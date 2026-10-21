@@ -4,6 +4,7 @@ import { Library } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { api } from "../api";
+import { StatusMenu } from "../components/series-actions";
 import { PosterGridSkeleton } from "../components/skeletons";
 import { cx, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
 
@@ -49,11 +50,17 @@ export function LibraryPage() {
       {shown.length ? (
         <div className={POSTER_GRID}>
           {shown.map((c) => (
-            <Link key={c.seriesId} href={`/series/${c.seriesId}`} className="group space-y-1.5">
-              <Poster path={c.posterPath} name={c.name} className="w-full transition group-hover:-translate-y-0.5" />
-              <p className="truncate text-xs font-semibold sm:text-sm">{c.name}</p>
-              {c.airedCount > 0 && <ProgressBar value={c.watchedCount} max={c.airedCount} />}
-            </Link>
+            <div key={c.seriesId} className="relative has-[[aria-expanded=true]]:z-40">
+              <Link href={`/series/${c.seriesId}`} className="group block space-y-1.5">
+                <Poster path={c.posterPath} name={c.name} className="w-full transition group-hover:-translate-y-0.5" />
+                <p className="truncate text-xs font-semibold sm:text-sm">{c.name}</p>
+                {c.airedCount > 0 && <ProgressBar value={c.watchedCount} max={c.airedCount} />}
+              </Link>
+              {/* Change status without opening the series */}
+              <div className="absolute top-1 right-1 rounded-full bg-bg/70 backdrop-blur">
+                <StatusMenu seriesId={c.seriesId} status={c.status} />
+              </div>
+            </div>
           ))}
         </div>
       ) : (
