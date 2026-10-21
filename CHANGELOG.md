@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/mathieuletyrant/snug/compare/v0.4.0...v0.4.1) (2026-10-21)
+
+
+### 🐛 Fixes
+
+* **server:** keep every Watched webhook call in the history ([#12](https://github.com/mathieuletyrant/snug/issues/12)) ([a8f3d90](https://github.com/mathieuletyrant/snug/commit/a8f3d90ac033f400e8cd3f5168183caf7638159e))
+* **web:** Library status menu opens above the tab bar, smaller round ⋮ on posters ([#11](https://github.com/mathieuletyrant/snug/issues/11)) ([87f0964](https://github.com/mathieuletyrant/snug/commit/87f0964b1390972b9eca6848b78e29a838ca7cd4))
+
 ## [0.4.0](https://github.com/mathieuletyrant/snug/compare/v0.3.0...v0.4.0) (2026-10-21)
 
 
