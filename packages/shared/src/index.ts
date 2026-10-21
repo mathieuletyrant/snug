@@ -94,6 +94,12 @@ export interface Preferences {
 
 export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false };
 
+/** Web Push: the server's public key, and how many devices of this User receive notifications. */
+export interface PushSettings {
+  publicKey: string;
+  devices: number;
+}
+
 export interface ImportResult {
   series: number;
   watches: number;

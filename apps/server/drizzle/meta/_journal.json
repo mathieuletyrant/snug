@@ -29,6 +29,13 @@
       "when": 1792595491876,
       "tag": "0003_calendar_sonarr",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792596443877,
+      "tag": "0004_push_subscriptions",
+      "breakpoints": true
     }
   ]
 }

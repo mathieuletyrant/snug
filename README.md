@@ -20,6 +20,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 🛋️ **Home that matters**: *Ready to watch* (next episode is out) and *Upcoming* (caught up, next air date). One tap ✓ marks the next episode, with undo.
 - 📺 **Per-episode progress**: Watchlist, Watching, Paused, Completed, Dropped. Series come back to *Watching* on their own when you resume them or a new season airs.
 - 🪼 **Jellyfin webhook**: finished or "mark played" episodes are tracked automatically, unknown series are added. Full webhook history with raw payloads.
+- 🔔 **Notifications**: “✓ Severance S02E05 · Next: S02E06” on your phone when Jellyfin marks an episode watched (Web Push, per device; on iPhone from the Home Screen app over HTTPS).
 - 📡 **Sonarr import list**: your Watchlist as a Sonarr *Custom List* (TVDB ids), so adding a series in Snug gets it downloaded.
 - 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
 - 🌍 **Your language**: descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
@@ -50,6 +51,7 @@ Open http://localhost:3000, create the admin account, paste a [TMDB key](https:/
 | `DATA_DIR` | `/data` | SQLite database, image cache, generated auth secret |
 | `BETTER_AUTH_SECRET` | generated in `DATA_DIR/secret` | |
 | `PORT` | `3000` | |
+| `SNUG_PUSH_CONTACT` | first `https://` origin | Contact sent to push services (`https://…` or `mailto:…`) |
 
 The image is multi-arch (amd64 / arm64), tagged `latest`, `x.y` and `x.y.z`.
 
@@ -82,6 +84,7 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     identity     accounts, sessions, preferences, webhook tokens
     jellyfin     webhook → Watches, history
     feeds        read-only lists for other apps (Sonarr)
+    notifications  Web Push to the User's devices
     import       JSON export → TrackedSeries
 apps/web         React 19 · Vite · Tailwind 4 · TanStack Query, PWA
 packages/shared  API contract types
