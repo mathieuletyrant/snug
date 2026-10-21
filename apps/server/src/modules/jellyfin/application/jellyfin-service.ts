@@ -1,4 +1,4 @@
-import { desc, eq, and, notInArray } from "drizzle-orm";
+import { desc, eq, and, ne, notInArray } from "drizzle-orm";
 import { type EpisodeRef, episodeCode, type JellyfinEventLog } from "@snug/shared";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import type { IdentityService } from "../../identity/application/identity-service";
@@ -9,6 +9,7 @@ import type { TrackingService } from "../../tracking/application/tracking-servic
 import { type JellyfinEvent, parseJellyfinEvent } from "../domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "../infrastructure/schema";
 
+/** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;
 const MAX_PAYLOAD = 20_000;
 
@@ -130,14 +131,29 @@ export class JellyfinService {
   private log(userId: string, summary: string, result: Outcome, body: unknown) {
     const payload = JSON.stringify(body, null, 2).slice(0, MAX_PAYLOAD);
     this.db.insert(jellyfinEvents).values({ userId, summary, receivedAt: new Date(), payload, ...result }).run();
-    const keep = this.db
+
+    // Ignored calls come in bursts (UserDataSaved on every pause): capping them all together pushed Watched ones out.
+    const notWatched = and(eq(jellyfinEvents.userId, userId), ne(jellyfinEvents.outcome, "watched"));
+    const keep = this.latestIds(notWatched);
+    this.db.delete(jellyfinEvents).where(and(notWatched, notInArray(jellyfinEvents.id, keep))).run();
+
+    const watched = and(eq(jellyfinEvents.userId, userId), eq(jellyfinEvents.outcome, "watched"));
+    const keepPayload = this.latestIds(watched);
+    this.db
+      .update(jellyfinEvents)
+      .set({ payload: null })
+      .where(and(watched, notInArray(jellyfinEvents.id, keepPayload)))
+      .run();
+  }
+
+  private latestIds(where: ReturnType<typeof and>) {
+    return this.db
       .select({ id: jellyfinEvents.id })
       .from(jellyfinEvents)
-      .where(eq(jellyfinEvents.userId, userId))
+      .where(where)
       .orderBy(desc(jellyfinEvents.id))
       .limit(KEEP_EVENTS)
       .all()
       .map((e) => e.id);
-    this.db.delete(jellyfinEvents).where(and(eq(jellyfinEvents.userId, userId), notInArray(jellyfinEvents.id, keep))).run();
   }
 }
