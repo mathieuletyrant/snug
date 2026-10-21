@@ -17,11 +17,11 @@ export const jellyfinRoutes = (jellyfin: JellyfinService, identity: IdentityServ
   new Hono<AuthEnv>()
     .get("/", (c) =>
       c.json<JellyfinIntegration>({
-        webhookPath: `/api/webhooks/jellyfin/${identity.webhookToken(c.var.user.id)}`,
+        webhookPath: `/api/webhooks/jellyfin/${identity.webhookTokens.of(c.var.user.id)}`,
         events: jellyfin.events(c.var.user.id),
       }),
     )
     .post("/rotate", (c) => {
-      identity.rotateWebhookToken(c.var.user.id);
+      identity.webhookTokens.rotate(c.var.user.id);
       return c.body(null, 204);
     });

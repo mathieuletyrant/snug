@@ -6,6 +6,7 @@ import { CatalogSettings } from "./modules/catalog/infrastructure/settings-store
 import { TmdbClient } from "./modules/catalog/infrastructure/tmdb-client";
 import { IdentityService } from "./modules/identity/application/identity-service";
 import { createAuth } from "./modules/identity/infrastructure/auth";
+import { FeedsService } from "./modules/feeds/application/feeds-service";
 import { ImportService } from "./modules/import/application/import-service";
 import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
 import { db } from "./shared/db";
@@ -20,6 +21,7 @@ export const tracking = new TrackingService(trackedSeries, catalog);
 export const identity = new IdentityService(db, auth);
 export const jellyfin = new JellyfinService(db, identity, catalog, tracking);
 export const importer = new ImportService(tracking, catalog);
+export const feeds = new FeedsService(tracking, catalog);
 
 /**
  * Refreshes Catalog data of every tracked Series older than `maxAgeDays` (0 = all, e.g. after a language change),

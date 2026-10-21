@@ -4,6 +4,7 @@ import { withEnglishFallback } from "./tmdb-client";
 
 const series = (overview: string, names: string[]): Series => ({
   tmdbId: 1,
+  tvdbId: null,
   name: "Dark",
   year: 2017,
   overview,

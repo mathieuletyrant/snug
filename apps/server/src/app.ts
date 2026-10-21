@@ -1,7 +1,8 @@
 /** HTTP composition: mounts each module's routes under /api. */
 import { Hono } from "hono";
 import type { SetupState } from "@snug/shared";
-import { auth, catalog, catalogSettings, identity, importer, jellyfin, refreshCatalog, tracking } from "./container";
+import { auth, catalog, catalogSettings, feeds, identity, importer, jellyfin, refreshCatalog, tracking } from "./container";
+import { feedRoutes, feedSettingsRoutes } from "./modules/feeds/http/routes";
 import { catalogRoutes, imageRoutes } from "./modules/catalog/http/routes";
 import { authHandler, identityRoutes, requireAdmin, requireSession } from "./modules/identity/http/routes";
 import { importRoutes } from "./modules/import/http/routes";
@@ -14,6 +15,7 @@ const api = new Hono<AuthEnv>()
   .route("/auth", authHandler(auth))
   .route("/webhooks/jellyfin", jellyfinWebhook(jellyfin))
   .route("/images", imageRoutes())
+  .route("/feeds", feedRoutes(feeds, identity))
   .get("/setup", (c) =>
     c.json<SetupState>({
       hasUsers: identity.hasUsers(),
@@ -28,6 +30,7 @@ const api = new Hono<AuthEnv>()
   .route("/", trackingRoutes(tracking))
   .route("/import", importRoutes(importer))
   .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, identity))
+  .route("/integrations/feeds", feedSettingsRoutes(identity))
   .all("/*", (c) => c.json({ error: "Not found" }, 404));
 
 export const app = new Hono().onError(onError).route("/api", api);

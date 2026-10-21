@@ -138,6 +138,11 @@ export class TrackingService {
     };
   }
 
+  /** Series ids tracked with one of these Statuses. */
+  async seriesIdsWithStatus(userId: string, statuses: readonly Status[]): Promise<number[]> {
+    return (await this.repo.listByUser(userId)).filter((t) => statuses.includes(t.status)).map((t) => t.seriesId);
+  }
+
   // ---- Helpers
 
   private async get(userId: string, seriesId: number) {

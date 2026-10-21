@@ -26,6 +26,7 @@ function setup(series: Series[]) {
 
 const series = (tmdbId: number, ended: boolean, airDates: string[]): Series => ({
   tmdbId,
+  tvdbId: null,
   name: `Series ${tmdbId}`,
   year: 2020,
   overview: "",
@@ -72,3 +73,4 @@ test("import keeps existing Statuses and merges Watches", async () => {
   expect(detail.status).toBe("paused");
   expect(detail.progress).toEqual({ season: 1, number: 2 });
 });
+
