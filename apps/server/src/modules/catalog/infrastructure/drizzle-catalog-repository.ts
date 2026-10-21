@@ -34,6 +34,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     });
   }
 
+  async setTvdbId(tmdbId: number, tvdbId: number | null) {
+    this.db.update(series).set({ tvdbId }).where(eq(series.tmdbId, tmdbId)).run();
+  }
+
   async stale(tmdbIds: readonly number[], before: Date) {
     if (!tmdbIds.length) return [];
     const ids = [...tmdbIds];

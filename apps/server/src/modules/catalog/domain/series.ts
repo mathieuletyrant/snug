@@ -6,6 +6,8 @@ export type { Episode, SeriesSummary };
 
 export interface Series {
   tmdbId: number;
+  /** TheTVDB id, what Sonarr identifies series by; null when TMDB doesn't know it. */
+  tvdbId: number | null;
   name: string;
   year: number | null;
   overview: string;
@@ -31,6 +33,7 @@ export interface CatalogRepository {
   get(tmdbId: number): Promise<Series | null>;
   getMany(tmdbIds: readonly number[]): Promise<Map<number, Series>>;
   save(series: Series): Promise<void>;
+  setTvdbId(tmdbId: number, tvdbId: number | null): Promise<void>;
   /** Ids among `tmdbIds` never fetched or fetched before `before`. */
   stale(tmdbIds: readonly number[], before: Date): Promise<number[]>;
 }
@@ -38,6 +41,7 @@ export interface CatalogRepository {
 /** Where Series metadata comes from (TMDB). */
 export interface SeriesSource {
   fetch(tmdbId: number): Promise<Series>;
+  tvdbId(tmdbId: number): Promise<number | null>;
   search(query: string): Promise<SeriesSummary[]>;
   /** Series id owning an Episode known by an external id. */
   findByEpisode(externalId: string, source: "tvdb_id" | "imdb_id"): Promise<number | null>;

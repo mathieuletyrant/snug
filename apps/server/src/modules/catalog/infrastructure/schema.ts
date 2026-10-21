@@ -2,6 +2,7 @@ import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 export const series = sqliteTable("series", {
   tmdbId: integer("tmdb_id").primaryKey(),
+  tvdbId: integer("tvdb_id"),
   name: text("name").notNull(),
   year: integer("year"),
   overview: text("overview").notNull().default(""),

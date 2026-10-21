@@ -43,6 +43,11 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
   seasons: { number: number; episodes: (Episode & { watched: boolean; aired: boolean })[] }[];
 }
 
+/** Read-only feed URLs (paths, to prefix with the origin) for other apps. */
+export interface Feeds {
+  sonarrPath: string;
+}
+
 export interface SeriesSummary {
   tmdbId: number;
   name: string;

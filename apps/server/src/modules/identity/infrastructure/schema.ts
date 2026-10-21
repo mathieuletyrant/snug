@@ -69,3 +69,11 @@ export const webhookToken = sqliteTable("webhook_token", {
     .references(() => user.id, { onDelete: "cascade" }),
   token: text("token").notNull().unique(),
 });
+
+/** Secret token for read-only feeds (iCal calendar, Sonarr list): leaking it can't change anything. */
+export const feedToken = sqliteTable("feed_token", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+});

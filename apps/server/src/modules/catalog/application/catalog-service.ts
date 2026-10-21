@@ -35,6 +35,22 @@ export class CatalogService {
     return stale.length;
   }
 
+  /**
+   * TheTVDB ids of cached Series; ones fetched before ids were stored are looked up once on TMDB.
+   * ponytail: a Series TMDB has no TVDB id for is looked up again on every call; cache "none" if lists get big.
+   */
+  async tvdbIds(tmdbIds: readonly number[]): Promise<Map<number, number | null>> {
+    const cached = await this.repo.getMany(tmdbIds);
+    const result = new Map([...cached.values()].map((s) => [s.tmdbId, s.tvdbId]));
+    const missing = [...cached.values()].filter((s) => s.tvdbId === null).map((s) => s.tmdbId);
+    await forEachLimit(missing, 4, async (id) => {
+      const tvdbId = await this.source.tvdbId(id);
+      result.set(id, tvdbId);
+      if (tvdbId) await this.repo.setTvdbId(id, tvdbId);
+    });
+    return result;
+  }
+
   search(query: string): Promise<SeriesSummary[]> {
     return this.source.search(query);
   }

@@ -35,7 +35,7 @@ export class JellyfinService {
   }
 
   private async process(token: string, body: Record<string, unknown>) {
-    const userId = this.identity.userIdByWebhookToken(token);
+    const userId = this.identity.webhookTokens.userIdOf(token);
     if (!userId) throw new ForbiddenError("Unknown webhook token");
 
     const event = parseJellyfinEvent(body);

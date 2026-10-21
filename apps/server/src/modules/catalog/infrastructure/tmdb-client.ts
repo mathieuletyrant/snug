@@ -19,6 +19,7 @@ interface TmdbShow {
   backdrop_path: string | null;
   status: string;
   seasons: { season_number: number }[];
+  external_ids?: { tvdb_id: number | null };
   [appended: `season/${number}`]: { episodes: TmdbEpisode[] } | undefined;
 }
 interface TmdbEpisode {
@@ -96,7 +97,7 @@ export class TmdbClient implements SeriesSource {
   }
 
   private async fetchIn(tmdbId: number, language: string): Promise<Series> {
-    const show = await this.get<TmdbShow>(`/tv/${tmdbId}`, { language });
+    const show = await this.get<TmdbShow>(`/tv/${tmdbId}`, { language, append_to_response: "external_ids" });
     const seasons = show.seasons.map((s) => s.season_number).filter((n) => n > 0);
     const episodes: Episode[] = [];
     for (let i = 0; i < seasons.length; i += SEASONS_PER_CALL) {
@@ -113,6 +114,7 @@ export class TmdbClient implements SeriesSource {
     }
     return {
       tmdbId: show.id,
+      tvdbId: show.external_ids?.tvdb_id ?? null,
       name: show.name,
       year: yearOf(show.first_air_date),
       overview: show.overview,
@@ -122,6 +124,10 @@ export class TmdbClient implements SeriesSource {
       episodes,
       fetchedAt: new Date(),
     };
+  }
+
+  async tvdbId(tmdbId: number) {
+    return (await this.get<{ tvdb_id: number | null }>(`/tv/${tmdbId}/external_ids`)).tvdb_id ?? null;
   }
 
   async search(query: string): Promise<SeriesSummary[]> {

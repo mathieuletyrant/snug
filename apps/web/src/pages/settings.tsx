@@ -1,9 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ImportResult, JellyfinEventLog, JellyfinIntegration, Me } from "@snug/shared";
-import { ChevronDown, Copy, LogOut, RefreshCw, Upload } from "lucide-react";
+import type { Feeds as FeedsUrls, ImportResult, JellyfinEventLog, JellyfinIntegration, Me } from "@snug/shared";
+import { ChevronDown, LogOut, Upload } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { api, authClient, queryClient } from "../api";
+import { CopyField } from "../components/copy-field";
 import { useFormErrors } from "../components/form";
 import { Toggle, usePreferences, useUpdatePreferences } from "../components/preferences";
 import { ImportProgressBar, useImportProgress } from "../components/import-progress";
@@ -19,6 +20,7 @@ export function SettingsPage({ me }: { me: Me }) {
         <Account me={me} />
         <Display />
         <Jellyfin />
+        <Sonarr />
         <Import />
         {me.isAdmin && <Users />}
         {me.isAdmin && (
@@ -70,7 +72,6 @@ function Display() {
 }
 
 function Jellyfin() {
-  const toast = useToast();
   const { data } = useQuery({
     queryKey: ["jellyfin"],
     queryFn: () => api<JellyfinIntegration>("/integrations/jellyfin"),
@@ -98,19 +99,7 @@ function Jellyfin() {
           user, tick <b className="text-text">Send All Properties</b>, save.
         </li>
       </ol>
-      <div className="flex gap-2">
-        <code className="min-w-0 flex-1 truncate rounded-2xl bg-raised px-4 py-3 text-xs">{url}</code>
-        <Button
-          variant="ghost"
-          aria-label="Copy webhook URL"
-          onClick={() => navigator.clipboard.writeText(url).then(() => toast({ message: "Copied" }))}
-        >
-          <Copy className="size-4" />
-        </Button>
-        <Button variant="ghost" aria-label="New webhook URL" title="New URL (the old one stops working)" onClick={() => rotate.mutate()}>
-          <RefreshCw className="size-4" />
-        </Button>
-      </div>
+      <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
       <WebhookHistory events={data?.events} />
     </Card>
   );
@@ -193,6 +182,35 @@ function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) 
         </p>
       )}
     </div>
+  );
+}
+
+function Sonarr() {
+  const { data } = useQuery({ queryKey: ["feeds"], queryFn: () => api<FeedsUrls>("/integrations/feeds") });
+  const rotate = useMutation({
+    mutationFn: () => api("/integrations/feeds/rotate", { method: "POST" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["feeds"] }),
+  });
+  const url = data ? location.origin + data.sonarrPath : "…";
+
+  return (
+    <Card>
+      <h2 className="mb-1 text-xl">Sonarr</h2>
+      <p className="mb-4 text-sm text-muted">
+        Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees
+        your list: replace it with ↻ if it leaks.
+      </p>
+      <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-muted">
+        <li>
+          In Sonarr: Settings → Import Lists → + → <b className="text-text">Custom Lists</b>, paste the URL below.
+        </li>
+        <li>Pick a quality profile and root folder, save. Sonarr checks the list every few hours.</li>
+      </ol>
+      <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
+      <p className="mt-3 text-xs text-muted">
+        Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
+      </p>
+    </Card>
   );
 }
 

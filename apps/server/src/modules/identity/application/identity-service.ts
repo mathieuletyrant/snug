@@ -4,15 +4,23 @@ import { isAPIError } from "better-auth/api";
 import type { Db } from "../../../shared/db";
 import { InvalidInputError } from "../../../shared/errors";
 import { type Auth, invitation } from "../infrastructure/auth";
-import { user, userPreferences, webhookToken } from "../infrastructure/schema";
+import { feedToken, user, userPreferences, webhookToken } from "../infrastructure/schema";
 
 const newToken = () => Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
 
 export class IdentityService {
+  /** Token in the media server webhook URL: lets its holder mark Episodes as watched. */
+  readonly webhookTokens: UserTokens;
+  /** Token in read-only feed URLs (calendar, Sonarr list). */
+  readonly feedTokens: UserTokens;
+
   constructor(
     private readonly db: Db,
     private readonly auth: Auth,
-  ) {}
+  ) {
+    this.webhookTokens = new UserTokens(db, webhookToken);
+    this.feedTokens = new UserTokens(db, feedToken);
+  }
 
   hasUsers() {
     return (this.db.select({ n: count() }).from(user).get()?.n ?? 0) > 0;
@@ -57,25 +65,34 @@ export class IdentityService {
     return data;
   }
 
-  webhookToken(userId: string): string {
-    const existing = this.db.select().from(webhookToken).where(eq(webhookToken.userId, userId)).get();
+}
+
+/** One secret token per User, created on first use, rotatable. */
+class UserTokens {
+  constructor(
+    private readonly db: Db,
+    private readonly table: typeof webhookToken | typeof feedToken,
+  ) {}
+
+  of(userId: string): string {
+    const existing = this.db.select().from(this.table).where(eq(this.table.userId, userId)).get();
     if (existing) return existing.token;
     const token = newToken();
-    this.db.insert(webhookToken).values({ userId, token }).run();
+    this.db.insert(this.table).values({ userId, token }).run();
     return token;
   }
 
-  rotateWebhookToken(userId: string): string {
+  rotate(userId: string): string {
     const token = newToken();
     this.db
-      .insert(webhookToken)
+      .insert(this.table)
       .values({ userId, token })
-      .onConflictDoUpdate({ target: webhookToken.userId, set: { token } })
+      .onConflictDoUpdate({ target: this.table.userId, set: { token } })
       .run();
     return token;
   }
 
-  userIdByWebhookToken(token: string): string | null {
-    return this.db.select().from(webhookToken).where(eq(webhookToken.token, token)).get()?.userId ?? null;
+  userIdOf(token: string): string | null {
+    return this.db.select().from(this.table).where(eq(this.table.token, token)).get()?.userId ?? null;
   }
 }
