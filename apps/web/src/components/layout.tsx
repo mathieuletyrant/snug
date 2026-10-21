@@ -49,15 +49,13 @@ export function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/90 backdrop-blur-lg md:hidden">
-        {/* Content fades out before it slides under the bar. */}
-        <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-bg/80 to-transparent" />
         <div className="mx-auto flex max-w-md justify-around pt-2">
           {TABS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cx(
-                "flex min-w-16 flex-col items-center gap-0.5 px-3 py-1 text-xs font-bold transition",
+                "flex flex-col items-center gap-0.5 px-4 py-1 text-[11px] font-bold transition",
                 active(href) ? "text-accent" : "text-muted",
               )}
             >
