@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import { api, authClient, queryClient } from "../api";
 import { CopyField } from "../components/copy-field";
+import { usePush } from "../components/push";
 import { useFormErrors } from "../components/form";
 import { Toggle, usePreferences, useUpdatePreferences } from "../components/preferences";
 import { ImportProgressBar, useImportProgress } from "../components/import-progress";
@@ -19,6 +20,7 @@ export function SettingsPage({ me }: { me: Me }) {
       <div className="space-y-5">
         <Account me={me} />
         <Display />
+        <Notifications />
         <Jellyfin />
         <Sonarr />
         <Import />
@@ -67,6 +69,53 @@ function Display() {
         checked={preferences.hideUndatedUpcoming}
         onChange={(hideUndatedUpcoming) => update.mutate({ hideUndatedUpcoming })}
       />
+    </Card>
+  );
+}
+
+function Notifications() {
+  const toast = useToast();
+  const push = usePush();
+  const [busy, setBusy] = useState(false);
+  const run = (action: () => Promise<unknown>) => {
+    setBusy(true);
+    action()
+      .catch((e: Error) => toast({ message: e.message }))
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <Card>
+      <h2 className="mb-2 text-xl">Notifications</h2>
+      <Toggle
+        label="On this device"
+        description="Get “✓ Severance S02E05”, and what's next, when Jellyfin marks an episode watched."
+        checked={push.state === "on"}
+        onChange={(on) => !busy && push.state !== "unsupported" && run(on ? push.enable : push.disable)}
+      />
+      {push.state === "unsupported" && (
+        <p className="mt-2 text-sm text-muted">
+          Not available here. On iPhone, add Snug to your Home Screen (Share → Add to Home Screen) and open it from
+          there, over HTTPS.
+        </p>
+      )}
+      {push.state === "denied" && (
+        <p className="mt-2 text-sm text-rose">Notifications are blocked for Snug: allow them in your browser or phone settings.</p>
+      )}
+      {push.state === "on" && (
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="text-sm text-muted">
+            {push.devices === 1 ? "1 device receives" : `${push.devices} devices receive`} notifications.
+          </p>
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() => run(() => api("/push/test", { method: "POST" }).then(() => toast({ message: "Test sent" })))}
+          >
+            Send a test
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }

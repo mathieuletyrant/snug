@@ -1,5 +1,5 @@
 // Offline support: the app shell and the last data seen load without network; actions need the network.
-const CACHE = "snug-v2";
+const CACHE = "snug-v3";
 const READ_API = /^\/api\/(setup|me|home|library|series\/\d+)$/;
 
 self.addEventListener("install", (event) => {
@@ -45,4 +45,30 @@ self.addEventListener("fetch", (event) => {
   }
   if (READ_API.test(url.pathname)) return event.respondWith(networkFirst(request));
   if (request.mode === "navigate") return event.respondWith(networkFirst(new Request("/")));
+});
+
+// Web Push: { title, body, url, tag } sent by the server.
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? "Snug", {
+      body: data.body,
+      tag: data.tag,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url ?? "/" },
+    }),
+  );
+});
+
+// Tapping a notification focuses an open Snug window (navigating it) or opens one.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url ?? "/", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => w.url.startsWith(self.location.origin));
+      return open ? open.navigate(url).then((w) => (w ?? open).focus()) : self.clients.openWindow(url);
+    }),
+  );
 });

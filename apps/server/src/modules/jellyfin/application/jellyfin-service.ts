@@ -1,9 +1,10 @@
 import { desc, eq, and, notInArray } from "drizzle-orm";
-import { episodeCode, type JellyfinEventLog } from "@snug/shared";
+import { type EpisodeRef, episodeCode, type JellyfinEventLog } from "@snug/shared";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { Db } from "../../../shared/db";
 import { ForbiddenError } from "../../../shared/errors";
+import type { Notifier } from "../../notifications/application/notification-service";
 import type { TrackingService } from "../../tracking/application/tracking-service";
 import { type JellyfinEvent, parseJellyfinEvent } from "../domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "../infrastructure/schema";
@@ -19,6 +20,7 @@ export class JellyfinService {
     private readonly identity: IdentityService,
     private readonly catalog: CatalogService,
     private readonly tracking: TrackingService,
+    private readonly notifier: Notifier,
   ) {}
 
   private queue: Promise<unknown> = Promise.resolve();
@@ -83,7 +85,28 @@ export class JellyfinService {
       await this.catalog.refresh(seriesId);
     }
     await this.tracking.watchEpisode(userId, seriesId, event);
+    void this.announce(userId, seriesId, series.name, event);
     return { outcome: "watched", message: `Marked ${series.name} ${episodeCode(event)} as watched`, seriesId };
+  }
+
+  /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
+  private async announce(userId: string, seriesId: number, name: string, ep: EpisodeRef) {
+    try {
+      const { next } = await this.tracking.detail(userId, seriesId);
+      const today = new Date().toISOString().slice(0, 10);
+      await this.notifier.notify(userId, {
+        title: `✓ ${name} ${episodeCode(ep)}`,
+        body: !next
+          ? "You're all caught up."
+          : next.airDate && next.airDate <= today
+            ? `Next: ${episodeCode(next)} · ${next.name}`
+            : `Next: ${episodeCode(next)}${next.airDate ? ` on ${next.airDate}` : ", date to be announced"}`,
+        url: `/series/${seriesId}`,
+        tag: `series-${seriesId}`,
+      });
+    } catch (error) {
+      console.error("Watch notification failed", error);
+    }
   }
 
   private async resolveSeries(event: Extract<JellyfinEvent, { kind: "episode-watched" }>) {

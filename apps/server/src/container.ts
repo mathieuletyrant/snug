@@ -8,6 +8,8 @@ import { IdentityService } from "./modules/identity/application/identity-service
 import { createAuth } from "./modules/identity/infrastructure/auth";
 import { FeedsService } from "./modules/feeds/application/feeds-service";
 import { ImportService } from "./modules/import/application/import-service";
+import { NotificationService } from "./modules/notifications/application/notification-service";
+import { WebPushSender } from "./modules/notifications/infrastructure/web-push-sender";
 import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
 import { db } from "./shared/db";
 import { TrackingService } from "./modules/tracking/application/tracking-service";
@@ -19,7 +21,8 @@ export const trackedSeries = new DrizzleTrackedSeriesRepository(db);
 export const catalog = new CatalogService(new DrizzleCatalogRepository(db), new TmdbClient(catalogSettings.tmdbKey, catalogSettings.language));
 export const tracking = new TrackingService(trackedSeries, catalog);
 export const identity = new IdentityService(db, auth);
-export const jellyfin = new JellyfinService(db, identity, catalog, tracking);
+export const notifications = new NotificationService(db, new WebPushSender());
+export const jellyfin = new JellyfinService(db, identity, catalog, tracking, notifications);
 export const importer = new ImportService(tracking, catalog);
 export const feeds = new FeedsService(tracking, catalog);
 
