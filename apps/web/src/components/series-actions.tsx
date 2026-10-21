@@ -71,7 +71,7 @@ export function StatusMenu({ seriesId, status, small = false }: { seriesId: numb
         aria-label="Change status"
         aria-haspopup="menu"
         aria-expanded={open}
-        className={cx("rounded-full text-muted transition hover:bg-raised hover:text-text", small ? "p-1" : "p-2")}
+        className={cx("flex items-center justify-center rounded-full text-muted transition hover:bg-raised hover:text-text", small ? "p-1" : "p-2")}
         onClick={() => {
           const rect = ref.current?.getBoundingClientRect();
           setAlignLeft((rect?.right ?? Infinity) < 200);
