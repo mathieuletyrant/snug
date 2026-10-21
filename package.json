@@ -1,0 +1,21 @@
+{
+  "name": "snug",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter '@snug/server' --filter '@snug/web' dev",
+    "build": "bun --filter '@snug/web' build",
+    "start": "bun --filter '@snug/server' start",
+    "test": "bun test",
+    "typecheck": "bun --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "typescript": "^7.0.2"
+  }
+}

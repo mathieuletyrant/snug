@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/nunito";
+
+/* Evening-on-the-couch palette: warm dark browns, amber lamp light, cream text. */
+@theme {
+  --color-bg: #17120f;
+  --color-surface: #221a16;
+  --color-raised: #2c231d;
+  --color-line: #3a2e26;
+  --color-text: #f6ecdf;
+  --color-muted: #b6a493;
+  --color-accent: #f0a35e;
+  --color-accent-strong: #d98a47;
+  --color-accent-ink: #2a1a0c;
+  --color-sage: #a3c28f;
+  --color-rose: #e48f8f;
+
+  --animate-page-in: page-in 220ms ease-out;
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  --font-sans: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    /* Always reserve the scrollbar's width: short and long pages keep the same centered layout. */
+    scrollbar-gutter: stable;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+    background-image: radial-gradient(ellipse at top, rgb(240 163 94 / 0.07), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+    }
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+/* Image fading out at the bottom (and, on wide screens, on the sides) into the page background. */
+@utility backdrop-fade {
+  mask-image: linear-gradient(to bottom, #000 25%, transparent 95%);
+  @media (min-width: 768px) {
+    mask-image:
+      linear-gradient(to bottom, #000 25%, transparent 95%),
+      linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
+    mask-composite: intersect;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}

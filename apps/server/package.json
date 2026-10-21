@@ -1,0 +1,21 @@
+{
+  "name": "@snug/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "DATA_DIR=../../data SNUG_ORIGINS=http://localhost:5173 bun --watch src/main.ts",
+    "start": "bun src/main.ts",
+    "db:generate": "drizzle-kit generate",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@snug/shared": "workspace:*",
+    "better-auth": "^1.7.12",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11"
+  }
+}

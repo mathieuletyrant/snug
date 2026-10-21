@@ -1,0 +1,10 @@
+# Local test: docker compose up --build → http://localhost:3000
+services:
+  snug:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    environment:
+      SNUG_ORIGINS: "http://localhost:3000"
