@@ -7,6 +7,7 @@ import {
   useId,
   useState,
 } from "react";
+import { ToggleGroup } from "radix-ui";
 import { backdropSrcSet, image, posterSrcSet } from "../api";
 
 const cx = (...classes: (string | false | null | undefined)[]) => classes.filter(Boolean).join(" ");
@@ -15,6 +16,58 @@ const cx = (...classes: (string | false | null | undefined)[]) => classes.filter
 export const POSTER_GRID = "grid grid-cols-4 gap-x-2.5 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 lg:gap-x-4";
 /** Rendered poster width in POSTER_GRID, for `srcset`. */
 const POSTER_GRID_SIZES = "(min-width: 1024px) 115px, (min-width: 768px) 16vw, (min-width: 640px) 20vw, 25vw";
+
+/** Radix popups keep this far from the screen's edges; at the bottom, clear of the phone's tab bar. */
+export const COLLISION_PADDING = { top: 12, right: 12, bottom: 96, left: 12 };
+
+/** Floating menu (Radix DropdownMenu content) and its items. */
+export const MENU =
+  "z-50 min-w-44 overflow-hidden rounded-2xl border border-line bg-raised p-1 shadow-2xl shadow-black/50 origin-(--radix-dropdown-menu-content-transform-origin) data-[state=open]:animate-pop-in";
+export const MENU_ITEM =
+  "flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none select-none data-highlighted:bg-line data-[state=checked]:text-accent";
+
+/**
+ * One choice among a few, as pills (Radix ToggleGroup: arrow keys move between them). Clicking the
+ * active pill keeps it on rather than leaving nothing chosen.
+ */
+export function Chips({
+  label,
+  value,
+  onChange,
+  options,
+  small = false,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: ReactNode }[];
+  small?: boolean;
+  className?: string;
+}) {
+  return (
+    <ToggleGroup.Root
+      type="single"
+      aria-label={label}
+      value={value}
+      onValueChange={(v) => v && onChange(v)}
+      className={cx("no-scrollbar flex gap-1.5 overflow-x-auto", className)}
+    >
+      {options.map((o) => (
+        <ToggleGroup.Item
+          key={o.value}
+          value={o.value}
+          className={cx(
+            "shrink-0 rounded-full font-bold text-muted transition hover:text-text data-[state=on]:bg-accent data-[state=on]:text-accent-ink",
+            small ? "bg-raised px-3 py-1.5 text-xs" : "bg-raised px-4 py-2 text-sm",
+          )}
+        >
+          {o.label}
+        </ToggleGroup.Item>
+      ))}
+    </ToggleGroup.Root>
+  );
+}
 
 export function Button({
   variant = "primary",

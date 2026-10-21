@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { api, image, queryClient } from "../api";
 import { useSetStatus } from "../components/series-actions";
+import { Confirm } from "../components/confirm";
 import { useToast } from "../components/toast";
 import { SeriesSkeleton } from "../components/skeletons";
 import { Button, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
@@ -102,12 +103,14 @@ export function SeriesPage({ id }: { id: string }) {
 
       {data.tracked && (
         <div className="mt-10">
-          <Button
-            variant="danger"
-            onClick={() => remove.mutate(undefined, { onSuccess: () => navigate("/library") })}
+          <Confirm
+            title={`Remove ${data.name}?`}
+            description="Its status and every episode you marked watched are deleted from Snug."
+            confirm="Remove"
+            onConfirm={() => remove.mutate(undefined, { onSuccess: () => navigate("/library") })}
           >
-            Remove from library
-          </Button>
+            <Button variant="danger">Remove from library</Button>
+          </Confirm>
         </div>
       )}
     </article>

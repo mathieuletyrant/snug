@@ -10,7 +10,7 @@ import { useFormErrors } from "../components/form";
 import { Toggle, usePreferences, useUpdatePreferences } from "../components/preferences";
 import { ImportProgressBar, useImportProgress } from "../components/import-progress";
 import { useToast } from "../components/toast";
-import { Button, Card, cx, ErrorText, Input, PageTitle, Skeleton } from "../components/ui";
+import { Button, Card, Chips, cx, ErrorText, Input, PageTitle, Skeleton } from "../components/ui";
 import { LanguageSelect, TmdbKeyForm } from "./setup";
 
 export function SettingsPage({ me }: { me: Me }) {
@@ -197,20 +197,14 @@ function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) 
     <div className="mt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-sans text-sm font-bold text-muted">Webhook history</h3>
-        <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1">
-          {OUTCOMES.map((o) => (
-            <button
-              key={o}
-              onClick={() => setFilter(o)}
-              className={cx(
-                "shrink-0 rounded-full px-3 py-1.5 text-xs font-bold capitalize transition",
-                o === filter ? "bg-accent text-accent-ink" : "bg-raised text-muted hover:text-text",
-              )}
-            >
-              {o === "error" ? "errors" : o}
-            </button>
-          ))}
-        </div>
+        <Chips
+          label="Webhook history filter"
+          small
+          value={filter}
+          onChange={(o) => setFilter(o as (typeof OUTCOMES)[number])}
+          options={OUTCOMES.map((o) => ({ value: o, label: o === "error" ? "Errors" : o[0]!.toUpperCase() + o.slice(1) }))}
+          className="-mx-1 px-1"
+        />
       </div>
       {!events ? (
         <Skeleton className="h-24 w-full" />

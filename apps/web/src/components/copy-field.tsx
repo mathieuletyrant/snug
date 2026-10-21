@@ -1,4 +1,5 @@
 import { Copy, RefreshCw } from "lucide-react";
+import { Confirm } from "./confirm";
 import { useToast } from "./toast";
 import { Button } from "./ui";
 
@@ -24,9 +25,16 @@ export function CopyField({ label, value, onRotate }: { label: string; value: st
           <span className="sm:hidden">Copy URL</span>
         </Button>
         {onRotate && (
-          <Button variant="ghost" aria-label={`New ${label}`} title="New URL (the old one stops working)" onClick={onRotate}>
-            <RefreshCw className="size-4" />
-          </Button>
+          <Confirm
+            title="Replace this URL?"
+            description="The current URL stops working right away: paste the new one wherever you used it."
+            confirm="Replace"
+            onConfirm={onRotate}
+          >
+            <Button variant="ghost" aria-label={`New ${label}`} title="New URL (the old one stops working)">
+              <RefreshCw className="size-4" />
+            </Button>
+          </Confirm>
         )}
       </div>
     </div>
