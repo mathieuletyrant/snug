@@ -40,15 +40,21 @@ export function useSetStatus() {
   });
 }
 
+/** Room the open menu needs below its button, and the phone's bottom tab bar it must not slide under. */
+const MENU_HEIGHT = 230;
+const TAB_BAR_HEIGHT = 96;
+
 /**
  * "⋯" menu to move a Series to another Status.
  * A card holding it should lift itself while it's open (`has-[[aria-expanded=true]]:z-40`): the blurred
  * button background creates a stacking context, so the menu alone can't rise above the next cards.
  */
-export function StatusMenu({ seriesId, status }: { seriesId: number; status: Status }) {
+export function StatusMenu({ seriesId, status, small = false }: { seriesId: number; status: Status; small?: boolean }) {
   const [open, setOpen] = useState(false);
   // Opens towards the side with room, so the menu never leaves the screen (e.g. first column of a grid).
   const [alignLeft, setAlignLeft] = useState(false);
+  // Opens upwards near the bottom, where it would slide under the phone's tab bar.
+  const [openUp, setOpenUp] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const setStatus = useSetStatus();
 
@@ -65,19 +71,22 @@ export function StatusMenu({ seriesId, status }: { seriesId: number; status: Sta
         aria-label="Change status"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="rounded-full p-2 text-muted transition hover:bg-raised hover:text-text"
+        className={cx("rounded-full text-muted transition hover:bg-raised hover:text-text", small ? "p-1" : "p-2")}
         onClick={() => {
-          setAlignLeft((ref.current?.getBoundingClientRect().right ?? Infinity) < 200);
+          const rect = ref.current?.getBoundingClientRect();
+          setAlignLeft((rect?.right ?? Infinity) < 200);
+          setOpenUp(!!rect && rect.bottom + MENU_HEIGHT > window.innerHeight - TAB_BAR_HEIGHT);
           setOpen(!open);
         }}
       >
-        <EllipsisVertical className="size-5" />
+        <EllipsisVertical className={small ? "size-4" : "size-5"} />
       </button>
       {open && (
         <div
           className={cx(
-            "absolute z-30 mt-1 w-44 overflow-hidden rounded-2xl border border-line bg-raised py-1 shadow-2xl shadow-black/50",
+            "absolute z-30 w-44 overflow-hidden rounded-2xl border border-line bg-raised py-1 shadow-2xl shadow-black/50",
             alignLeft ? "left-0" : "right-0",
+            openUp ? "bottom-full mb-1" : "mt-1",
           )}
         >
           {STATUSES.map((s) => (

@@ -57,8 +57,8 @@ export function LibraryPage() {
                 {c.airedCount > 0 && <ProgressBar value={c.watchedCount} max={c.airedCount} />}
               </Link>
               {/* Change status without opening the series */}
-              <div className="absolute top-1 right-1 rounded-full bg-bg/70 backdrop-blur">
-                <StatusMenu seriesId={c.seriesId} status={c.status} />
+              <div className="absolute top-1 right-1 rounded-full bg-bg/60 backdrop-blur">
+                <StatusMenu seriesId={c.seriesId} status={c.status} small />
               </div>
             </div>
           ))}
