@@ -15,6 +15,11 @@ const cx = (...classes: (string | false | null | undefined)[]) => classes.filter
 export const POSTER_GRID = "grid grid-cols-4 gap-x-2.5 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 lg:gap-x-4";
 /** Rendered poster width in POSTER_GRID, for `srcset`. */
 const POSTER_GRID_SIZES = "(min-width: 1024px) 115px, (min-width: 768px) 16vw, (min-width: 640px) 20vw, 25vw";
+/** Same grid from tablets up; on phones a row that scrolls sideways, edge to edge, with wider posters. */
+export const POSTER_ROW =
+  "no-scrollbar -mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-6 md:gap-x-2.5 md:gap-y-4 md:overflow-visible md:px-0 lg:grid-cols-8 lg:gap-x-4";
+export const POSTER_ROW_ITEM = "w-26 shrink-0 snap-start md:w-auto";
+export const POSTER_ROW_SIZES = "(min-width: 1024px) 115px, (min-width: 768px) 16vw, 104px";
 
 export function Button({
   variant = "primary",
@@ -234,8 +239,8 @@ export function ErrorText({ error }: { error: unknown }) {
 
 export function PageTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4">
-      <h1 className="text-3xl font-semibold">{children}</h1>
+    <div className="mb-5 flex items-end justify-between gap-4 md:mb-6">
+      <h1 className="text-[1.75rem] leading-tight font-semibold md:text-3xl">{children}</h1>
       {action}
     </div>
   );

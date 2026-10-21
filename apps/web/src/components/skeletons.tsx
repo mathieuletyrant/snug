@@ -1,4 +1,4 @@
-import { POSTER_GRID, Skeleton } from "./ui";
+import { cx, POSTER_GRID, POSTER_ROW, POSTER_ROW_ITEM, Skeleton } from "./ui";
 
 const times = (n: number) => Array.from({ length: n }, (_, i) => i);
 
@@ -25,13 +25,20 @@ export function HomeSkeleton() {
     <>
       <TitleSkeleton />
       <Skeleton className="mb-3 h-6 w-40" />
-      <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-        {times(4).map((i) => (
-          <Skeleton key={i} className="aspect-video w-full" />
+      <div className="mb-10 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {times(3).map((i) => (
+          <Skeleton key={i} className="h-[6.5rem] w-full" />
         ))}
       </div>
       <Skeleton className="mb-3 h-6 w-32" />
-      <PosterGridSkeleton count={8} />
+      <div className={POSTER_ROW}>
+        {times(8).map((i) => (
+          <div key={i} className={cx(POSTER_ROW_ITEM, "space-y-2")}>
+            <Skeleton className="aspect-[2/3] w-full" />
+            <Skeleton className="h-3.5 w-3/4 rounded-full" />
+          </div>
+        ))}
+      </div>
     </>
   );
 }
