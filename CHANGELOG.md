@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mathieuletyrant/snug/compare/v0.3.0...v0.4.0) (2026-10-21)
+
+
+### ✨ Features
+
+* **web:** readable Upcoming dates and a phone-friendly Settings page ([#9](https://github.com/mathieuletyrant/snug/issues/9)) ([1402eb6](https://github.com/mathieuletyrant/snug/commit/1402eb65cc4de407d419e51ffb21348c9457f3f4))
+
 ## [0.3.0](https://github.com/mathieuletyrant/snug/compare/v0.2.1...v0.3.0) (2026-10-21)
 
 
