@@ -20,7 +20,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 🛋️ **Home that matters**: *Ready to watch* (next episode is out) and *Upcoming* (caught up, next air date). One tap ✓ marks the next episode, with undo.
 - 📺 **Per-episode progress**: Watchlist, Watching, Paused, Completed, Dropped. Series come back to *Watching* on their own when you resume them or a new season airs.
 - 🪼 **Jellyfin webhook**: finished or "mark played" episodes are tracked automatically, unknown series are added. Full webhook history with raw payloads.
-- 📥 **Import** your history from a JSON export, with live progress while series details are fetched.
+- 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
 - 🌍 **Your language**: descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
 - 📱 **PWA**: installable, works offline for what you've already seen, mobile-first.
 - 🔐 **Accounts**: email + password, the first account is admin, sign-up closed afterwards.

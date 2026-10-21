@@ -14,11 +14,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T = void>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+/** `body` is sent as JSON; `text` as-is with `contentType` (e.g. a CSV file). */
+export async function api<T = void>(
+  path: string,
+  init: { method?: string; body?: unknown; text?: string; contentType?: string } = {},
+): Promise<T> {
+  const raw = init.text !== undefined;
+  const hasBody = raw || init.body !== undefined;
   const res = await fetch(`/api${path}`, {
-    method: init.method ?? (init.body === undefined ? "GET" : "POST"),
-    headers: init.body === undefined ? undefined : { "content-type": "application/json" },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    method: init.method ?? (hasBody ? "POST" : "GET"),
+    headers: hasBody ? { "content-type": raw ? (init.contentType ?? "text/plain") : "application/json" } : undefined,
+    body: raw ? init.text : hasBody ? JSON.stringify(init.body) : undefined,
     credentials: "same-origin",
   });
   if (!res.ok) {

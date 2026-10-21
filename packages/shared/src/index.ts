@@ -92,6 +92,8 @@ export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false };
 export interface ImportResult {
   series: number;
   watches: number;
+  /** CSV titles that matched no series on TMDB (skipped). */
+  unresolved: string[];
 }
 
 /** Background fetch of Series details that follows an Import. */
