@@ -21,6 +21,24 @@ export const jsonBody = (c: Context) =>
     throw new InvalidInputError("Expected a JSON body");
   });
 
+/** HTTPS directly, or through a reverse proxy terminating TLS. */
+export const isHttps = (req: Request) =>
+  new URL(req.url).protocol === "https:" || req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+
+/**
+ * Adds `Secure` to every cookie of a response to an HTTPS request, so one instance can serve
+ * http://umbrel.local (cookies must not be Secure) and https://snug.example.com (they must be).
+ * A spoofed X-Forwarded-Proto only makes the sender's own cookies stricter.
+ */
+export function withSecureCookies(req: Request, res: Response): Response {
+  const cookies = res.headers.getSetCookie();
+  if (!cookies.length || !isHttps(req)) return res;
+  const secured = new Response(res.body, res);
+  secured.headers.delete("set-cookie");
+  for (const cookie of cookies) secured.headers.append("set-cookie", /;\s*secure\b/i.test(cookie) ? cookie : `${cookie}; Secure`);
+  return secured;
+}
+
 export const onError = (err: Error, c: Context) => {
   if (err instanceof HTTPException) return err.getResponse();
   const status =

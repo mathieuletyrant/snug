@@ -2,6 +2,7 @@ import { join, normalize } from "node:path";
 import { refreshCatalog } from "./container";
 import { app } from "./app";
 import { PORT } from "./shared/config";
+import { withSecureCookies } from "./shared/http";
 
 const WEB_DIST = normalize(process.env.WEB_DIST ?? join(import.meta.dir, "../../web/dist"));
 
@@ -21,10 +22,10 @@ app.get("*", async (c) => {
 Bun.serve({
   port: PORT,
   // The socket address is the only client IP we trust (auth rate limiting); a client-sent header is overwritten.
-  fetch(req, server) {
+  async fetch(req, server) {
     const headers = new Headers(req.headers);
     headers.set("x-snug-client-ip", server.requestIP(req)?.address ?? "unknown");
-    return app.fetch(new Request(req, { headers }));
+    return withSecureCookies(req, await app.fetch(new Request(req, { headers })));
   },
 });
 console.log(`Snug listening on http://localhost:${PORT}`);

@@ -23,9 +23,9 @@ export function createAuth(db: Db) {
     rateLimit: { enabled: true, window: 60, max: 30 },
     advanced: {
       ipAddress: { ipAddressHeaders: ["x-snug-client-ip"] },
-      // With several origins the baseURL is dynamic and better-auth falls back to Secure cookies in
-      // production, which browsers drop over plain HTTP: only use them when every origin is HTTPS.
-      ...(ORIGINS.length > 0 && { useSecureCookies: ORIGINS.every((o) => o.startsWith("https://")) }),
+      // Browsers drop Secure cookies over plain HTTP (e.g. http://umbrel.local), so better-auth never sets it;
+      // the HTTP edge adds Secure back per request when it arrived over HTTPS (see withSecureCookies).
+      useSecureCookies: false,
     },
     databaseHooks: {
       user: {
