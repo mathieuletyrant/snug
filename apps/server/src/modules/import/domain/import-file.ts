@@ -19,7 +19,7 @@ const ImportFile = z.object({
     .default([]),
 });
 
-const STATUS_ALIASES: Record<string, Status> = {
+export const STATUS_ALIASES: Record<string, Status> = {
   watchlist: "watchlist",
   plan_to_watch: "watchlist",
   in_progress: "watching",

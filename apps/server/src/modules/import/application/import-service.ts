@@ -2,7 +2,8 @@ import type { ImportProgress, ImportResult } from "@snug/shared";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import { forEachLimit } from "../../../shared/async";
 import { InvalidInputError } from "../../../shared/errors";
-import type { TrackingService } from "../../tracking/application/tracking-service";
+import type { ImportEntry, TrackingService } from "../../tracking/application/tracking-service";
+import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "../domain/csv-import";
 import { parseImportFile } from "../domain/import-file";
 
 const IDLE: ImportProgress = { running: false, total: 0, done: 0, failed: 0 };
@@ -16,15 +17,37 @@ export class ImportService {
     private readonly catalog: CatalogService,
   ) {}
 
-  /** Imports right away; Series metadata is then fetched in the background (see `progressOf`). */
-  async import(userId: string, json: unknown): Promise<ImportResult> {
-    if (this.progressOf(userId).running) throw new InvalidInputError("An import is still running, wait for it to finish");
-    let entries: ReturnType<typeof parseImportFile>;
+  /** JSON export (see import-file.ts). */
+  async importJson(userId: string, json: unknown): Promise<ImportResult> {
+    this.assertIdle(userId);
+    let entries: ImportEntry[];
     try {
       entries = parseImportFile(json);
     } catch {
       throw new InvalidInputError("This file is not a valid export");
     }
+    return this.run(userId, entries, []);
+  }
+
+  /** CSV (see csv-import.ts); titles without a tmdb_id are looked up on TMDB first. */
+  async importCsv(userId: string, text: string): Promise<ImportResult> {
+    this.assertIdle(userId);
+    let rows: CsvRow[];
+    try {
+      rows = parseCsvImport(text);
+    } catch (error) {
+      if (error instanceof CsvImportError) throw new InvalidInputError(error.message);
+      throw error;
+    }
+    const titles = [...new Set(rows.filter((r) => !r.tmdbId && r.title).map((r) => r.title as string))];
+    const ids = new Map<string, number | null>();
+    await forEachLimit(titles, 6, async (title) => ids.set(title, await this.catalog.resolve({ title })));
+    const entries = csvRowsToEntries(rows, (title) => ids.get(title) ?? null, new Date());
+    return this.run(userId, entries, titles.filter((t) => !ids.get(t)));
+  }
+
+  /** Imports right away; Series metadata is then fetched in the background (see `progressOf`). */
+  private async run(userId: string, entries: ImportEntry[], unresolved: string[]): Promise<ImportResult> {
     const ids = await this.tracking.import(userId, entries);
 
     const progress: ImportProgress = { running: true, total: ids.length, done: 0, failed: 0 };
@@ -43,7 +66,11 @@ export class ImportService {
       },
     ).finally(() => (progress.running = false));
 
-    return { series: entries.length, watches: entries.reduce((n, e) => n + e.watches.length, 0) };
+    return { series: entries.length, watches: entries.reduce((n, e) => n + e.watches.length, 0), unresolved };
+  }
+
+  private assertIdle(userId: string) {
+    if (this.progressOf(userId).running) throw new InvalidInputError("An import is still running, wait for it to finish");
   }
 
   progressOf(userId: string): ImportProgress {

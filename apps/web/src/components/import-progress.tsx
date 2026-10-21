@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ImportProgress } from "@snug/shared";
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { api, queryClient } from "../api";
 import { ProgressBar } from "./ui";
 
@@ -46,10 +47,11 @@ export function ImportProgressBar({ progress }: { progress: ImportProgress }) {
   );
 }
 
-/** Thin banner on every page while an Import is still running. */
+/** Thin banner while an Import is still running, on every page but Settings (its Import card shows the same bar). */
 export function ImportBanner() {
   const progress = useImportProgress();
-  if (!progress?.running) return null;
+  const [location] = useLocation();
+  if (!progress?.running || location === "/settings") return null;
   return (
     <div className="mb-6 rounded-2xl border border-line/60 bg-surface px-4 py-3">
       <ImportProgressBar progress={progress} />

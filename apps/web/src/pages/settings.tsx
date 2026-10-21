@@ -200,11 +200,15 @@ function Import() {
   const progress = useImportProgress();
   const run = useMutation({
     mutationFn: async (file: File) => {
+      const text = await file.text();
+      if (/\.csv$/i.test(file.name) || file.type === "text/csv") {
+        return api<ImportResult>("/import", { text, contentType: "text/csv" });
+      }
       let body: unknown;
       try {
-        body = JSON.parse(await file.text());
+        body = JSON.parse(text);
       } catch {
-        throw new Error("This file is not JSON");
+        throw new Error("This file is neither CSV nor JSON");
       }
       return api<ImportResult>("/import", { body });
     },
@@ -216,12 +220,30 @@ function Import() {
     <Card>
       <h2 className="mb-1 text-xl">Import</h2>
       <p className="mb-4 text-sm text-muted">
-        Load series and watch history from a JSON export. Existing data is kept.
+        Load series and watch history from a <b className="text-text">CSV</b> (one row per watched episode) or a JSON
+        export. Existing data is kept.{" "}
+        <a href="/snug-import-template.csv" download className="font-semibold text-accent underline">
+          Download the CSV template
+        </a>
+      </p>
+      <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 font-mono text-xs text-muted">
+        title,tmdb_id,season,episode,watched_at,status
+        <br />
+        <span className="font-sans">
+          Only <b>title</b> or <b>tmdb_id</b> is required. Leave season/episode empty to just add a series.
+        </span>
       </p>
       {run.data && (
-        <p className="mb-3 text-sm text-sage">
-          Imported {run.data.series} series and {run.data.watches} watches.
-        </p>
+        <div className="mb-3 space-y-1 text-sm">
+          <p className="text-sage">
+            Imported {run.data.series} series and {run.data.watches} watches.
+          </p>
+          {run.data.unresolved.length > 0 && (
+            <p className="text-rose">
+              Not found on TMDB, skipped: {run.data.unresolved.join(", ")}. Add their tmdb_id and import again.
+            </p>
+          )}
+        </div>
       )}
       {progress && progress.total > 0 && (
         <div className="mb-4">
@@ -231,7 +253,7 @@ function Import() {
       <label className={cx("inline-flex cursor-pointer", busy && "pointer-events-none opacity-60")}>
         <input
           type="file"
-          accept="application/json,.json"
+          accept=".csv,text/csv,.json,application/json"
           className="sr-only"
           onChange={(e) => {
             const file = e.target.files?.[0];
