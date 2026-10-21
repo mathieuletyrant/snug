@@ -50,7 +50,7 @@ export function LibraryPage() {
       {shown.length ? (
         <div className={POSTER_GRID}>
           {shown.map((c) => (
-            <div key={c.seriesId} className="relative">
+            <div key={c.seriesId} className="relative has-[[aria-expanded=true]]:z-40">
               <Link href={`/series/${c.seriesId}`} className="group block space-y-1.5">
                 <Poster path={c.posterPath} name={c.name} className="w-full transition group-hover:-translate-y-0.5" />
                 <p className="truncate text-xs font-semibold sm:text-sm">{c.name}</p>
