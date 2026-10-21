@@ -44,14 +44,22 @@ function Account({ me }: { me: Me }) {
   return (
     <Card className="flex items-center justify-between gap-4">
       <div className="min-w-0">
-        <h2 className="truncate text-xl">{me.name}</h2>
-        <p className="truncate text-sm text-muted">
-          {me.email}
-          {me.isAdmin && " · admin"}
-        </p>
+        <h2 className="flex items-center gap-2 text-xl">
+          <span className="truncate">{me.name}</span>
+          {me.isAdmin && (
+            <span className="shrink-0 rounded-full bg-raised px-2 py-0.5 font-sans text-[11px] font-bold text-muted">Admin</span>
+          )}
+        </h2>
+        <p className="truncate text-sm text-muted">{me.email}</p>
       </div>
-      <Button variant="ghost" onClick={() => authClient.signOut().then(() => location.assign("/"))}>
-        <LogOut className="size-4" /> Sign out
+      <Button
+        variant="ghost"
+        aria-label="Sign out"
+        className="shrink-0 whitespace-nowrap"
+        onClick={() => authClient.signOut().then(() => location.assign("/"))}
+      >
+        <LogOut className="size-4" />
+        <span className="hidden sm:inline">Sign out</span>
       </Button>
     </Card>
   );
@@ -103,7 +111,7 @@ function Notifications() {
         <p className="mt-2 text-sm text-rose">Notifications are blocked for Snug: allow them in your browser or phone settings.</p>
       )}
       {push.state === "on" && (
-        <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
           <p className="text-sm text-muted">
             {push.devices === 1 ? "1 device receives" : `${push.devices} devices receive`} notifications.
           </p>
@@ -136,7 +144,7 @@ function Jellyfin() {
     <Card>
       <h2 className="mb-1 text-xl">Jellyfin</h2>
       <p className="mb-4 text-sm text-muted">Episodes you finish, or mark as played, in Jellyfin are marked watched here.</p>
-      <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-muted">
+      <SetupSteps open={data ? data.events.length === 0 : false}>
         <li>
           Install the <b className="text-text">Webhook</b> plugin (Dashboard → Plugins → Catalog), restart Jellyfin.
         </li>
@@ -147,10 +155,23 @@ function Jellyfin() {
           Tick <b className="text-text">Playback Stop</b> and <b className="text-text">User Data Saved</b>, select your
           user, tick <b className="text-text">Send All Properties</b>, save.
         </li>
-      </ol>
+      </SetupSteps>
       <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
       <WebhookHistory events={data?.events} />
     </Card>
+  );
+}
+
+/** Numbered instructions, folded once set up so the page stays short on a phone. */
+function SetupSteps({ open = false, children }: { open?: boolean; children: React.ReactNode }) {
+  return (
+    <details open={open} className="group mb-4">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-accent">
+        How to connect
+        <ChevronDown className="size-4 transition group-open:rotate-180" />
+      </summary>
+      <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">{children}</ol>
+    </details>
   );
 }
 
@@ -168,19 +189,21 @@ const ago = (iso: string) => {
 /** Every call Jellyfin made to the webhook, newest first, with what Snug did and the raw payload. */
 function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) {
   const [filter, setFilter] = useState<(typeof OUTCOMES)[number]>("all");
-  const shown = events?.filter((e) => filter === "all" || e.outcome === filter) ?? [];
+  const [all, setAll] = useState(false);
+  const matching = events?.filter((e) => filter === "all" || e.outcome === filter) ?? [];
+  const shown = all ? matching : matching.slice(0, 5);
 
   return (
     <div className="mt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-sans text-sm font-bold text-muted">Webhook history</h3>
-        <div className="flex gap-1">
+        <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1">
           {OUTCOMES.map((o) => (
             <button
               key={o}
               onClick={() => setFilter(o)}
               className={cx(
-                "rounded-full px-3 py-1 text-xs font-bold capitalize transition",
+                "shrink-0 rounded-full px-3 py-1.5 text-xs font-bold capitalize transition",
                 o === filter ? "bg-accent text-accent-ink" : "bg-raised text-muted hover:text-text",
               )}
             >
@@ -222,6 +245,13 @@ function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) 
               </details>
             </li>
           ))}
+          {!all && matching.length > shown.length && (
+            <li>
+              <button onClick={() => setAll(true)} className="w-full rounded-xl py-2 text-sm font-bold text-accent">
+                Show {matching.length - shown.length} more
+              </button>
+            </li>
+          )}
         </ul>
       ) : (
         <p className="rounded-xl bg-raised/40 px-4 py-6 text-center text-sm text-muted">
@@ -249,12 +279,12 @@ function Sonarr() {
         Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees
         your list: replace it with ↻ if it leaks.
       </p>
-      <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-muted">
+      <SetupSteps>
         <li>
           In Sonarr: Settings → Import Lists → + → <b className="text-text">Custom Lists</b>, paste the URL below.
         </li>
         <li>Pick a quality profile and root folder, save. Sonarr checks the list every few hours.</li>
-      </ol>
+      </SetupSteps>
       <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
       <p className="mt-3 text-xs text-muted">
         Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
@@ -293,10 +323,9 @@ function Import() {
           Download the CSV template
         </a>
       </p>
-      <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 font-mono text-xs text-muted">
-        title,tmdb_id,season,episode,watched_at,status
-        <br />
-        <span className="font-sans">
+      <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 text-xs text-muted">
+        <code className="mb-1 block font-mono break-all text-text">title,tmdb_id,season,episode,watched_at,status</code>
+        <span>
           Only <b>title</b> or <b>tmdb_id</b> is required. Leave season/episode empty to just add a series.
         </span>
       </p>

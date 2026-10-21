@@ -6,7 +6,7 @@ import { api } from "../api";
 import { StatusMenu, useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
-import { Backdrop, Button, Empty, PageTitle, Poster, POSTER_GRID, Skeleton } from "../components/ui";
+import { Backdrop, Button, cx, Empty, PageTitle, Poster, POSTER_GRID, Skeleton } from "../components/ui";
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -143,17 +143,17 @@ function UpcomingCard({ card }: { card: SeriesCard }) {
     <Link href={`/series/${card.seriesId}`} className="group space-y-1.5">
       <Poster path={card.posterPath} name={card.name} className="w-full transition group-hover:-translate-y-0.5" />
       <p className="truncate text-xs font-semibold sm:text-sm">{card.name}</p>
-      <p className="flex items-center gap-1 text-[11px] leading-tight text-muted sm:text-xs">
-        {card.loaded ? (
-          <>
-            <Sparkles className="size-3 text-accent" />
-            {card.next ? `${episodeCode(card.next)} · ` : ""}
-            {relativeDay(card.next?.airDate)}
-          </>
-        ) : (
-          "Loading…"
+      {/* Date and episode on their own lines: "S02E06 · In 2 days" wraps mid-date in a 4-column grid. */}
+      <p
+        className={cx(
+          "flex items-center gap-1 text-[11px] leading-tight font-bold sm:text-xs",
+          card.next?.airDate ? "text-accent" : "text-muted",
         )}
+      >
+        <Sparkles className="size-3 shrink-0" />
+        <span className="truncate">{relativeDay(card.next?.airDate)}</span>
       </p>
+      {card.next && <p className="text-[11px] leading-tight text-muted sm:text-xs">{episodeCode(card.next)}</p>}
     </Link>
   );
 }
