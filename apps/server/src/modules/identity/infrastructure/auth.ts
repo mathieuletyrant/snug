@@ -21,7 +21,12 @@ export function createAuth(db: Db) {
     emailAndPassword: { enabled: true, minPasswordLength: 10 },
     session: { expiresIn: 60 * 60 * 24 * 90, updateAge: 60 * 60 * 24 },
     rateLimit: { enabled: true, window: 60, max: 30 },
-    advanced: { ipAddress: { ipAddressHeaders: ["x-snug-client-ip"] } },
+    advanced: {
+      ipAddress: { ipAddressHeaders: ["x-snug-client-ip"] },
+      // With several origins the baseURL is dynamic and better-auth falls back to Secure cookies in
+      // production, which browsers drop over plain HTTP: only use them when every origin is HTTPS.
+      ...(ORIGINS.length > 0 && { useSecureCookies: ORIGINS.every((o) => o.startsWith("https://")) }),
+    },
     databaseHooks: {
       user: {
         create: {
