@@ -1,5 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { DEFAULT_PREFERENCES, type Preferences } from "@snug/shared";
+import { Switch } from "radix-ui";
+import { useId } from "react";
 import { api, queryClient } from "../api";
 
 const KEY = ["preferences"];
@@ -34,23 +36,21 @@ export function Toggle({
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const id = useId();
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 py-2">
-      <span>
+    <div className="flex items-center justify-between gap-4 py-2">
+      <label htmlFor={id} className="cursor-pointer">
         <span className="block font-semibold">{label}</span>
         {description && <span className="block text-sm text-muted">{description}</span>}
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition ${checked ? "bg-accent" : "bg-line"}`}
+      </label>
+      <Switch.Root
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="relative h-7 w-12 shrink-0 cursor-pointer rounded-full bg-line transition data-[state=checked]:bg-accent"
       >
-        <span
-          className={`absolute top-1 left-1 size-5 rounded-full bg-text shadow transition-transform ${checked ? "translate-x-5" : ""}`}
-        />
-      </button>
-    </label>
+        <Switch.Thumb className="block size-5 translate-x-1 rounded-full bg-text shadow transition-transform data-[state=checked]:translate-x-6" />
+      </Switch.Root>
+    </div>
   );
 }

@@ -6,7 +6,7 @@ import { Link } from "wouter";
 import { api } from "../api";
 import { StatusMenu } from "../components/series-actions";
 import { PosterGridSkeleton } from "../components/skeletons";
-import { cx, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
+import { Chips, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
 
 export function LibraryPage() {
   const { data, isPending } = useQuery({ queryKey: ["library"], queryFn: () => api<SeriesCard[]>("/library") });
@@ -27,20 +27,20 @@ export function LibraryPage() {
   return (
     <>
       <PageTitle>Library</PageTitle>
-      <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={cx(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-bold transition",
-              s === status ? "bg-accent text-accent-ink" : "bg-raised text-muted hover:text-text",
-            )}
-          >
-            {STATUS_LABELS[s]} <span className="opacity-60">{all.filter((c) => c.status === s).length}</span>
-          </button>
-        ))}
-      </div>
+      <Chips
+        label="Status"
+        value={status}
+        onChange={(s) => setStatus(s as Status)}
+        options={STATUSES.map((s) => ({
+          value: s,
+          label: (
+            <>
+              {STATUS_LABELS[s]} <span className="opacity-60">{all.filter((c) => c.status === s).length}</span>
+            </>
+          ),
+        }))}
+        className="-mx-4 mb-4 gap-2 px-4 pb-1 md:mx-0 md:px-0"
+      />
       <input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
@@ -50,7 +50,7 @@ export function LibraryPage() {
       {shown.length ? (
         <div className={POSTER_GRID}>
           {shown.map((c) => (
-            <div key={c.seriesId} className="relative has-[[aria-expanded=true]]:z-40">
+            <div key={c.seriesId} className="relative">
               <Link href={`/series/${c.seriesId}`} className="group block space-y-1.5">
                 <Poster path={c.posterPath} name={c.name} className="w-full transition group-hover:-translate-y-0.5" />
                 <p className="truncate text-xs font-semibold sm:text-sm">{c.name}</p>

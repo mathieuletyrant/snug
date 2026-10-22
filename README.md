@@ -86,7 +86,7 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     feeds        read-only lists for other apps (Sonarr)
     notifications  Web Push to the User's devices
     import       JSON export → TrackedSeries
-apps/web         React 19 · Vite · Tailwind 4 · TanStack Query, PWA
+apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA
 packages/shared  API contract types
 ```
 

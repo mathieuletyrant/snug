@@ -78,7 +78,7 @@ function ReadyCard({ card }: { card: SeriesCard }) {
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
   return (
-    <article className="relative rounded-2xl border border-line/60 bg-surface shadow-lg shadow-black/20 has-[[aria-expanded=true]]:z-40">
+    <article className="relative rounded-2xl border border-line/60 bg-surface shadow-lg shadow-black/20">
       <Link href={`/series/${card.seriesId}`} className="block">
         <div className="relative aspect-video overflow-hidden rounded-t-2xl">
           <Backdrop
