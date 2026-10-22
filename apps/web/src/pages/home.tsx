@@ -114,7 +114,8 @@ function ReadyCard({ card }: { card: SeriesCard }) {
       >
         <Check className="size-5" strokeWidth={3} />
       </button>
-      <div className="absolute top-1 right-1 rounded-full bg-bg/60 backdrop-blur">
+      {/* Same right edge as ✓ and centered on the same vertical line: 36px button, 40px ✓ from sm. */}
+      <div className="absolute top-1.5 right-2 rounded-full bg-bg/60 backdrop-blur sm:right-3">
         <StatusMenu seriesId={card.seriesId} status={card.status} />
       </div>
     </article>
