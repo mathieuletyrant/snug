@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { STATUS_LABELS, STATUSES, type SeriesCard, type Status } from "@snug/shared";
+import { STATUS_LABELS, STATUSES, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
-import { api } from "../api";
+import { libraryQuery } from "../queries";
 import { StatusMenu } from "../components/series-actions";
 import { PosterGridSkeleton } from "../components/skeletons";
 import { Chips, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
 
 export function LibraryPage() {
-  const { data, isPending } = useQuery({ queryKey: ["library"], queryFn: () => api<SeriesCard[]>("/library") });
+  const { data, isPending } = useQuery(libraryQuery);
   const [status, setStatus] = useState<Status>("watching");
   const [filter, setFilter] = useState("");
 

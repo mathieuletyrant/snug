@@ -16,7 +16,7 @@
   --color-sage: #a3c28f;
   --color-rose: #e48f8f;
 
-  --animate-page-in: page-in 220ms ease-out;
+  --animate-page-in: page-in 150ms ease-out;
   @keyframes page-in {
     from {
       opacity: 0;

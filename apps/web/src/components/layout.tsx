@@ -1,6 +1,8 @@
 import { House, Library, Search, Settings } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { queryClient } from "../api";
+import { homeQuery, libraryQuery } from "../queries";
 import { ImportBanner } from "./import-progress";
 import { cx } from "./ui";
 
@@ -11,10 +13,25 @@ const TABS = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+/** Starts loading a tab's data while the finger is still down (no-op when it is fresh in the cache). */
+const prefetch = (href: string) => {
+  if (href === "/") queryClient.prefetchQuery(homeQuery);
+  if (href === "/library") queryClient.prefetchQuery(libraryQuery);
+};
+
 /** Top bar on desktop, bottom tab bar on mobile. */
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const active = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
+  // The tab under the finger, lit before the page changes; cleared once it has.
+  const [pressed, setPressed] = useState<string | null>(null);
+  useEffect(() => setPressed(null), [location]);
+  // A finger that slid off the tab never clicks it: unlight it.
+  useEffect(() => {
+    if (!pressed) return;
+    const timer = setTimeout(() => setPressed(null), 800);
+    return () => clearTimeout(timer);
+  }, [pressed]);
 
   return (
     <div className="pt-safe min-h-dvh">
@@ -49,20 +66,29 @@ export function Layout({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/90 backdrop-blur-lg md:hidden">
-        <div className="mx-auto flex max-w-md justify-around pt-2">
-          {TABS.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cx(
-                "flex flex-col items-center gap-0.5 px-4 py-1 text-[11px] font-bold transition",
-                active(href) ? "text-accent" : "text-muted",
-              )}
-            >
-              <Icon className="size-6" strokeWidth={active(href) ? 2.4 : 1.8} />
-              {label}
-            </Link>
-          ))}
+        <div className="mx-auto flex max-w-md">
+          {TABS.map(({ href, label, icon: Icon }) => {
+            const on = pressed ? pressed === href : active(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                // React on touch, not on release: the tab lights up and its data starts loading right away.
+                onPointerDown={() => {
+                  setPressed(href);
+                  prefetch(href);
+                }}
+                onPointerCancel={() => setPressed(null)}
+                className={cx(
+                  "group flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1 text-[11px] font-bold transition-colors duration-75",
+                  on ? "text-accent" : "text-muted",
+                )}
+              >
+                <Icon className="size-6 transition-transform duration-75 group-active:scale-90" strokeWidth={on ? 2.4 : 1.8} />
+                {label}
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </div>

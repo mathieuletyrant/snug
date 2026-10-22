@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { episodeCode, type Home, type SeriesCard } from "@snug/shared";
+import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check, Coffee, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { api } from "../api";
+import { homeQuery } from "../queries";
 import { StatusMenu, useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
@@ -14,7 +14,7 @@ const greeting = () => {
 };
 
 export function HomePage() {
-  const { data, isPending } = useQuery({ queryKey: ["home"], queryFn: () => api<Home>("/home") });
+  const { data, isPending } = useQuery(homeQuery);
   const { hideUndatedUpcoming } = usePreferences();
 
   if (isPending) return <HomeSkeleton />;
