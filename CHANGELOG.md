@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/mathieuletyrant/snug/compare/v0.4.1...v0.5.0) (2026-10-22)
+
+
+### ✨ Features
+
+* **web:** Radix UI for menus, switches, toasts, filters and confirmations ([#14](https://github.com/mathieuletyrant/snug/issues/14)) ([4aa6420](https://github.com/mathieuletyrant/snug/commit/4aa6420f83f4c5b43b4939523692620b85a5b6a2))
+
 ## [0.4.1](https://github.com/mathieuletyrant/snug/compare/v0.4.0...v0.4.1) (2026-10-21)
 
 
