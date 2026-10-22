@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { episodeCode, type Home, type SeriesCard } from "@snug/shared";
+import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check, Coffee, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { api } from "../api";
+import { homeQuery } from "../queries";
 import { StatusMenu, useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
@@ -14,7 +14,7 @@ const greeting = () => {
 };
 
 export function HomePage() {
-  const { data, isPending } = useQuery({ queryKey: ["home"], queryFn: () => api<Home>("/home") });
+  const { data, isPending } = useQuery(homeQuery);
   const { hideUndatedUpcoming } = usePreferences();
 
   if (isPending) return <HomeSkeleton />;
@@ -77,10 +77,11 @@ function ReadyCard({ card }: { card: SeriesCard }) {
   const watchNext = useWatchNext();
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
+  // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
   return (
-    <article className="relative rounded-2xl border border-line/60 bg-surface shadow-lg shadow-black/20">
+    <article className="relative overflow-hidden rounded-2xl border border-line/60 bg-surface shadow-lg shadow-black/20">
       <Link href={`/series/${card.seriesId}`} className="block">
-        <div className="relative aspect-video overflow-hidden rounded-t-2xl">
+        <div className="relative aspect-video">
           <Backdrop
             backdropPath={card.backdropPath}
             posterPath={card.posterPath}
@@ -101,7 +102,7 @@ function ReadyCard({ card }: { card: SeriesCard }) {
             )}
           </div>
         </div>
-        <div className="h-1 overflow-hidden rounded-b-2xl bg-raised">
+        <div className="h-1 bg-raised">
           <div className="h-full bg-accent" style={{ width: `${card.airedCount ? (card.watchedCount / card.airedCount) * 100 : 0}%` }} />
         </div>
       </Link>

@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { STATUS_LABELS, STATUSES, type SeriesCard, type Status } from "@snug/shared";
+import { STATUS_LABELS, STATUSES, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
-import { api } from "../api";
+import { libraryQuery } from "../queries";
 import { StatusMenu } from "../components/series-actions";
 import { PosterGridSkeleton } from "../components/skeletons";
 import { Chips, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
 
 export function LibraryPage() {
-  const { data, isPending } = useQuery({ queryKey: ["library"], queryFn: () => api<SeriesCard[]>("/library") });
+  const { data, isPending } = useQuery(libraryQuery);
   const [status, setStatus] = useState<Status>("watching");
   const [filter, setFilter] = useState("");
 
@@ -41,11 +41,12 @@ export function LibraryPage() {
         }))}
         className="-mx-4 mb-4 gap-2 px-4 pb-1 md:mx-0 md:px-0"
       />
+      {/* 16px on phones: iOS zooms into any field with smaller text when it gets focus, and stays zoomed. */}
       <input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filter…"
-        className="mb-6 w-full rounded-2xl border border-line bg-surface px-4 py-2.5 text-sm placeholder:text-muted/60 focus:border-accent focus:outline-none"
+        className="mb-6 w-full rounded-2xl border border-line bg-surface px-4 py-2.5 text-base placeholder:text-muted/60 md:text-sm focus:border-accent focus:outline-none"
       />
       {shown.length ? (
         <div className={POSTER_GRID}>

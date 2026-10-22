@@ -16,7 +16,7 @@
   --color-sage: #a3c28f;
   --color-rose: #e48f8f;
 
-  --animate-page-in: page-in 220ms ease-out;
+  --animate-page-in: page-in 150ms ease-out;
   @keyframes page-in {
     from {
       opacity: 0;
@@ -55,6 +55,8 @@
     /* Always reserve the scrollbar's width: short and long pages keep the same centered layout. */
     scrollbar-gutter: stable;
     -webkit-tap-highlight-color: transparent;
+    /* No double-tap zoom: two quick taps on ✓ zoomed the page in on iPhone. Pinch zoom still works. */
+    touch-action: manipulation;
   }
   body {
     @apply bg-bg text-text font-sans antialiased;
