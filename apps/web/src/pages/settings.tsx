@@ -7,9 +7,9 @@ import type {
   Me,
   WatchlistIntegration,
 } from "@snug/shared";
-import { ChevronDown, LogOut, Upload } from "lucide-react";
-import { Link } from "wouter";
-import { useState } from "react";
+import { ChevronDown, Clapperboard, Download, LogOut, type LucideIcon, Tv, Upload } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { Link, useSearchParams } from "wouter";
 import { api, authClient, queryClient } from "../api";
 import { CopyField } from "../components/copy-field";
 import { usePush } from "../components/push";
@@ -20,31 +20,92 @@ import { useToast } from "../components/toast";
 import { Button, Card, Chips, cx, ErrorText, Input, PageTitle, Skeleton } from "../components/ui";
 import { LanguageSelect, TmdbKeyForm } from "./setup";
 
+const SECTIONS = [
+  { value: "general", label: "General" },
+  { value: "integrations", label: "Integrations" },
+  { value: "import", label: "Import" },
+  { value: "admin", label: "Admin" },
+] as const;
+type Section = (typeof SECTIONS)[number]["value"];
+
+/** One section at a time, chosen by `?section=` so a link (or Back) lands on the right one. */
 export function SettingsPage({ me }: { me: Me }) {
+  const [params, setParams] = useSearchParams();
+  const sections = SECTIONS.filter((s) => s.value !== "admin" || me.isAdmin);
+  const section: Section = sections.find((s) => s.value === params.get("section"))?.value ?? "general";
+
   return (
     <>
       <PageTitle>Settings</PageTitle>
+      <Chips
+        label="Settings section"
+        value={section}
+        onChange={(value) => setParams({ section: value }, { replace: true })}
+        options={sections.map((s) => ({ value: s.value, label: s.label }))}
+        className="-mx-4 mb-5 gap-2 px-4 pb-1 md:mx-0 md:px-0"
+      />
       <div className="space-y-5">
-        <Account me={me} />
-        <Display />
-        <Notifications />
-        <Jellyfin />
-        <Sonarr />
-        <Spotarr />
-        <Import />
-        {me.isAdmin && <Users />}
-        {me.isAdmin && (
-          <Card className="space-y-5">
-            <div>
-              <h2 className="mb-1 text-xl">Series details</h2>
-              <p className="text-sm text-muted">From TMDB, for everyone on this Snug.</p>
-            </div>
-            <LanguageSelect />
-            <TmdbKeyForm />
-          </Card>
+        {section === "general" && (
+          <>
+            <Account me={me} />
+            <Display />
+            <Notifications />
+          </>
+        )}
+        {section === "integrations" && (
+          <>
+            <p className="text-sm text-muted">
+              Each app gets its own secret URL from Snug: paste it in the app, and replace it with ↻ if it leaks.
+            </p>
+            <Jellyfin />
+            <Sonarr />
+            <Spotarr />
+          </>
+        )}
+        {section === "import" && <Import />}
+        {section === "admin" && (
+          <>
+            <Users />
+            <Card className="space-y-5">
+              <div>
+                <h2 className="mb-1 text-xl">Series details</h2>
+                <p className="text-sm text-muted">From TMDB, for everyone on this Snug.</p>
+              </div>
+              <LanguageSelect />
+              <TmdbKeyForm />
+            </Card>
+          </>
         )}
       </div>
     </>
+  );
+}
+
+/** An app Snug talks to: its icon and name, what it does, then how to connect it. */
+function IntegrationCard({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Card>
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent">
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-xl leading-tight">{title}</h2>
+          <p className="mt-1 text-sm text-muted">{description}</p>
+        </div>
+      </div>
+      {children}
+    </Card>
   );
 }
 
@@ -149,9 +210,11 @@ function Jellyfin() {
   const url = data ? location.origin + data.webhookPath : "…";
 
   return (
-    <Card>
-      <h2 className="mb-1 text-xl">Jellyfin</h2>
-      <p className="mb-4 text-sm text-muted">Episodes you finish, or mark as played, in Jellyfin are marked watched here.</p>
+    <IntegrationCard
+      icon={Tv}
+      title="Jellyfin"
+      description="Episodes you finish, or mark as played, in Jellyfin are marked watched here."
+    >
       <SetupSteps open={data ? data.events.length === 0 : false}>
         <li>
           Install the <b className="text-text">Webhook</b> plugin (Dashboard → Plugins → Catalog), restart Jellyfin.
@@ -166,12 +229,12 @@ function Jellyfin() {
       </SetupSteps>
       <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
       <WebhookHistory events={data?.events} />
-    </Card>
+    </IntegrationCard>
   );
 }
 
 /** Numbered instructions, folded once set up so the page stays short on a phone. */
-function SetupSteps({ open = false, children }: { open?: boolean; children: React.ReactNode }) {
+function SetupSteps({ open = false, children }: { open?: boolean; children: ReactNode }) {
   return (
     <details open={open} className="group mb-4">
       <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-accent">
@@ -275,12 +338,11 @@ function Sonarr() {
   const url = data ? location.origin + data.sonarrPath : "…";
 
   return (
-    <Card>
-      <h2 className="mb-1 text-xl">Sonarr</h2>
-      <p className="mb-4 text-sm text-muted">
-        Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees
-        your list: replace it with ↻ if it leaks.
-      </p>
+    <IntegrationCard
+      icon={Download}
+      title="Sonarr"
+      description="Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees your list."
+    >
       <SetupSteps>
         <li>
           In Sonarr: Settings → Import Lists → + → <b className="text-text">Custom Lists</b>, paste the URL below.
@@ -291,7 +353,7 @@ function Sonarr() {
       <p className="mt-3 text-xs text-muted">
         Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
       </p>
-    </Card>
+    </IntegrationCard>
   );
 }
 
@@ -307,12 +369,11 @@ function Spotarr() {
   const url = data ? location.origin + data.addPath : "…";
 
   return (
-    <Card>
-      <h2 className="mb-1 text-xl">Spotarr</h2>
-      <p className="mb-4 text-sm text-muted">
-        A series you share to Spotarr lands on your Watchlist here. Series you already track keep their status. The
-        link can only add series: replace it with ↻ if it leaks.
-      </p>
+    <IntegrationCard
+      icon={Clapperboard}
+      title="Spotarr"
+      description="A series you share to Spotarr lands on your Watchlist here. Series you already track keep their status. The link can only add series."
+    >
       <SetupSteps>
         <li>
           In Spotarr: Settings → Connections → <b className="text-text">Snug</b>, paste the URL below, save.
@@ -324,7 +385,7 @@ function Spotarr() {
         If Seerr downloads what Spotarr finds, let Sonarr's list skip the Watchlist: append{" "}
         <code className="text-text">?status=watching</code> to its URL.
       </p>
-    </Card>
+    </IntegrationCard>
   );
 }
 
