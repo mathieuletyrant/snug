@@ -372,7 +372,7 @@ function Spotarr() {
     <IntegrationCard
       icon={Clapperboard}
       title="Spotarr"
-      description="A series you share to Spotarr lands on your Watchlist here. Series you already track keep their status. The link can only add series."
+      description="Every series Spotarr adds lands on your Watchlist. A series you already follow stays where it is."
     >
       <SetupSteps>
         <li>
@@ -382,8 +382,9 @@ function Spotarr() {
       </SetupSteps>
       <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
       <p className="mt-3 text-xs text-muted">
-        If Seerr downloads what Spotarr finds, let Sonarr's list skip the Watchlist: append{" "}
-        <code className="text-text">?status=watching</code> to its URL.
+        Using the Sonarr list too? Add <code className="text-text">?status=watching</code> at the end of its URL in
+        Sonarr. Seerr already downloads what Spotarr finds: without it, Sonarr would download those series a second
+        time.
       </p>
     </IntegrationCard>
   );
