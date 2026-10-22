@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/mathieuletyrant/snug/compare/v0.5.0...v0.5.1) (2026-10-22)
+
+
+### 🐛 Fixes
+
+* **web:** faster tab bar, no zoom on double tap, Ready card corners on iPhone ([#16](https://github.com/mathieuletyrant/snug/issues/16)) ([a11be2f](https://github.com/mathieuletyrant/snug/commit/a11be2fdedc9d038539cedcf2cc7b848bc2d32c2))
+
 ## [0.5.0](https://github.com/mathieuletyrant/snug/compare/v0.4.1...v0.5.0) (2026-10-22)
 
 
