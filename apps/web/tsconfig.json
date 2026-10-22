@@ -1,5 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "lib": ["ESNext", "DOM", "DOM.Iterable"], "jsx": "react-jsx", "types": ["vite/client"] },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  // Tests run under bun test (Bun types); the app itself must only see browser APIs.
+  "exclude": ["src/**/*.test.ts"]
 }
