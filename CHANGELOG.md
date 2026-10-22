@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/mathieuletyrant/snug/compare/v0.5.1...v0.6.0) (2026-10-22)
+
+
+### ✨ Features
+
+* Spotarr can add a series to the Watchlist, Settings in sections ([#21](https://github.com/mathieuletyrant/snug/issues/21)) ([7f17ff0](https://github.com/mathieuletyrant/snug/commit/7f17ff0420b392a369495800af0a8c90896f6b68))
+* **web:** pull to refresh in the Home Screen app ([#20](https://github.com/mathieuletyrant/snug/issues/20)) ([8200cbe](https://github.com/mathieuletyrant/snug/commit/8200cbe2dab018cb624c9cf5b8e1897024193f69))
+
+
+### 🐛 Fixes
+
+* **web:** align the ⋮ and ✓ buttons of Ready to watch cards ([#18](https://github.com/mathieuletyrant/snug/issues/18)) ([7ccef48](https://github.com/mathieuletyrant/snug/commit/7ccef4845c33c4a5c54f7d05362f2a828caead14))
+
 ## [0.5.1](https://github.com/mathieuletyrant/snug/compare/v0.5.0...v0.5.1) (2026-10-22)
 
 
