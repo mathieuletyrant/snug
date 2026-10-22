@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import { queryClient } from "../api";
 import { homeQuery, libraryQuery } from "../queries";
 import { ImportBanner } from "./import-progress";
+import { PullToRefresh } from "./pull-to-refresh";
 import { cx } from "./ui";
 
 const TABS = [
@@ -60,9 +61,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
       <main className="mx-auto max-w-5xl px-4 pt-6 pb-28 md:px-6 md:pt-10 md:pb-12">
         <ImportBanner />
-        <div key={location} className="animate-page-in">
-          {children}
-        </div>
+        <PullToRefresh>
+          <div key={location} className="animate-page-in">
+            {children}
+          </div>
+        </PullToRefresh>
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/90 backdrop-blur-lg md:hidden">
