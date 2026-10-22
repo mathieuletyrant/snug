@@ -315,11 +315,9 @@ function Spotarr() {
       </p>
       <SetupSteps>
         <li>
-          In Spotarr: Settings → <b className="text-text">Snug</b>, paste the URL below.
+          In Spotarr: Settings → Connections → <b className="text-text">Snug</b>, paste the URL below, save.
         </li>
-        <li>
-          Add a Rule with the <b className="text-text">Snug Watchlist</b> action, or add from a Share's page.
-        </li>
+        <li>Every TV show Spotarr then adds, by hand or with a Rule, lands here.</li>
       </SetupSteps>
       <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
       <p className="mt-3 text-xs text-muted">
