@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/mathieuletyrant/snug/compare/v0.6.0...v0.7.0) (2026-10-22)
+
+
+### ✨ Features
+
+* **server:** readable server logs with pino ([#22](https://github.com/mathieuletyrant/snug/issues/22)) ([ccfbbda](https://github.com/mathieuletyrant/snug/commit/ccfbbda6cc8ef43d20d9e72bf624ccfbe878bd68))
+* **web:** airing badge on Watching posters in the Library ([#23](https://github.com/mathieuletyrant/snug/issues/23)) ([6837a51](https://github.com/mathieuletyrant/snug/commit/6837a51c2378c93a11edcf89428fb316d22554de))
+
 ## [0.6.0](https://github.com/mathieuletyrant/snug/compare/v0.5.1...v0.6.0) (2026-10-22)
 
 
