@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { STATUS_LABELS, STATUSES, type Status } from "@snug/shared";
+import { STATUS_LABELS, STATUSES, type SeriesCard, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { libraryQuery } from "../queries";
+import { airing, shortDay } from "../components/airing";
 import { StatusMenu } from "../components/series-actions";
 import { PosterGridSkeleton } from "../components/skeletons";
-import { Chips, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
+import { Chips, cx, Empty, PageTitle, Poster, POSTER_GRID, ProgressBar } from "../components/ui";
 
 export function LibraryPage() {
   const { data, isPending } = useQuery(libraryQuery);
@@ -53,7 +54,10 @@ export function LibraryPage() {
           {shown.map((c) => (
             <div key={c.seriesId} className="relative">
               <Link href={`/series/${c.seriesId}`} className="group block space-y-1.5">
-                <Poster path={c.posterPath} name={c.name} className="w-full transition group-hover:-translate-y-0.5" />
+                <div className="relative transition group-hover:-translate-y-0.5">
+                  <Poster path={c.posterPath} name={c.name} className="w-full" />
+                  {c.status === "watching" && c.loaded && <AiringBadge card={c} />}
+                </div>
                 <p className="truncate text-xs font-semibold sm:text-sm">{c.name}</p>
                 {c.airedCount > 0 && <ProgressBar value={c.watchedCount} max={c.airedCount} />}
               </Link>
@@ -68,5 +72,33 @@ export function LibraryPage() {
         <Empty icon={<Library className="size-10" />} title={`No ${STATUS_LABELS[status].toLowerCase()} series`} />
       )}
     </>
+  );
+}
+
+/**
+ * Watching mixes Series with Episodes to catch up on and ones waiting for the next Episode (dated or not);
+ * the badge tells them apart at a glance: "3 left", "Thu", "TBA".
+ */
+function AiringBadge({ card }: { card: SeriesCard }) {
+  const state = airing(card);
+  const label = state.kind === "ready" ? `${state.left} left` : state.kind === "dated" ? shortDay(state.date) : "TBA";
+  const title =
+    state.kind === "ready"
+      ? `${state.left} episode${state.left === 1 ? "" : "s"} to watch`
+      : state.kind === "dated"
+        ? `Next episode on ${state.date}`
+        : "Caught up, next episode not dated yet";
+  return (
+    <span
+      title={title}
+      className={cx(
+        "absolute bottom-1.5 left-1.5 max-w-[calc(100%-0.75rem)] truncate rounded-full px-1.5 py-0.5 text-[10px] leading-tight font-bold shadow-md shadow-black/40 sm:text-[11px]",
+        state.kind === "ready" ? "bg-accent text-accent-ink" : "bg-bg/75 backdrop-blur",
+        state.kind === "dated" && "text-accent",
+        state.kind === "tba" && "text-muted",
+      )}
+    >
+      {label}
+    </span>
   );
 }

@@ -3,6 +3,7 @@ import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check, Coffee, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { homeQuery } from "../queries";
+import { relativeDay } from "../components/airing";
 import { StatusMenu, useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
@@ -121,15 +122,6 @@ function ReadyCard({ card }: { card: SeriesCard }) {
     </article>
   );
 }
-
-const relativeDay = (date: string | null | undefined) => {
-  if (!date) return "Date TBA";
-  const days = Math.round((new Date(date).getTime() - new Date(new Date().toDateString()).getTime()) / 86_400_000);
-  if (days <= 0) return "Today";
-  if (days === 1) return "Tomorrow";
-  if (days < 7) return `In ${days} days`;
-  return new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short" });
-};
 
 function UpcomingCard({ card }: { card: SeriesCard }) {
   // Details not fetched yet (e.g. right after an Import): a placeholder rather than "Series #123".
