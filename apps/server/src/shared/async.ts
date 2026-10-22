@@ -1,9 +1,11 @@
+import { logger } from "./logger";
+
 /** Runs `fn` over `items` with at most `limit` calls in flight. Failures are reported, not thrown. */
 export async function forEachLimit<T>(
   items: readonly T[],
   limit: number,
   fn: (item: T) => Promise<unknown>,
-  onError: (item: T, error: unknown) => void = (item, error) => console.error("task failed", item, error),
+  onError: (item: T, error: unknown) => void = (item, error) => logger.error({ err: error }, `Task failed for ${String(item)}`),
 ): Promise<void> {
   let next = 0;
   const worker = async () => {

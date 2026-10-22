@@ -2,9 +2,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { WatchlistIntegration } from "@snug/shared";
 import { NotFoundError } from "../../../shared/errors";
+import { moduleLogger } from "../../../shared/logger";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { TrackingService } from "../../tracking/application/tracking-service";
+
+const log = moduleLogger("watchlist");
 
 const body = z.object({ tmdbId: z.number().int().positive() });
 
@@ -18,6 +21,12 @@ export const watchlistWebhook = (tracking: TrackingService, identity: IdentitySe
     if (!userId) throw new NotFoundError("Unknown watchlist token");
     const { tmdbId } = parse(body, await jsonBody(c));
     const result = await tracking.addToWatchlist(userId, tmdbId);
+    const who = identity.nameOf(userId);
+    log.info(
+      result.added
+        ? `${who} · added series ${tmdbId} to the Watchlist`
+        : `${who} · series ${tmdbId} already tracked (${result.status}), kept as is`,
+    );
     return c.json(result, result.added ? 201 : 200);
   });
 

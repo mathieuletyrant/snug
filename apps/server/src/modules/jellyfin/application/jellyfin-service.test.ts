@@ -17,7 +17,7 @@ function setup() {
   migrate(db, { migrationsFolder: join(import.meta.dir, "../../../../drizzle") });
   const now = Math.floor(Date.now() / 1000);
   sqlite.run(`insert into user (id, name, email, email_verified, created_at, updated_at) values ('u', 'U', 'u@x.io', 0, ${now}, ${now})`);
-  const identity = { webhookTokens: { userIdOf: () => "u" } } as unknown as IdentityService;
+  const identity = { webhookTokens: { userIdOf: () => "u" }, nameOf: () => "Mathieu" } as unknown as IdentityService;
   const service = new JellyfinService(db, identity, {} as CatalogService, {} as TrackingService, {} as Notifier);
   return { db, service };
 }

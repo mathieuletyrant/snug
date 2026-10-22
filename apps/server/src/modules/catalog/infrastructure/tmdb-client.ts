@@ -1,4 +1,7 @@
+import { moduleLogger } from "../../../shared/logger";
 import type { Episode, Series, SeriesSource, SeriesSummary } from "../domain/series";
+
+const log = moduleLogger("tmdb");
 
 const BASE = "https://api.themoviedb.org/3";
 /** TMDB caps `append_to_response` at 20 sub-requests. */
@@ -45,7 +48,10 @@ async function request<T>(key: string, path: string, params: Record<string, stri
   const headers: Record<string, string> = { accept: "application/json" };
   if (key.startsWith("eyJ")) headers.authorization = `Bearer ${key}`;
   else url.searchParams.set("api_key", key);
+  const start = performance.now();
   const res = await fetch(url, { headers });
+  // The path only: the query string can hold the API key.
+  log.debug(`GET ${path} ${res.status} ${Math.round(performance.now() - start)}ms`);
   if (!res.ok) throw new TmdbError(res.status, path);
   return res.json() as Promise<T>;
 }

@@ -12,8 +12,11 @@ import { NotificationService } from "./modules/notifications/application/notific
 import { WebPushSender } from "./modules/notifications/infrastructure/web-push-sender";
 import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
 import { db } from "./shared/db";
+import { moduleLogger } from "./shared/logger";
 import { TrackingService } from "./modules/tracking/application/tracking-service";
 import { DrizzleTrackedSeriesRepository } from "./modules/tracking/infrastructure/drizzle-tracked-series-repository";
+
+const log = moduleLogger("catalog");
 
 export const auth = createAuth(db);
 export const catalogSettings = new CatalogSettings(db);
@@ -31,8 +34,12 @@ export const feeds = new FeedsService(tracking, catalog);
  * then re-applies the Completed rule (new seasons, finales). Also fetches Series never fetched (interrupted Import).
  */
 export async function refreshCatalog(maxAgeDays = 0.9) {
-  if (!catalogSettings.tmdbKey()) return;
+  if (!catalogSettings.tmdbKey()) {
+    log.debug("Catalog refresh skipped: no TMDB key yet");
+    return;
+  }
   const ids = await trackedSeries.seriesIdsWithStatus(STATUSES);
-  const refreshed = await catalog.refreshStale(ids, maxAgeDays, (id) => tracking.reconcileSeries(id));
-  if (refreshed) console.log(`Refreshed ${refreshed} series from TMDB`);
+  const { refreshed, failed } = await catalog.refreshStale(ids, maxAgeDays, (id) => tracking.reconcileSeries(id));
+  if (refreshed || failed) log.info(`Refreshed ${refreshed} series from TMDB${failed ? `, ${failed} failed` : ""}`);
+  else log.debug("Catalog refresh: everything is up to date");
 }

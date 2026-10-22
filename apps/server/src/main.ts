@@ -1,8 +1,9 @@
 import { join, normalize } from "node:path";
-import { refreshCatalog } from "./container";
+import { catalogSettings, identity, refreshCatalog } from "./container";
 import { app } from "./app";
-import { PORT } from "./shared/config";
+import { ORIGINS, PORT } from "./shared/config";
 import { withSecureCookies } from "./shared/http";
+import { LOG_LEVEL, logger } from "./shared/logger";
 
 const WEB_DIST = normalize(process.env.WEB_DIST ?? join(import.meta.dir, "../../web/dist"));
 
@@ -28,7 +29,13 @@ Bun.serve({
     return withSecureCookies(req, await app.fetch(new Request(req, { headers })));
   },
 });
-console.log(`Snug listening on http://localhost:${PORT}`);
+const { version } = await Bun.file(join(import.meta.dir, "../../../package.json")).json();
+const users = identity.listUsers().length;
+logger.info(
+  `Snug ${version} listening on :${PORT} · origins ${ORIGINS.join(", ") || "none (set SNUG_ORIGINS)"} · ` +
+    `TMDB key ${catalogSettings.tmdbKey() ? "set" : "missing"} · ${users} user${users === 1 ? "" : "s"} · log level ${LOG_LEVEL}`,
+);
 
-setTimeout(() => refreshCatalog(), 30_000);
-setInterval(() => refreshCatalog(), 6 * 60 * 60 * 1000);
+const refresh = () => refreshCatalog().catch((err) => logger.error({ err }, "Catalog refresh failed"));
+setTimeout(refresh, 30_000);
+setInterval(refresh, 6 * 60 * 60 * 1000);

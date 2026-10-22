@@ -1,7 +1,9 @@
 import { forEachLimit } from "../../../shared/async";
+import { moduleLogger, reason } from "../../../shared/logger";
 import type { CatalogRepository, Series, SeriesHint, SeriesSource, SeriesSummary } from "../domain/series";
 
 const DAY = 24 * 60 * 60 * 1000;
+const log = moduleLogger("catalog");
 
 export class CatalogService {
   constructor(
@@ -25,14 +27,23 @@ export class CatalogService {
     return series;
   }
 
-  /** Refreshes Series older than `maxAgeDays`, calling `onRefreshed` for each one. */
+  /** Refreshes Series older than `maxAgeDays`, calling `onRefreshed` for each one. A failure skips that Series only. */
   async refreshStale(tmdbIds: readonly number[], maxAgeDays: number, onRefreshed: (id: number) => Promise<unknown>) {
     const stale = await this.repo.stale(tmdbIds, new Date(this.now().getTime() - maxAgeDays * DAY));
-    await forEachLimit(stale, 4, async (id) => {
-      await this.refresh(id);
-      await onRefreshed(id);
-    });
-    return stale.length;
+    let failed = 0;
+    await forEachLimit(
+      stale,
+      4,
+      async (id) => {
+        await this.refresh(id);
+        await onRefreshed(id);
+      },
+      (id, error) => {
+        failed++;
+        log.warn(`Could not refresh series ${id}: ${reason(error)}`);
+      },
+    );
+    return { refreshed: stale.length - failed, failed };
   }
 
   /**

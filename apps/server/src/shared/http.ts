@@ -2,6 +2,10 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { ForbiddenError, InvalidInputError, NotFoundError } from "./errors";
+import { moduleLogger } from "./logger";
+import { maskTokens } from "./request-log";
+
+const log = moduleLogger("http");
 
 /** Hono env of routes behind the session middleware. */
 export type AuthEnv = { Variables: { user: { id: string; name: string; email: string } } };
@@ -43,7 +47,7 @@ export const onError = (err: Error, c: Context) => {
   if (err instanceof HTTPException) return err.getResponse();
   const status =
     err instanceof NotFoundError ? 404 : err instanceof ForbiddenError ? 403 : err instanceof InvalidInputError ? 400 : 500;
-  if (status === 500) console.error(err);
+  if (status === 500) log.error({ err }, `${c.req.method} ${maskTokens(c.req.path)} failed`);
   const fields = err instanceof InvalidInputError ? err.fields : undefined;
   return c.json({ error: status === 500 ? "Something went wrong" : err.message, fields }, status);
 };

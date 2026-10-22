@@ -5,9 +5,12 @@ import { APIError } from "better-auth/api";
 import { count } from "drizzle-orm";
 import { AUTH_SECRET, ORIGINS } from "../../../shared/config";
 import type { Db } from "../../../shared/db";
+import { LOG_LEVEL, moduleLogger } from "../../../shared/logger";
 import * as schema from "./schema";
 
 /** Set while an admin creates an account, the only way to sign up once the first User exists. */
+const log = moduleLogger("auth");
+
 export const invitation = new AsyncLocalStorage<true>();
 
 export function createAuth(db: Db) {
@@ -21,6 +24,13 @@ export function createAuth(db: Db) {
     emailAndPassword: { enabled: true, minPasswordLength: 10 },
     session: { expiresIn: 60 * 60 * 24 * 90, updateAge: 60 * 60 * 24 },
     rateLimit: { enabled: true, window: 60, max: 30 },
+    logger: {
+      level: LOG_LEVEL === "debug" || LOG_LEVEL === "trace" ? "debug" : "warn",
+      log: (level, message, ...args) => {
+        const extra = args.map((a) => (a instanceof Error ? a.message : typeof a === "string" ? a : JSON.stringify(a)));
+        log[level]([message, ...extra].join(" "));
+      },
+    },
     advanced: {
       ipAddress: { ipAddressHeaders: ["x-snug-client-ip"] },
       // Browsers drop Secure cookies over plain HTTP (e.g. http://umbrel.local), so better-auth never sets it;
