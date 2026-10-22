@@ -55,6 +55,8 @@
     /* Always reserve the scrollbar's width: short and long pages keep the same centered layout. */
     scrollbar-gutter: stable;
     -webkit-tap-highlight-color: transparent;
+    /* No double-tap zoom: two quick taps on ✓ zoomed the page in on iPhone. Pinch zoom still works. */
+    touch-action: manipulation;
   }
   body {
     @apply bg-bg text-text font-sans antialiased;
