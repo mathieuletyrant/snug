@@ -78,6 +78,13 @@
       transition-duration: 1ms !important;
     }
   }
+  /*
+   * Radix pads <body> by the scrollbar's width while a dialog or menu locks scrolling. scrollbar-gutter
+   * already keeps that room, so the padding pushed the page sideways under the dialog.
+   */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-accent;
   }

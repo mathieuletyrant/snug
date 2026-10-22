@@ -1,12 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type {
-  Feeds as FeedsUrls,
-  ImportResult,
-  JellyfinEventLog,
-  JellyfinIntegration,
-  Me,
-  WatchlistIntegration,
+import {
+  type Feeds as FeedsUrls,
+  type ImportResult,
+  type JellyfinEventLog,
+  type JellyfinIntegration,
+  type Me,
+  STATUS_LABELS,
+  STATUSES,
+  type Status,
+  type WatchlistIntegration,
 } from "@snug/shared";
+import { ToggleGroup } from "radix-ui";
 import { ChevronDown, Clapperboard, Download, LogOut, type LucideIcon, Tv, Upload } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, useSearchParams } from "wouter";
@@ -335,13 +339,16 @@ function Sonarr() {
     mutationFn: () => api("/integrations/feeds/rotate", { method: "POST" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["feeds"] }),
   });
-  const url = data ? location.origin + data.sonarrPath : "…";
+  // What the list sends, written into the URL below; the server's default is the Watchlist.
+  const [statuses, setStatuses] = useState<Status[]>(["watchlist"]);
+  const query = statuses.length === 1 && statuses[0] === "watchlist" ? "" : `?status=${statuses.join(",")}`;
+  const url = data ? location.origin + data.sonarrPath + query : "…";
 
   return (
     <IntegrationCard
       icon={Download}
       title="Sonarr"
-      description="Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees your list."
+      description="Sonarr downloads the series you pick below. The link is read-only, but anyone with it sees those series."
     >
       <SetupSteps>
         <li>
@@ -349,10 +356,30 @@ function Sonarr() {
         </li>
         <li>Pick a quality profile and root folder, save. Sonarr checks the list every few hours.</li>
       </SetupSteps>
-      <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
-      <p className="mt-3 text-xs text-muted">
-        Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
+      <p className="mb-2 text-sm font-semibold">Series to send</p>
+      <ToggleGroup.Root
+        type="multiple"
+        aria-label="Series to send to Sonarr"
+        value={statuses}
+        // At least one: an empty list would send nothing.
+        onValueChange={(picked) => picked.length > 0 && setStatuses(STATUSES.filter((s) => picked.includes(s)))}
+        className="no-scrollbar -mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1"
+      >
+        {STATUSES.map((s) => (
+          <ToggleGroup.Item
+            key={s}
+            value={s}
+            className="shrink-0 rounded-full bg-raised px-3 py-1.5 text-xs font-bold text-muted transition hover:text-text data-[state=on]:bg-accent data-[state=on]:text-accent-ink"
+          >
+            {STATUS_LABELS[s]}
+          </ToggleGroup.Item>
+        ))}
+      </ToggleGroup.Root>
+      <p className="mb-4 text-xs text-muted">
+        Only series with one of these statuses go to Sonarr. Changed your pick? Copy the URL again and paste it in
+        Sonarr.
       </p>
+      <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
     </IntegrationCard>
   );
 }
@@ -372,19 +399,18 @@ function Spotarr() {
     <IntegrationCard
       icon={Clapperboard}
       title="Spotarr"
-      description="Every series Spotarr adds lands on your Watchlist. A series you already follow stays where it is."
+      description="TV shows you send from Spotarr land on your Watchlist. A series you already follow stays where it is."
     >
       <SetupSteps>
         <li>
           In Spotarr: Settings → Connections → <b className="text-text">Snug</b>, paste the URL below, save.
         </li>
-        <li>Every TV show Spotarr then adds, by hand or with a Rule, lands here.</li>
+        <li>
+          Add a rule with <b className="text-text">TV shows only</b> and the action{" "}
+          <b className="text-text">Add to Snug's Watchlist</b>, or use the Watchlist button on a TV show.
+        </li>
       </SetupSteps>
       <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
-      <p className="mt-3 text-xs text-muted">
-        Spotarr already gets your series downloaded? Add <code className="text-text">?status=watching</code> at the end
-        of the Sonarr list URL: Sonarr then only takes the series you're watching, and nothing is downloaded twice.
-      </p>
     </IntegrationCard>
   );
 }
