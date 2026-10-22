@@ -382,9 +382,8 @@ function Spotarr() {
       </SetupSteps>
       <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
       <p className="mt-3 text-xs text-muted">
-        Using the Sonarr list too? Add <code className="text-text">?status=watching</code> at the end of its URL in
-        Sonarr. Seerr already downloads what Spotarr finds: without it, Sonarr would download those series a second
-        time.
+        Spotarr already gets your series downloaded? Add <code className="text-text">?status=watching</code> at the end
+        of the Sonarr list URL: Sonarr then only takes the series you're watching, and nothing is downloaded twice.
       </p>
     </IntegrationCard>
   );
