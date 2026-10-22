@@ -38,6 +38,11 @@ export class IdentityService {
     return { id: u.id, name: u.name, email: u.email, isAdmin: this.isAdmin(u.id) };
   }
 
+  /** A User's name, for log lines ("Mathieu"); the id when the account is gone. */
+  nameOf(userId: string) {
+    return this.db.select({ name: user.name }).from(user).where(eq(user.id, userId)).get()?.name ?? userId;
+  }
+
   listUsers() {
     return this.db.select({ id: user.id, name: user.name, email: user.email }).from(user).orderBy(asc(user.createdAt)).all();
   }

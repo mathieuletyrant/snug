@@ -22,6 +22,7 @@ import { notificationRoutes } from "./modules/notifications/http/routes";
 import { trackingRoutes } from "./modules/tracking/http/routes";
 import { watchlistRoutes, watchlistWebhook } from "./modules/watchlist/http/routes";
 import { type AuthEnv, onError } from "./shared/http";
+import { requestLog } from "./shared/request-log";
 
 const api = new Hono<AuthEnv>()
   // Public
@@ -49,4 +50,4 @@ const api = new Hono<AuthEnv>()
   .route("/push", notificationRoutes(notifications))
   .all("/*", (c) => c.json({ error: "Not found" }, 404));
 
-export const app = new Hono().onError(onError).route("/api", api);
+export const app = new Hono().use(requestLog).onError(onError).route("/api", api);

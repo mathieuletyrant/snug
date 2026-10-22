@@ -4,6 +4,7 @@ import type { CatalogService } from "../../catalog/application/catalog-service";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { Db } from "../../../shared/db";
 import { ForbiddenError } from "../../../shared/errors";
+import { moduleLogger, reason } from "../../../shared/logger";
 import type { Notifier } from "../../notifications/application/notification-service";
 import type { TrackingService } from "../../tracking/application/tracking-service";
 import { type JellyfinEvent, parseJellyfinEvent } from "../domain/jellyfin-event";
@@ -12,6 +13,8 @@ import { jellyfinEvents, jellyfinSeries } from "../infrastructure/schema";
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;
 const MAX_PAYLOAD = 20_000;
+
+const log = moduleLogger("jellyfin");
 
 type Outcome = Pick<JellyfinEventLog, "outcome" | "message"> & { seriesId?: number };
 
@@ -39,7 +42,10 @@ export class JellyfinService {
 
   private async process(token: string, body: Record<string, unknown>) {
     const userId = this.identity.webhookTokens.userIdOf(token);
-    if (!userId) throw new ForbiddenError("Unknown webhook token");
+    if (!userId) {
+      log.warn("Webhook call with an unknown token (rotated? copied from another Snug?)");
+      throw new ForbiddenError("Unknown webhook token");
+    }
 
     const event = parseJellyfinEvent(body);
     const summary =
@@ -54,6 +60,11 @@ export class JellyfinService {
       result = { outcome: "error", message: error instanceof Error ? error.message : String(error) };
     }
     this.log(userId, summary, result, body);
+    // Ignored calls come in bursts (UserDataSaved on every pause), so they only show at debug.
+    const line = `${this.identity.nameOf(userId)} · ${summary} → ${result.outcome}: ${result.message}`;
+    if (result.outcome === "watched") log.info(line);
+    else if (result.outcome === "ignored") log.debug(line);
+    else log.warn(line);
     return { outcome: result.outcome, message: result.message };
   }
 
@@ -106,7 +117,7 @@ export class JellyfinService {
         tag: `series-${seriesId}`,
       });
     } catch (error) {
-      console.error("Watch notification failed", error);
+      log.warn(`Watch notification for series ${seriesId} failed: ${reason(error)}`);
     }
   }
 

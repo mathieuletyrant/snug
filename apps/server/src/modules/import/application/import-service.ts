@@ -2,11 +2,14 @@ import type { ImportProgress, ImportResult } from "@snug/shared";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import { forEachLimit } from "../../../shared/async";
 import { InvalidInputError } from "../../../shared/errors";
+import { moduleLogger, reason } from "../../../shared/logger";
 import type { ImportEntry, TrackingService } from "../../tracking/application/tracking-service";
 import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "../domain/csv-import";
 import { parseImportFile } from "../domain/import-file";
 
 const IDLE: ImportProgress = { running: false, total: 0, done: 0, failed: 0 };
+
+const log = moduleLogger("import");
 
 export class ImportService {
   /** ponytail: in memory, lost on restart; the periodic Catalog refresh fetches whatever is still missing. */
@@ -50,6 +53,12 @@ export class ImportService {
   private async run(userId: string, entries: ImportEntry[], unresolved: string[]): Promise<ImportResult> {
     const ids = await this.tracking.import(userId, entries);
 
+    const watches = entries.reduce((n, e) => n + e.watches.length, 0);
+    log.info(
+      `Imported ${entries.length} series and ${watches} watches` +
+        (unresolved.length ? `; not found on TMDB: ${unresolved.join(", ")}` : "") +
+        `. Fetching ${ids.length} series from TMDB…`,
+    );
     const progress: ImportProgress = { running: true, total: ids.length, done: 0, failed: 0 };
     this.progress.set(userId, progress);
     void forEachLimit(
@@ -62,11 +71,14 @@ export class ImportService {
       },
       (id, error) => {
         progress.failed++;
-        console.error(`Import: could not fetch series ${id}`, error);
+        log.warn(`Could not fetch series ${id}: ${reason(error)}`);
       },
-    ).finally(() => (progress.running = false));
+    ).finally(() => {
+      progress.running = false;
+      log.info(`Import finished: ${progress.done} series fetched, ${progress.failed} failed`);
+    });
 
-    return { series: entries.length, watches: entries.reduce((n, e) => n + e.watches.length, 0), unresolved };
+    return { series: entries.length, watches, unresolved };
   }
 
   private assertIdle(userId: string) {

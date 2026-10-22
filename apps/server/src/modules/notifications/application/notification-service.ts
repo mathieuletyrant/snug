@@ -1,7 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "../../../shared/db";
+import { moduleLogger, reason } from "../../../shared/logger";
 import { pushSubscriptions } from "../infrastructure/schema";
 import type { WebPushSender } from "../infrastructure/web-push-sender";
+
+const log = moduleLogger("push");
 
 export interface Notification {
   title: string;
@@ -50,13 +53,17 @@ export class NotificationService implements Notifier {
       devices.map(async (device) => {
         try {
           const status = await this.sender.send(device, notification);
+          const host = new URL(device.endpoint).host;
           if (status === 404 || status === 410) {
             this.db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, device.endpoint)).run();
+            log.info(`Device on ${host} is gone (${status}), forgotten`);
           } else if (status >= 400) {
-            console.error(`Push to ${new URL(device.endpoint).host} failed: ${status}`);
+            log.warn(`Push to ${host} failed: ${status}`);
+          } else {
+            log.debug(`Sent "${notification.title}" to ${host}`);
           }
         } catch (error) {
-          console.error("Push failed", error);
+          log.warn(`Push failed: ${reason(error)}`);
         }
       }),
     );

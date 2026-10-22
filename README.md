@@ -51,6 +51,8 @@ Open http://localhost:3000, create the admin account, paste a [TMDB key](https:/
 | `SNUG_ORIGINS` | – | Comma-separated URLs you open Snug with (LAN name, IP, Tailscale…) |
 | `DATA_DIR` | `/data` | SQLite database, image cache, generated auth secret |
 | `BETTER_AUTH_SECRET` | generated in `DATA_DIR/secret` | |
+| `LOG_LEVEL` | `info` | `debug` adds every request, ignored Jellyfin calls and TMDB calls; `warn` keeps only problems |
+| `LOG_FORMAT` | readable lines | `json` for one pino JSON object per line |
 | `PORT` | `3000` | |
 | `SNUG_PUSH_CONTACT` | first `https://` origin | Contact sent to push services (`https://…` or `mailto:…`) |
 

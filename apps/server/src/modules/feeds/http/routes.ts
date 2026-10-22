@@ -4,6 +4,9 @@ import { type Feeds, STATUSES } from "@snug/shared";
 import { type AuthEnv, parse } from "../../../shared/http";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { FeedsService } from "../application/feeds-service";
+import { moduleLogger } from "../../../shared/logger";
+
+const log = moduleLogger("feeds");
 
 const statuses = z
   .string()
@@ -15,7 +18,10 @@ const statuses = z
 export const feedRoutes = (feeds: FeedsService, identity: IdentityService) =>
   new Hono()
     .use("/:token/*", async (c, next) => {
-      if (!identity.feedTokens.userIdOf(c.req.param("token") ?? "")) return c.json({ error: "Not found" }, 404);
+      if (!identity.feedTokens.userIdOf(c.req.param("token") ?? "")) {
+        log.warn("Feed asked with an unknown token (rotated? check the URL in Sonarr)");
+        return c.json({ error: "Not found" }, 404);
+      }
       await next();
     })
     .get("/:token/sonarr", async (c) => {
