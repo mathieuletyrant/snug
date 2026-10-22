@@ -74,3 +74,13 @@ test("import keeps existing Statuses and merges Watches", async () => {
   expect(detail.progress).toEqual({ season: 1, number: 2 });
 });
 
+
+test("adding to the Watchlist from another app never changes a Series already tracked", async () => {
+  const tracking = setup([series(1, false, ["2026-10-01"]), series(2, false, ["2026-10-01"])]);
+  await tracking.track("u", 2, "watching");
+
+  expect(await tracking.addToWatchlist("u", 1)).toEqual({ status: "watchlist", added: true });
+  expect(await tracking.addToWatchlist("u", 1)).toEqual({ status: "watchlist", added: false });
+  expect(await tracking.addToWatchlist("u", 2)).toEqual({ status: "watching", added: false });
+  await expect(tracking.addToWatchlist("u", 99)).rejects.toThrow();
+});

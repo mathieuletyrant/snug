@@ -21,6 +21,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 📺 **Per-episode progress**: Watchlist, Watching, Paused, Completed, Dropped. Series come back to *Watching* on their own when you resume them or a new season airs.
 - 🪼 **Jellyfin webhook**: finished or "mark played" episodes are tracked automatically, unknown series are added. Full webhook history with raw payloads.
 - 🔔 **Notifications**: “✓ Severance S02E05 · Next: S02E06” on your phone when Jellyfin marks an episode watched (Web Push, per device; on iPhone from the Home Screen app over HTTPS).
+- 🎬 **Spotarr**: a series identified from a shared reel lands on your Watchlist (series you already track keep their status).
 - 📡 **Sonarr import list**: your Watchlist as a Sonarr *Custom List* (TVDB ids), so adding a series in Snug gets it downloaded.
 - 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
 - 🌍 **Your language**: descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.

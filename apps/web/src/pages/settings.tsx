@@ -1,8 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Feeds as FeedsUrls, ImportResult, JellyfinEventLog, JellyfinIntegration, Me } from "@snug/shared";
-import { ChevronDown, LogOut, Upload } from "lucide-react";
-import { Link } from "wouter";
-import { useState } from "react";
+import {
+  type Feeds as FeedsUrls,
+  type ImportResult,
+  type JellyfinEventLog,
+  type JellyfinIntegration,
+  type Me,
+  STATUS_LABELS,
+  STATUSES,
+  type Status,
+  type WatchlistIntegration,
+} from "@snug/shared";
+import { ToggleGroup } from "radix-ui";
+import { ChevronDown, Clapperboard, Download, LogOut, type LucideIcon, Tv, Upload } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { Link, useSearchParams } from "wouter";
 import { api, authClient, queryClient } from "../api";
 import { CopyField } from "../components/copy-field";
 import { usePush } from "../components/push";
@@ -13,30 +24,92 @@ import { useToast } from "../components/toast";
 import { Button, Card, Chips, cx, ErrorText, Input, PageTitle, Skeleton } from "../components/ui";
 import { LanguageSelect, TmdbKeyForm } from "./setup";
 
+const SECTIONS = [
+  { value: "general", label: "General" },
+  { value: "integrations", label: "Integrations" },
+  { value: "import", label: "Import" },
+  { value: "admin", label: "Admin" },
+] as const;
+type Section = (typeof SECTIONS)[number]["value"];
+
+/** One section at a time, chosen by `?section=` so a link (or Back) lands on the right one. */
 export function SettingsPage({ me }: { me: Me }) {
+  const [params, setParams] = useSearchParams();
+  const sections = SECTIONS.filter((s) => s.value !== "admin" || me.isAdmin);
+  const section: Section = sections.find((s) => s.value === params.get("section"))?.value ?? "general";
+
   return (
     <>
       <PageTitle>Settings</PageTitle>
+      <Chips
+        label="Settings section"
+        value={section}
+        onChange={(value) => setParams({ section: value }, { replace: true })}
+        options={sections.map((s) => ({ value: s.value, label: s.label }))}
+        className="-mx-4 mb-5 gap-2 px-4 pb-1 md:mx-0 md:px-0"
+      />
       <div className="space-y-5">
-        <Account me={me} />
-        <Display />
-        <Notifications />
-        <Jellyfin />
-        <Sonarr />
-        <Import />
-        {me.isAdmin && <Users />}
-        {me.isAdmin && (
-          <Card className="space-y-5">
-            <div>
-              <h2 className="mb-1 text-xl">Series details</h2>
-              <p className="text-sm text-muted">From TMDB, for everyone on this Snug.</p>
-            </div>
-            <LanguageSelect />
-            <TmdbKeyForm />
-          </Card>
+        {section === "general" && (
+          <>
+            <Account me={me} />
+            <Display />
+            <Notifications />
+          </>
+        )}
+        {section === "integrations" && (
+          <>
+            <p className="text-sm text-muted">
+              Each app gets its own secret URL from Snug: paste it in the app, and replace it with ↻ if it leaks.
+            </p>
+            <Jellyfin />
+            <Sonarr />
+            <Spotarr />
+          </>
+        )}
+        {section === "import" && <Import />}
+        {section === "admin" && (
+          <>
+            <Users />
+            <Card className="space-y-5">
+              <div>
+                <h2 className="mb-1 text-xl">Series details</h2>
+                <p className="text-sm text-muted">From TMDB, for everyone on this Snug.</p>
+              </div>
+              <LanguageSelect />
+              <TmdbKeyForm />
+            </Card>
+          </>
         )}
       </div>
     </>
+  );
+}
+
+/** An app Snug talks to: its icon and name, what it does, then how to connect it. */
+function IntegrationCard({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Card>
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent">
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-xl leading-tight">{title}</h2>
+          <p className="mt-1 text-sm text-muted">{description}</p>
+        </div>
+      </div>
+      {children}
+    </Card>
   );
 }
 
@@ -141,9 +214,11 @@ function Jellyfin() {
   const url = data ? location.origin + data.webhookPath : "…";
 
   return (
-    <Card>
-      <h2 className="mb-1 text-xl">Jellyfin</h2>
-      <p className="mb-4 text-sm text-muted">Episodes you finish, or mark as played, in Jellyfin are marked watched here.</p>
+    <IntegrationCard
+      icon={Tv}
+      title="Jellyfin"
+      description="Episodes you finish, or mark as played, in Jellyfin are marked watched here."
+    >
       <SetupSteps open={data ? data.events.length === 0 : false}>
         <li>
           Install the <b className="text-text">Webhook</b> plugin (Dashboard → Plugins → Catalog), restart Jellyfin.
@@ -158,12 +233,12 @@ function Jellyfin() {
       </SetupSteps>
       <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
       <WebhookHistory events={data?.events} />
-    </Card>
+    </IntegrationCard>
   );
 }
 
 /** Numbered instructions, folded once set up so the page stays short on a phone. */
-function SetupSteps({ open = false, children }: { open?: boolean; children: React.ReactNode }) {
+function SetupSteps({ open = false, children }: { open?: boolean; children: ReactNode }) {
   return (
     <details open={open} className="group mb-4">
       <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-accent">
@@ -264,26 +339,79 @@ function Sonarr() {
     mutationFn: () => api("/integrations/feeds/rotate", { method: "POST" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["feeds"] }),
   });
-  const url = data ? location.origin + data.sonarrPath : "…";
+  // What the list sends, written into the URL below; the server's default is the Watchlist.
+  const [statuses, setStatuses] = useState<Status[]>(["watchlist"]);
+  const query = statuses.length === 1 && statuses[0] === "watchlist" ? "" : `?status=${statuses.join(",")}`;
+  const url = data ? location.origin + data.sonarrPath + query : "…";
 
   return (
-    <Card>
-      <h2 className="mb-1 text-xl">Sonarr</h2>
-      <p className="mb-4 text-sm text-muted">
-        Sonarr picks up the series on your Watchlist and downloads them. The link is read-only, but anyone with it sees
-        your list: replace it with ↻ if it leaks.
-      </p>
+    <IntegrationCard
+      icon={Download}
+      title="Sonarr"
+      description="Sonarr downloads the series you pick below. The link is read-only, but anyone with it sees those series."
+    >
       <SetupSteps>
         <li>
           In Sonarr: Settings → Import Lists → + → <b className="text-text">Custom Lists</b>, paste the URL below.
         </li>
         <li>Pick a quality profile and root folder, save. Sonarr checks the list every few hours.</li>
       </SetupSteps>
-      <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
-      <p className="mt-3 text-xs text-muted">
-        Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
+      <p className="mb-2 text-sm font-semibold">Series to send</p>
+      <ToggleGroup.Root
+        type="multiple"
+        aria-label="Series to send to Sonarr"
+        value={statuses}
+        // At least one: an empty list would send nothing.
+        onValueChange={(picked) => picked.length > 0 && setStatuses(STATUSES.filter((s) => picked.includes(s)))}
+        className="no-scrollbar -mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1"
+      >
+        {STATUSES.map((s) => (
+          <ToggleGroup.Item
+            key={s}
+            value={s}
+            className="shrink-0 rounded-full bg-raised px-3 py-1.5 text-xs font-bold text-muted transition hover:text-text data-[state=on]:bg-accent data-[state=on]:text-accent-ink"
+          >
+            {STATUS_LABELS[s]}
+          </ToggleGroup.Item>
+        ))}
+      </ToggleGroup.Root>
+      <p className="mb-4 text-xs text-muted">
+        Only series with one of these statuses go to Sonarr. Changed your pick? Copy the URL again and paste it in
+        Sonarr.
       </p>
-    </Card>
+      <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
+    </IntegrationCard>
+  );
+}
+
+function Spotarr() {
+  const { data } = useQuery({
+    queryKey: ["watchlist-integration"],
+    queryFn: () => api<WatchlistIntegration>("/integrations/watchlist"),
+  });
+  const rotate = useMutation({
+    mutationFn: () => api("/integrations/watchlist/rotate", { method: "POST" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["watchlist-integration"] }),
+  });
+  const url = data ? location.origin + data.addPath : "…";
+
+  return (
+    <IntegrationCard
+      icon={Clapperboard}
+      title="Spotarr"
+      description="TV shows you send from Spotarr land on your Watchlist. A series you already follow stays where it is."
+    >
+      <SetupSteps>
+        <li>
+          In Spotarr: Settings → Connections → <b className="text-text">Snug</b>, paste the URL below, save.
+        </li>
+        <li>
+          Add a rule with <b className="text-text">TV shows only</b> and the action{" "}
+          <b className="text-text">Add to Snug's Watchlist</b>, or use the Watchlist button on a TV show.
+        </li>
+      </SetupSteps>
+      <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
+    </IntegrationCard>
   );
 }
 
