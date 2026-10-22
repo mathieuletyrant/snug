@@ -40,6 +40,18 @@ export class TrackingService {
     await this.repo.save(tracked);
   }
 
+  /**
+   * Puts a Series on the Watchlist unless it is already tracked: a Series being watched, paused or
+   * completed keeps its Status. Returns the Status it ends with, and whether it was added.
+   */
+  async addToWatchlist(userId: string, seriesId: number): Promise<{ status: Status; added: boolean }> {
+    await this.catalog.ensure(seriesId);
+    const existing = await this.repo.find(userId, seriesId);
+    if (existing) return { status: existing.status, added: false };
+    await this.repo.save(TrackedSeries.start(userId, seriesId, "watchlist", this.now()));
+    return { status: "watchlist", added: true };
+  }
+
   untrack(userId: string, seriesId: number) {
     return this.repo.delete(userId, seriesId);
   }

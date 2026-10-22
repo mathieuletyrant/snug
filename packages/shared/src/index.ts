@@ -48,6 +48,11 @@ export interface Feeds {
   sonarrPath: string;
 }
 
+/** URL path (to prefix with the origin) other apps POST `{ tmdbId }` to, adding a Series to the Watchlist. */
+export interface WatchlistIntegration {
+  addPath: string;
+}
+
 export interface SeriesSummary {
   tmdbId: number;
   name: string;

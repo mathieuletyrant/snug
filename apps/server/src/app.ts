@@ -20,6 +20,7 @@ import { importRoutes } from "./modules/import/http/routes";
 import { jellyfinRoutes, jellyfinWebhook } from "./modules/jellyfin/http/routes";
 import { notificationRoutes } from "./modules/notifications/http/routes";
 import { trackingRoutes } from "./modules/tracking/http/routes";
+import { watchlistRoutes, watchlistWebhook } from "./modules/watchlist/http/routes";
 import { type AuthEnv, onError } from "./shared/http";
 
 const api = new Hono<AuthEnv>()
@@ -28,6 +29,7 @@ const api = new Hono<AuthEnv>()
   .route("/webhooks/jellyfin", jellyfinWebhook(jellyfin))
   .route("/images", imageRoutes())
   .route("/feeds", feedRoutes(feeds, identity))
+  .route("/watchlist", watchlistWebhook(tracking, identity))
   .get("/setup", (c) =>
     c.json<SetupState>({
       hasUsers: identity.hasUsers(),
@@ -43,6 +45,7 @@ const api = new Hono<AuthEnv>()
   .route("/import", importRoutes(importer))
   .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, identity))
   .route("/integrations/feeds", feedSettingsRoutes(identity))
+  .route("/integrations/watchlist", watchlistRoutes(identity))
   .route("/push", notificationRoutes(notifications))
   .all("/*", (c) => c.json({ error: "Not found" }, 404));
 

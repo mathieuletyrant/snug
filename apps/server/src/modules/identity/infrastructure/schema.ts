@@ -77,3 +77,11 @@ export const feedToken = sqliteTable("feed_token", {
     .references(() => user.id, { onDelete: "cascade" }),
   token: text("token").notNull().unique(),
 });
+
+/** Secret token letting another app (Spotarr) add Series to the Watchlist: it can't read or change anything else. */
+export const watchlistToken = sqliteTable("watchlist_token", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+});

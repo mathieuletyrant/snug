@@ -4,7 +4,7 @@ import { isAPIError } from "better-auth/api";
 import type { Db } from "../../../shared/db";
 import { InvalidInputError } from "../../../shared/errors";
 import { type Auth, invitation } from "../infrastructure/auth";
-import { feedToken, user, userPreferences, webhookToken } from "../infrastructure/schema";
+import { feedToken, user, userPreferences, watchlistToken, webhookToken } from "../infrastructure/schema";
 
 const newToken = () => Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
 
@@ -13,6 +13,8 @@ export class IdentityService {
   readonly webhookTokens: UserTokens;
   /** Token in read-only feed URLs (calendar, Sonarr list). */
   readonly feedTokens: UserTokens;
+  /** Token in the URL other apps (Spotarr) call to add a Series to the Watchlist. */
+  readonly watchlistTokens: UserTokens;
 
   constructor(
     private readonly db: Db,
@@ -20,6 +22,7 @@ export class IdentityService {
   ) {
     this.webhookTokens = new UserTokens(db, webhookToken);
     this.feedTokens = new UserTokens(db, feedToken);
+    this.watchlistTokens = new UserTokens(db, watchlistToken);
   }
 
   hasUsers() {
@@ -71,7 +74,7 @@ export class IdentityService {
 class UserTokens {
   constructor(
     private readonly db: Db,
-    private readonly table: typeof webhookToken | typeof feedToken,
+    private readonly table: typeof webhookToken | typeof feedToken | typeof watchlistToken,
   ) {}
 
   of(userId: string): string {

@@ -1,5 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Feeds as FeedsUrls, ImportResult, JellyfinEventLog, JellyfinIntegration, Me } from "@snug/shared";
+import type {
+  Feeds as FeedsUrls,
+  ImportResult,
+  JellyfinEventLog,
+  JellyfinIntegration,
+  Me,
+  WatchlistIntegration,
+} from "@snug/shared";
 import { ChevronDown, LogOut, Upload } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -23,6 +30,7 @@ export function SettingsPage({ me }: { me: Me }) {
         <Notifications />
         <Jellyfin />
         <Sonarr />
+        <Spotarr />
         <Import />
         {me.isAdmin && <Users />}
         {me.isAdmin && (
@@ -282,6 +290,41 @@ function Sonarr() {
       <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
       <p className="mt-3 text-xs text-muted">
         Sends your <b>Watchlist</b>. For more, append <code className="text-text">?status=watchlist,watching</code>.
+      </p>
+    </Card>
+  );
+}
+
+function Spotarr() {
+  const { data } = useQuery({
+    queryKey: ["watchlist-integration"],
+    queryFn: () => api<WatchlistIntegration>("/integrations/watchlist"),
+  });
+  const rotate = useMutation({
+    mutationFn: () => api("/integrations/watchlist/rotate", { method: "POST" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["watchlist-integration"] }),
+  });
+  const url = data ? location.origin + data.addPath : "…";
+
+  return (
+    <Card>
+      <h2 className="mb-1 text-xl">Spotarr</h2>
+      <p className="mb-4 text-sm text-muted">
+        A series you share to Spotarr lands on your Watchlist here. Series you already track keep their status. The
+        link can only add series: replace it with ↻ if it leaks.
+      </p>
+      <SetupSteps>
+        <li>
+          In Spotarr: Settings → <b className="text-text">Snug</b>, paste the URL below.
+        </li>
+        <li>
+          Add a Rule with the <b className="text-text">Snug Watchlist</b> action, or add from a Share's page.
+        </li>
+      </SetupSteps>
+      <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
+      <p className="mt-3 text-xs text-muted">
+        If Seerr downloads what Spotarr finds, let Sonarr's list skip the Watchlist: append{" "}
+        <code className="text-text">?status=watching</code> to its URL.
       </p>
     </Card>
   );
