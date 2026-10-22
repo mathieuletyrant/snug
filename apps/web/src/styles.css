@@ -78,6 +78,12 @@
       transition-duration: 1ms !important;
     }
   }
+  /* As a Home Screen app, the page doesn't rubber-band at the top: pull-to-refresh moves it instead. */
+  @media (display-mode: standalone) {
+    html {
+      overscroll-behavior-y: none;
+    }
+  }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-accent;
   }
