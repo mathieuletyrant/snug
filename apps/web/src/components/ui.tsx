@@ -179,7 +179,7 @@ export function Poster({
   return (
     <div
       className={cx(
-        "aspect-[2/3] shrink-0 overflow-hidden rounded-2xl bg-raised shadow-lg shadow-black/30",
+        "aspect-[2/3] shrink-0 overflow-hidden rounded-2xl bg-raised shadow-md shadow-black/30",
         path && !loaded && "animate-pulse",
         className,
       )}

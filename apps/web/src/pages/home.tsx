@@ -80,7 +80,7 @@ function ReadyCard({ card }: { card: SeriesCard }) {
   const left = card.airedCount - card.watchedCount;
   // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
   return (
-    <article className="relative overflow-hidden rounded-2xl border border-line/60 bg-surface shadow-lg shadow-black/20">
+    <article className="relative overflow-hidden rounded-2xl border border-line/60 bg-surface shadow-md shadow-black/20">
       <Link href={`/series/${card.seriesId}`} className="block">
         <div className="relative aspect-video">
           <Backdrop
@@ -90,7 +90,7 @@ function ReadyCard({ card }: { card: SeriesCard }) {
             className="h-full w-full"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
-          <span className="absolute top-2 left-2 rounded-full bg-bg/70 px-2 py-0.5 text-[11px] font-bold text-muted backdrop-blur">
+          <span className="absolute top-2 left-2 rounded-full bg-bg/85 px-2 py-0.5 text-[11px] font-bold text-muted">
             {left} left
           </span>
           <div className="absolute inset-x-0 bottom-0 p-2.5 pr-12 sm:p-3 sm:pr-14">
@@ -116,7 +116,7 @@ function ReadyCard({ card }: { card: SeriesCard }) {
         <Check className="size-5" strokeWidth={3} />
       </button>
       {/* Same right edge as ✓ and centered on the same vertical line: 36px button, 40px ✓ from sm. */}
-      <div className="absolute top-1.5 right-2 rounded-full bg-bg/60 backdrop-blur sm:right-3">
+      <div className="absolute top-1.5 right-2 rounded-full bg-bg/80 sm:right-3">
         <StatusMenu seriesId={card.seriesId} status={card.status} />
       </div>
     </article>

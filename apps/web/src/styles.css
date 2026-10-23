@@ -60,10 +60,17 @@
   }
   body {
     @apply bg-bg text-text font-sans antialiased;
-    background-image: radial-gradient(ellipse at top, rgb(240 163 94 / 0.07), transparent 60%);
-    background-attachment: fixed;
     min-height: 100dvh;
     overflow-x: clip;
+  }
+  /* The lamp glow stays put while the page scrolls. A fixed layer, not background-attachment: fixed, which repaints on every scroll frame. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse at top, rgb(240 163 94 / 0.07), transparent 60%);
   }
   h1,
   h2,
@@ -89,6 +96,14 @@
   @media (display-mode: standalone) {
     html {
       overscroll-behavior-y: none;
+    }
+    /* Feels like an app: a long press on a link or poster doesn't pop Safari's preview or select the label. */
+    a,
+    img,
+    button {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
   }
   :focus-visible {

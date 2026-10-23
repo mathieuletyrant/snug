@@ -62,7 +62,7 @@ export function LibraryPage() {
                 {c.airedCount > 0 && <ProgressBar value={c.watchedCount} max={c.airedCount} />}
               </Link>
               {/* Change status without opening the series */}
-              <div className="absolute top-1 right-1 rounded-full bg-bg/60 backdrop-blur">
+              <div className="absolute top-1 right-1 rounded-full bg-bg/80">
                 <StatusMenu seriesId={c.seriesId} status={c.status} small />
               </div>
             </div>
@@ -93,7 +93,7 @@ function AiringBadge({ card }: { card: SeriesCard }) {
       title={title}
       className={cx(
         "absolute bottom-1.5 left-1.5 max-w-[calc(100%-0.75rem)] truncate rounded-full px-1.5 py-0.5 text-[10px] leading-tight font-bold shadow-md shadow-black/40 sm:text-[11px]",
-        state.kind === "ready" ? "bg-accent text-accent-ink" : "bg-bg/75 backdrop-blur",
+        state.kind === "ready" ? "bg-accent text-accent-ink" : "bg-bg/90",
         state.kind === "dated" && "text-accent",
         state.kind === "tba" && "text-muted",
       )}
