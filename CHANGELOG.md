@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/mathieuletyrant/snug/compare/v0.7.0...v0.8.0) (2026-10-23)
+
+
+### ✨ Features
+
+* **web:** smoother scrolling and more native feel on mobile ([#25](https://github.com/mathieuletyrant/snug/issues/25)) ([6676f52](https://github.com/mathieuletyrant/snug/commit/6676f528a891b23b6bdba2c6ccd1b176e164d7fa))
+
 ## [0.7.0](https://github.com/mathieuletyrant/snug/compare/v0.6.0...v0.7.0) (2026-10-22)
 
 
