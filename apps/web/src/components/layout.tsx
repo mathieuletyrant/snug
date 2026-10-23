@@ -1,10 +1,11 @@
 import { House, Library, Search, Settings } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { queryClient } from "../api";
 import { homeQuery, libraryQuery } from "../queries";
 import { ImportBanner } from "./import-progress";
 import { PullToRefresh } from "./pull-to-refresh";
+import { useScrollToTop } from "./scroll";
 import { cx } from "./ui";
 
 const TABS = [
@@ -27,17 +28,7 @@ export function Layout({ children }: { children: ReactNode }) {
   // The tab under the finger, lit before the page changes; cleared once it has.
   const [pressed, setPressed] = useState<string | null>(null);
   useEffect(() => setPressed(null), [location]);
-  // A new page opens at the top; Back and Forward keep the position the browser restores.
-  const popped = useRef(false);
-  useEffect(() => {
-    const onPop = () => (popped.current = true);
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-  useEffect(() => {
-    if (!popped.current) window.scrollTo(0, 0);
-    popped.current = false;
-  }, [location]);
+  useScrollToTop();
   // A finger that slid off the tab never clicks it: unlight it.
   useEffect(() => {
     if (!pressed) return;
