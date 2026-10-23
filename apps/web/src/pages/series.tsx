@@ -39,7 +39,7 @@ export function SeriesPage({ id }: { id: string }) {
         </div>
       )}
 
-      <button onClick={() => history.back()} aria-label="Back" className="rounded-full bg-bg/60 p-2 backdrop-blur">
+      <button onClick={() => history.back()} aria-label="Back" className="rounded-full bg-bg/80 p-2">
         <ArrowLeft className="size-5" />
       </button>
 
@@ -74,7 +74,7 @@ export function SeriesPage({ id }: { id: string }) {
                   onClick={() => setStatus.mutate({ seriesId: data.seriesId, status: s })}
                   className={cx(
                     "rounded-full px-4 py-2 text-sm font-bold transition",
-                    s === data.status ? "bg-accent text-accent-ink" : "bg-raised/80 text-muted backdrop-blur hover:text-text",
+                    s === data.status ? "bg-accent text-accent-ink" : "bg-raised/90 text-muted hover:text-text",
                   )}
                 >
                   {STATUS_LABELS[s]}

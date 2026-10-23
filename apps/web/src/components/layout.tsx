@@ -1,5 +1,5 @@
 import { House, Library, Search, Settings } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { queryClient } from "../api";
 import { homeQuery, libraryQuery } from "../queries";
@@ -27,6 +27,17 @@ export function Layout({ children }: { children: ReactNode }) {
   // The tab under the finger, lit before the page changes; cleared once it has.
   const [pressed, setPressed] = useState<string | null>(null);
   useEffect(() => setPressed(null), [location]);
+  // A new page opens at the top; Back and Forward keep the position the browser restores.
+  const popped = useRef(false);
+  useEffect(() => {
+    const onPop = () => (popped.current = true);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  useEffect(() => {
+    if (!popped.current) window.scrollTo(0, 0);
+    popped.current = false;
+  }, [location]);
   // A finger that slid off the tab never clicks it: unlight it.
   useEffect(() => {
     if (!pressed) return;
@@ -68,7 +79,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </PullToRefresh>
       </main>
 
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/90 backdrop-blur-lg md:hidden">
+      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/95 md:hidden">
         <div className="mx-auto flex max-w-md">
           {TABS.map(({ href, label, icon: Icon }) => {
             const on = pressed ? pressed === href : active(href);
@@ -82,6 +93,8 @@ export function Layout({ children }: { children: ReactNode }) {
                   prefetch(href);
                 }}
                 onPointerCancel={() => setPressed(null)}
+                // Tapping the tab you're on scrolls back to the top, like any iOS app.
+                onClick={() => location === href && window.scrollTo({ top: 0, behavior: "smooth" })}
                 className={cx(
                   "group flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1 text-[11px] font-bold transition-colors duration-75",
                   on ? "text-accent" : "text-muted",
