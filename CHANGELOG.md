@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.0](https://github.com/mathieuletyrant/snug/compare/v0.8.1...v0.9.0) (2026-10-24)
+
+
+### ✨ Features
+
+* New mode, fresh episodes first on Home ([#41](https://github.com/mathieuletyrant/snug/issues/41)) ([2788293](https://github.com/mathieuletyrant/snug/commit/2788293291136d75d42e9fbf65e147f509be9282)), closes [#38](https://github.com/mathieuletyrant/snug/issues/38)
+* offer to mark earlier episodes watched when catching up ([#34](https://github.com/mathieuletyrant/snug/issues/34)) ([53b799d](https://github.com/mathieuletyrant/snug/commit/53b799d42c8c6f93d65a8c8ff31d8762629ea559)), closes [#31](https://github.com/mathieuletyrant/snug/issues/31)
+* Saving up status, wait for a full season or N episodes ([#46](https://github.com/mathieuletyrant/snug/issues/46)) ([c3d799d](https://github.com/mathieuletyrant/snug/commit/c3d799dd92fb92c606ba9726b41cc8b1619b072c)), closes [#45](https://github.com/mathieuletyrant/snug/issues/45)
+* spoiler shield for episode titles ([#40](https://github.com/mathieuletyrant/snug/issues/40)) ([0bbbda5](https://github.com/mathieuletyrant/snug/commit/0bbbda55b0382624c4fb51b93fe794bbaaf974a8))
+* the whole app in French or English ([#50](https://github.com/mathieuletyrant/snug/issues/50)) ([e1a7d50](https://github.com/mathieuletyrant/snug/commit/e1a7d50d1876fa4ef13f8ef45acbad7b95156924)), closes [#48](https://github.com/mathieuletyrant/snug/issues/48)
+* **web:** no status menu on Ready to watch cards ([#30](https://github.com/mathieuletyrant/snug/issues/30)) ([223f225](https://github.com/mathieuletyrant/snug/commit/223f2256140b22078d40904afd234eb1716f1f08))
+
+
+### 🐛 Fixes
+
+* **web:** a soft bar instead of a blurred title ([#44](https://github.com/mathieuletyrant/snug/issues/44)) ([5739326](https://github.com/mathieuletyrant/snug/commit/57393264d39e609dce653b2e5ff6fd4c76ea8140))
+* **web:** shorter settings texts ([#29](https://github.com/mathieuletyrant/snug/issues/29)) ([1efc35b](https://github.com/mathieuletyrant/snug/commit/1efc35b634cb361a43a1b296ac4fc62497389913))
+
 ## [0.8.1](https://github.com/mathieuletyrant/snug/compare/v0.8.0...v0.8.1) (2026-10-24)
 
 
