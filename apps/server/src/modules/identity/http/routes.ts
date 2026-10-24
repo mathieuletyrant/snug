@@ -28,7 +28,7 @@ export const identityRoutes = (identity: IdentityService) =>
     .get("/me", (c) => c.json(identity.me(c.var.user)))
     .get("/preferences", (c) => c.json(identity.preferences(c.var.user.id)))
     .patch("/preferences", async (c) => {
-      const changes = parse(z.object({ hideUndatedUpcoming: z.boolean() }).partial().strict(), await jsonBody(c));
+      const changes = parse(z.object({ hideUndatedUpcoming: z.boolean(), notifyNewEpisodes: z.boolean() }).partial().strict(), await jsonBody(c));
       return c.json(identity.updatePreferences(c.var.user.id, changes));
     })
     .get("/users", requireAdmin(identity), (c) => c.json(identity.listUsers()))

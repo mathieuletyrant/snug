@@ -1,5 +1,5 @@
 import { join, normalize } from "node:path";
-import { catalogSettings, identity, refreshCatalog } from "./container";
+import { catalogSettings, identity, newEpisodeAlerts, refreshCatalog } from "./container";
 import { app } from "./app";
 import { ORIGINS, PORT } from "./shared/config";
 import { withSecureCookies } from "./shared/http";
@@ -39,3 +39,7 @@ logger.info(
 const refresh = () => refreshCatalog().catch((err) => logger.error({ err }, "Catalog refresh failed"));
 setTimeout(refresh, 30_000);
 setInterval(refresh, 6 * 60 * 60 * 1000);
+
+const announce = () => newEpisodeAlerts.run().catch((err) => logger.error({ err }, "New episode alerts failed"));
+setTimeout(announce, 60_000);
+setInterval(announce, 60 * 60 * 1000);

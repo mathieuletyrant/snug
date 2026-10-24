@@ -156,6 +156,8 @@ function Display() {
 
 function Notifications() {
   const toast = useToast();
+  const preferences = usePreferences();
+  const update = useUpdatePreferences();
   const push = usePush();
   const [busy, setBusy] = useState(false);
   const run = (action: () => Promise<unknown>) => {
@@ -184,18 +186,28 @@ function Notifications() {
         <p className="mt-2 text-sm text-rose">Notifications are blocked for Snug: allow them in your browser or phone settings.</p>
       )}
       {push.state === "on" && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
-          <p className="text-sm text-muted">
-            {push.devices === 1 ? "1 device receives" : `${push.devices} devices receive`} notifications.
-          </p>
-          <Button
-            variant="ghost"
-            disabled={busy}
-            onClick={() => run(() => api("/push/test", { method: "POST" }).then(() => toast({ message: "Test sent" })))}
-          >
-            Send a test
-          </Button>
-        </div>
+        <>
+          <div className="mt-3 border-t border-line/60 pt-3">
+            <Toggle
+              label="New episodes"
+              description="When a series you're watching has a new episode out."
+              checked={preferences.notifyNewEpisodes}
+              onChange={(notifyNewEpisodes) => update.mutate({ notifyNewEpisodes })}
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
+            <p className="text-sm text-muted">
+              {push.devices === 1 ? "1 device receives" : `${push.devices} devices receive`} notifications.
+            </p>
+            <Button
+              variant="ghost"
+              disabled={busy}
+              onClick={() => run(() => api("/push/test", { method: "POST" }).then(() => toast({ message: "Test sent" })))}
+            >
+              Send a test
+            </Button>
+          </div>
+        </>
       )}
     </Card>
   );

@@ -91,13 +91,15 @@ export interface Me {
   isAdmin: boolean;
 }
 
-/** Per-user display preferences. */
+/** Per-user preferences. */
 export interface Preferences {
   /** Hide Upcoming Series whose next Episode has no air date yet. */
   hideUndatedUpcoming: boolean;
+  /** Push a notification when a new Episode of a Watching Series is out. */
+  notifyNewEpisodes: boolean;
 }
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false };
+export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, notifyNewEpisodes: true };
 
 /** Web Push: the server's public key, and how many devices of this User receive notifications. */
 export interface PushSettings {

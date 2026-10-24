@@ -8,6 +8,7 @@ import { IdentityService } from "./modules/identity/application/identity-service
 import { createAuth } from "./modules/identity/infrastructure/auth";
 import { FeedsService } from "./modules/feeds/application/feeds-service";
 import { ImportService } from "./modules/import/application/import-service";
+import { NewEpisodeAlerts } from "./modules/notifications/application/new-episode-alerts";
 import { NotificationService } from "./modules/notifications/application/notification-service";
 import { WebPushSender } from "./modules/notifications/infrastructure/web-push-sender";
 import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
@@ -28,6 +29,7 @@ export const notifications = new NotificationService(db, new WebPushSender());
 export const jellyfin = new JellyfinService(db, identity, catalog, tracking, notifications);
 export const importer = new ImportService(tracking, catalog);
 export const feeds = new FeedsService(tracking, catalog);
+export const newEpisodeAlerts = new NewEpisodeAlerts(db, tracking, notifications, (userId) => identity.preferences(userId));
 
 /**
  * Refreshes Catalog data of every tracked Series older than `maxAgeDays` (0 = all, e.g. after a language change),

@@ -43,6 +43,13 @@
       "when": 1792652671191,
       "tag": "0005_watchlist_token",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792840704386,
+      "tag": "0006_episode_alerts",
+      "breakpoints": true
     }
   ]
 }
