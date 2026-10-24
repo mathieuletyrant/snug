@@ -32,7 +32,7 @@ const api = new Hono<AuthEnv>()
   .route("/images", imageRoutes())
   .route("/feeds", feedRoutes(feeds, identity))
   .route("/watchlist", watchlistWebhook(tracking, identity))
-  .route("/mcp", mcpServer(identity, importer))
+  .route("/mcp", mcpServer(identity, catalog, importer))
   .get("/setup", (c) =>
     c.json<SetupState>({
       hasUsers: identity.hasUsers(),
