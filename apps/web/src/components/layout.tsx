@@ -70,7 +70,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </PullToRefresh>
       </main>
 
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg/95 md:hidden">
+      <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg md:hidden">
         <div className="mx-auto flex max-w-md">
           {TABS.map(({ href, label, icon: Icon }) => {
             const on = pressed ? pressed === href : active(href);
