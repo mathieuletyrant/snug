@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { STATUS_LABELS, STATUSES, type SeriesCard, type Status } from "@snug/shared";
-import { Library } from "lucide-react";
+import { ChartColumn, Library } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { libraryQuery } from "../queries";
@@ -27,7 +27,18 @@ export function LibraryPage() {
 
   return (
     <>
-      <PageTitle>Library</PageTitle>
+      <PageTitle
+        action={
+          <Link
+            href="/stats"
+            className="flex items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-sm font-bold text-muted hover:text-text"
+          >
+            <ChartColumn className="size-4" /> Stats
+          </Link>
+        }
+      >
+        Library
+      </PageTitle>
       <Chips
         label="Status"
         value={status}

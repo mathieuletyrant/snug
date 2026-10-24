@@ -1,4 +1,4 @@
-import type { Home, SeriesCard, SeriesDetail } from "@snug/shared";
+import type { Home, SeriesCard, SeriesDetail, Stats } from "@snug/shared";
 import type { Episode, Series } from "../../catalog/domain/series";
 import { today } from "../../../shared/async";
 import { NotFoundError } from "../../../shared/errors";
@@ -147,6 +147,42 @@ export class TrackingService {
       overview: series.overview,
       ended: series.ended,
       seasons: [...seasons.values()],
+    };
+  }
+
+  async stats(userId: string): Promise<Stats> {
+    const list = await this.repo.listByUser(userId);
+    const watches = list.flatMap((t) => t.watches);
+    const month = (d: Date) => d.toISOString().slice(0, 7);
+
+    // The last 12 months, this one included, oldest first.
+    const now = this.now();
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + i, 1));
+      return { month: month(d), episodes: 0 };
+    });
+    for (const w of watches) {
+      const bucket = months.find((m) => m.month === month(w.watchedAt));
+      if (bucket) bucket.episodes++;
+    }
+
+    const most = list
+      .filter((t) => t.watches.length > 0)
+      .sort((a, b) => b.watches.length - a.watches.length)
+      .slice(0, 5);
+    const catalog = await this.catalog.getMany(most.map((t) => t.seriesId));
+    return {
+      episodes: watches.length,
+      thisMonth: months.at(-1)?.episodes ?? 0,
+      watching: list.filter((t) => t.status === "watching").length,
+      completed: list.filter((t) => t.status === "completed").length,
+      months,
+      top: most.map((t) => ({
+        seriesId: t.seriesId,
+        name: catalog.get(t.seriesId)?.name ?? `Series #${t.seriesId}`,
+        posterPath: catalog.get(t.seriesId)?.posterPath ?? null,
+        episodes: t.watches.length,
+      })),
     };
   }
 

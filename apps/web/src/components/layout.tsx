@@ -24,7 +24,9 @@ const prefetch = (href: string) => {
 /** Top bar on desktop, bottom tab bar on mobile. */
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  const active = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
+  // Stats opens from the Library: its tab stays lit.
+  const active = (href: string) =>
+    href === "/" ? location === "/" : location.startsWith(href) || (href === "/library" && location === "/stats");
   // The tab under the finger, lit before the page changes; cleared once it has.
   const [pressed, setPressed] = useState<string | null>(null);
   useEffect(() => setPressed(null), [location]);

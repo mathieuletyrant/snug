@@ -12,6 +12,7 @@ export const trackingRoutes = (tracking: TrackingService) =>
   new Hono<AuthEnv>()
     .get("/home", async (c) => c.json(await tracking.home(c.var.user.id)))
     .get("/library", async (c) => c.json(await tracking.library(c.var.user.id)))
+    .get("/stats", async (c) => c.json(await tracking.stats(c.var.user.id)))
     .get("/series/:id", async (c) => c.json(await tracking.detail(c.var.user.id, parse(id, c.req.param("id")))))
     .put("/series/:id", async (c) => {
       const { status } = parse(z.object({ status: z.enum(STATUSES) }), await jsonBody(c));

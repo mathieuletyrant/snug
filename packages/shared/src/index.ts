@@ -43,6 +43,19 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
   seasons: { number: number; episodes: (Episode & { watched: boolean; aired: boolean })[] }[];
 }
 
+/** A few numbers about what a User watched. */
+export interface Stats {
+  episodes: number;
+  /** Episodes watched since the 1st of the current month. */
+  thisMonth: number;
+  watching: number;
+  completed: number;
+  /** The last 12 months, oldest first; `month` is YYYY-MM. */
+  months: { month: string; episodes: number }[];
+  /** Most watched Series, at most 5. */
+  top: { seriesId: number; name: string; posterPath: string | null; episodes: number }[];
+}
+
 /** Read-only feed URLs (paths, to prefix with the origin) for other apps. */
 export interface Feeds {
   sonarrPath: string;

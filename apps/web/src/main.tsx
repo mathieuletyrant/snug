@@ -15,6 +15,7 @@ import { LibraryPage } from "./pages/library";
 import { SearchPage } from "./pages/search";
 import { SeriesPage } from "./pages/series";
 import { SettingsPage } from "./pages/settings";
+import { StatsPage } from "./pages/stats";
 import { SetupPage } from "./pages/setup";
 
 /** First run → create admin; signed out → sign in; no TMDB key → setup; then the app. */
@@ -38,6 +39,7 @@ function App() {
         <Route path="/" component={HomePage} />
         <Route path="/library" component={LibraryPage} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/stats" component={StatsPage} />
         <Route path="/series/:id">{(p) => <SeriesPage key={p.id} id={p.id} />}</Route>
         <Route path="/settings">
           <SettingsPage me={me.data} />

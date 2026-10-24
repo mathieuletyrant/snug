@@ -84,3 +84,18 @@ test("adding to the Watchlist from another app never changes a Series already tr
   expect(await tracking.addToWatchlist("u", 2)).toEqual({ status: "watching", added: false });
   await expect(tracking.addToWatchlist("u", 99)).rejects.toThrow();
 });
+
+test("stats count Watches per month over the last 12, and the most watched Series", async () => {
+  const tracking = setup([series(1, false, ["2026-01-01", "2026-01-08", "2026-01-15"]), series(2, true, ["2020-01-01"])]);
+  await tracking.watchEpisode("u", 1, { season: 1, number: 1 }, new Date("2025-10-31T10:00:00Z")); // 13 months ago: out
+  await tracking.watchEpisode("u", 1, { season: 1, number: 2 }, new Date("2026-02-10T10:00:00Z"));
+  await tracking.watchEpisode("u", 1, { season: 1, number: 3 }, new Date("2026-10-02T10:00:00Z"));
+  await tracking.watchEpisode("u", 2, { season: 1, number: 1 }, new Date("2026-10-03T10:00:00Z"));
+
+  const stats = await tracking.stats("u");
+  expect(stats).toMatchObject({ episodes: 4, thisMonth: 2, watching: 1, completed: 1 });
+  expect(stats.months).toHaveLength(12);
+  expect(stats.months[0]).toEqual({ month: "2025-11", episodes: 0 });
+  expect(stats.months.find((m) => m.month === "2026-02")?.episodes).toBe(1);
+  expect(stats.top.map((t) => [t.seriesId, t.episodes])).toEqual([[1, 3], [2, 1]]);
+});
