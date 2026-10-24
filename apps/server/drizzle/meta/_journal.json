@@ -85,6 +85,13 @@
       "when": 1792957726302,
       "tag": "0011_absolute_numbering",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793647652521,
+      "tag": "0012_jellyfin_users",
+      "breakpoints": true
     }
   ]
 }

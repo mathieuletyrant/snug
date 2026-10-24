@@ -33,6 +33,7 @@ import { Badge, Button, Card, cx, ErrorText, Input, ListGroup, MultiChips, Toggl
 import { useT } from "@/i18n";
 import { ago } from "@/lib/format";
 import { SetupSteps, steps, useIntegration } from "./integration-card";
+import { JellyfinUserSelect, WatchAppChoice } from "./playback";
 import { WebhookHistory } from "./webhook-history";
 
 type AppId = "jellyfin" | "sonarr" | "spotarr" | "push" | "ntfy" | "calendar" | "mcp";
@@ -172,6 +173,8 @@ function Jellyfin() {
     <>
       <SetupSteps open={data ? data.events.length === 0 : false}>{steps(t.integrations.jellyfin.steps)}</SetupSteps>
       <CopyField label={t.integrations.jellyfin.url} value={url} onRotate={rotate} />
+      <WatchAppChoice />
+      {data?.playback.server && <JellyfinUserSelect current={data.playback.jellyfinUserId} />}
       <WebhookHistory events={data?.events} />
     </>
   );
