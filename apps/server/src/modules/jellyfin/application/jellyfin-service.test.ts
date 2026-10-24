@@ -1,22 +1,14 @@
-import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
-import { join } from "node:path";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { Notifier } from "../../notifications/application/notification-service";
 import type { TrackingService } from "../../tracking/application/tracking-service";
-import type { Db } from "../../../shared/db";
+import { testDb } from "../../../shared/testing";
 import { jellyfinEvents } from "../infrastructure/schema";
 import { JellyfinService } from "./jellyfin-service";
 
 function setup() {
-  const sqlite = new Database(":memory:");
-  const db = drizzle({ client: sqlite }) as unknown as Db;
-  migrate(db, { migrationsFolder: join(import.meta.dir, "../../../../drizzle") });
-  const now = Math.floor(Date.now() / 1000);
-  sqlite.run(`insert into user (id, name, email, email_verified, created_at, updated_at) values ('u', 'U', 'u@x.io', 0, ${now}, ${now})`);
+  const { db } = testDb();
   const identity = { webhookTokens: { userIdOf: () => "u" }, nameOf: () => "Mathieu" } as unknown as IdentityService;
   const service = new JellyfinService(db, identity, {} as CatalogService, {} as TrackingService, {} as Notifier);
   return { db, service };

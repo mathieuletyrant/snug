@@ -7,7 +7,7 @@ const BASE = "https://api.themoviedb.org/3";
 /** TMDB caps `append_to_response` at 20 sub-requests. */
 const SEASONS_PER_CALL = 20;
 
-export class TmdbError extends Error {
+class TmdbError extends Error {
   constructor(readonly status: number, path: string) {
     super(`TMDB ${status} on ${path}`);
   }

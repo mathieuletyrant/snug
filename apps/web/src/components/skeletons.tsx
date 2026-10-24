@@ -1,8 +1,9 @@
+import { PosterTileSkeleton } from "./poster-tile";
 import { POSTER_GRID, Skeleton } from "./ui";
 
 const times = (n: number) => Array.from({ length: n }, (_, i) => i);
 
-export function TitleSkeleton() {
+function TitleSkeleton() {
   return <Skeleton className="mb-6 h-9 w-56" />;
 }
 
@@ -11,10 +12,7 @@ export function PosterGridSkeleton({ count = 16 }: { count?: number }) {
   return (
     <div className={POSTER_GRID}>
       {times(count).map((i) => (
-        <div key={i} className="space-y-2">
-          <Skeleton className="aspect-[2/3] w-full" />
-          <Skeleton className="h-3.5 w-3/4 rounded-full" />
-        </div>
+        <PosterTileSkeleton key={i} />
       ))}
     </div>
   );

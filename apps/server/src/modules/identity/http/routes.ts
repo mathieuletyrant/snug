@@ -24,19 +24,22 @@ export const requireAdmin =
     await next();
   };
 
+/** The preferences a User may change, each one optional; anything else is refused. */
+const preferencesPatch = z
+  .object({
+    hideUndatedUpcoming: z.boolean(),
+    episodeTitles: z.enum(EPISODE_TITLES),
+    newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
+  })
+  .partial()
+  .strict();
+
 export const identityRoutes = (identity: IdentityService) =>
   new Hono<AuthEnv>()
     .get("/me", (c) => c.json(identity.me(c.var.user)))
     .get("/preferences", (c) => c.json(identity.preferences(c.var.user.id)))
     .patch("/preferences", async (c) => {
-      const changes = parse(z
-        .object({
-          hideUndatedUpcoming: z.boolean(),
-          episodeTitles: z.enum(EPISODE_TITLES),
-          newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
-        })
-        .partial()
-        .strict(), await jsonBody(c));
+      const changes = parse(preferencesPatch, await jsonBody(c));
       return c.json(identity.updatePreferences(c.var.user.id, changes));
     })
     .get("/users", requireAdmin(identity), (c) => c.json(identity.listUsers()))

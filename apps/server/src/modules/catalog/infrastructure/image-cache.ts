@@ -2,7 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { DATA_DIR } from "../../../shared/config";
 
-export const IMAGE_SIZES = ["w92", "w154", "w185", "w300", "w342", "w500", "w780", "w1280"] as const;
+const IMAGE_SIZES = ["w92", "w154", "w185", "w300", "w342", "w500", "w780", "w1280"] as const;
 const FILE = /^[A-Za-z0-9_-]+\.(jpg|png|webp)$/;
 const ROOT = join(DATA_DIR, "images");
 
