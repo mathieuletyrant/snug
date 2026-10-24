@@ -1,5 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  EPISODE_TITLES,
+  type EpisodeTitles,
   type Feeds as FeedsUrls,
   type ImportResult,
   type JellyfinEventLog,
@@ -138,6 +140,12 @@ function Account({ me }: { me: Me }) {
   );
 }
 
+const TITLE_LABELS: Record<EpisodeTitles, string> = {
+  show: "Show all",
+  hideUnwatched: "Hide unwatched",
+  hideAll: "Hide all",
+};
+
 function Display() {
   const preferences = usePreferences();
   const update = useUpdatePreferences();
@@ -150,21 +158,19 @@ function Display() {
         checked={preferences.hideUndatedUpcoming}
         onChange={(hideUndatedUpcoming) => update.mutate({ hideUndatedUpcoming })}
       />
-      <Toggle
-        label="Spoiler shield"
-        description="Blur the titles of episodes you haven't watched. Tap one to show it."
-        checked={preferences.hideUnwatchedTitles}
-        onChange={(hideUnwatchedTitles) => update.mutate({ hideUnwatchedTitles })}
-      />
-      {preferences.hideUnwatchedTitles && (
-        <div className="ml-4 border-l-2 border-line/60 pl-4">
-          <Toggle
-            label="Show the next episode's title"
-            checked={preferences.showNextTitle}
-            onChange={(showNextTitle) => update.mutate({ showNextTitle })}
-          />
-        </div>
-      )}
+      <div className="py-2">
+        <span className="block font-semibold">Episode titles</span>
+        <span className="mb-2 block text-sm text-muted">
+          Blur titles of episodes you haven't watched, against spoilers. Tap one to show it.
+        </span>
+        <Chips
+          label="Episode titles"
+          small
+          value={preferences.episodeTitles}
+          onChange={(episodeTitles) => update.mutate({ episodeTitles: episodeTitles as EpisodeTitles })}
+          options={EPISODE_TITLES.map((value) => ({ value, label: TITLE_LABELS[value] }))}
+        />
+      </div>
     </Card>
   );
 }
