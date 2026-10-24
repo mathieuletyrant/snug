@@ -10,6 +10,7 @@ import {
   importer,
   jellyfin,
   notifications,
+  playback,
   refreshCatalog,
   tracking,
 } from "./container";
@@ -17,7 +18,7 @@ import { feedRoutes, feedSettingsRoutes } from "./modules/feeds/http/routes";
 import { catalogRoutes, imageRoutes } from "./modules/catalog/http/routes";
 import { authHandler, identityRoutes, requireAdmin, requireSession } from "./modules/identity/http/routes";
 import { importRoutes } from "./modules/import/http/routes";
-import { jellyfinRoutes, jellyfinWebhook } from "./modules/jellyfin/http/routes";
+import { jellyfinRoutes, jellyfinWebhook, playRoutes } from "./modules/jellyfin/http/routes";
 import { notificationRoutes } from "./modules/notifications/http/routes";
 import { trackingRoutes } from "./modules/tracking/http/routes";
 import { watchlistRoutes, watchlistWebhook } from "./modules/watchlist/http/routes";
@@ -44,7 +45,8 @@ const api = new Hono<AuthEnv>()
   .route("/", catalogRoutes(catalog, catalogSettings, requireAdmin(identity), () => void refreshCatalog(0)))
   .route("/", trackingRoutes(tracking))
   .route("/import", importRoutes(importer))
-  .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, identity))
+  .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, playback, identity, requireAdmin(identity)))
+  .route("/play", playRoutes(playback))
   .route("/integrations/feeds", feedSettingsRoutes(identity))
   .route("/integrations/watchlist", watchlistRoutes(identity))
   .route("/push", notificationRoutes(notifications))

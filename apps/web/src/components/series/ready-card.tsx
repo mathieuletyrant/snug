@@ -2,6 +2,7 @@ import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
 import { useT } from "../../i18n";
+import { PlayButton, usePlayback } from "../play";
 import { useWatchNext } from "../series-actions";
 import { EpisodeTitle } from "../spoilers";
 import { Backdrop, Badge } from "../ui";
@@ -9,6 +10,7 @@ import { Backdrop, Badge } from "../ui";
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. */
 export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {
   const watchNext = useWatchNext();
+  const playback = usePlayback();
   const t = useT();
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
@@ -54,6 +56,14 @@ export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean })
       >
         <Check className="size-5" strokeWidth={3} />
       </button>
+      {/* Same right edge as ✓, in the top corner. */}
+      {playback && next && (
+        <PlayButton
+          seriesId={card.seriesId}
+          episode={next}
+          className="absolute top-1.5 right-2 flex size-9 items-center justify-center rounded-full bg-bg/80 text-text transition hover:bg-bg sm:right-2.5 sm:size-10"
+        />
+      )}
     </article>
   );
 }

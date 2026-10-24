@@ -6,6 +6,7 @@ import { LanguageSelect, TmdbKeyForm } from "../../components/tmdb-settings";
 import { useToast } from "../../components/toast";
 import { Button, Card, CardHeader, ErrorText, Input } from "../../components/ui";
 import { useT } from "../../i18n";
+import { JellyfinServerCard } from "./playback";
 
 export function AdminSection() {
   const t = useT();
@@ -17,6 +18,7 @@ export function AdminSection() {
         <LanguageSelect />
         <TmdbKeyForm />
       </Card>
+      <JellyfinServerCard />
     </>
   );
 }

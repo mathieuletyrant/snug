@@ -1,6 +1,6 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
-import { EPISODE_TITLES, NEW_FOR_DAYS } from "@snug/shared";
+import { EPISODE_TITLES, NEW_FOR_DAYS, WATCH_APPS } from "@snug/shared";
 import { ForbiddenError } from "../../../shared/errors";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { IdentityService } from "../application/identity-service";
@@ -31,6 +31,16 @@ const preferencesPatch = z
     hideUndatedUpcoming: z.boolean(),
     episodeTitles: z.enum(EPISODE_TITLES),
     newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
+    watchApp: z.enum(WATCH_APPS),
+    // An app's link (scheme://…) or a web page; never a script.
+    watchLink: z.union([
+      z.literal(""),
+      z
+        .string()
+        .trim()
+        .max(500)
+        .regex(/^(?!javascript:|data:)[a-z][a-z0-9+.-]*:\S+$/i, { error: () => t().playback.appLink }),
+    ]),
   })
   .partial()
   .strict();
