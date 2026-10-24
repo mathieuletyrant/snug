@@ -3,7 +3,7 @@ import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check, Coffee, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { homeQuery } from "../queries";
-import { relativeDay } from "../components/airing";
+import { isNew, relativeDay } from "../components/airing";
 import { useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
@@ -17,7 +17,7 @@ const greeting = () => {
 
 export function HomePage() {
   const { data, isPending } = useQuery(homeQuery);
-  const { hideUndatedUpcoming } = usePreferences();
+  const { hideUndatedUpcoming, newForDays } = usePreferences();
 
   if (isPending) return <HomeSkeleton />;
   const upcoming = hideUndatedUpcoming ? (data?.upcoming ?? []).filter((c) => !c.loaded || c.next?.airDate) : (data?.upcoming ?? []);
@@ -37,16 +37,20 @@ export function HomePage() {
     );
   }
 
+  // New mode: fresh Episodes first, the rest in the server's order (most recently watched first).
+  const fresh = (card: SeriesCard) => newForDays > 0 && isNew(card, newForDays);
+  const ready = [...data.ready.filter(fresh), ...data.ready.filter((c) => !fresh(c))];
+
   return (
     <>
       <PageTitle>{greeting()}</PageTitle>
 
-      {data.ready.length > 0 && (
+      {ready.length > 0 && (
         <section className="mb-10">
-          <SectionTitle count={data.ready.length}>Ready to watch</SectionTitle>
+          <SectionTitle count={ready.length}>Ready to watch</SectionTitle>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {data.ready.map((card) => (
-              <ReadyCard key={card.seriesId} card={card} />
+            {ready.map((card) => (
+              <ReadyCard key={card.seriesId} card={card} fresh={fresh(card)} />
             ))}
           </div>
         </section>
@@ -75,7 +79,7 @@ function SectionTitle({ children, count }: { children: string; count: number }) 
 }
 
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop. */
-function ReadyCard({ card }: { card: SeriesCard }) {
+function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {
   const watchNext = useWatchNext();
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
@@ -91,9 +95,12 @@ function ReadyCard({ card }: { card: SeriesCard }) {
             className="h-full w-full"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
-          <span className="absolute top-2 left-2 rounded-full bg-bg/85 px-2 py-0.5 text-[11px] font-bold text-muted">
-            {left} left
-          </span>
+          <div className="absolute top-2 left-2 flex gap-1">
+            {fresh && (
+              <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-ink">New</span>
+            )}
+            <span className="rounded-full bg-bg/85 px-2 py-0.5 text-[11px] font-bold text-muted">{left} left</span>
+          </div>
           <div className="absolute inset-x-0 bottom-0 p-2.5 pr-12 sm:p-3 sm:pr-14">
             <h3 className="truncate text-sm leading-tight sm:text-base">{card.name}</h3>
             {next && (

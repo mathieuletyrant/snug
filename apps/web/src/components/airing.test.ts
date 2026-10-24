@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { airing, shortDay } from "./airing";
+import { airing, isNew, shortDay } from "./airing";
 
 const now = new Date(2026, 9, 22, 21, 30); // Thu 22 Oct 2026, evening
 const ep = (airDate: string | null) => ({ season: 2, number: 3, name: "x", airDate });
@@ -16,4 +16,14 @@ test("badge dates stay short", () => {
   expect(shortDay("2026-10-23", now)).toBe("Tomorrow");
   expect(shortDay("2026-10-26", now)).toBe(new Date(2026, 9, 26).toLocaleDateString(undefined, { weekday: "short" }));
   expect(shortDay("2026-11-30", now)).toBe(new Date(2026, 10, 30).toLocaleDateString(undefined, { day: "numeric", month: "short" }));
+});
+
+test("an Episode is new when it aired lately, after the last Watch", () => {
+  const watchedOn = (day: number) => new Date(2026, 9, day, 21).toISOString();
+  expect(isNew({ next: ep("2026-10-20"), lastWatchedAt: watchedOn(14) }, 7, now)).toBe(true);
+  expect(isNew({ next: ep("2026-10-20"), lastWatchedAt: watchedOn(21) }, 7, now)).toBe(false); // binging
+  expect(isNew({ next: ep("2026-10-12"), lastWatchedAt: watchedOn(5) }, 7, now)).toBe(false); // too old
+  expect(isNew({ next: ep("2026-10-12"), lastWatchedAt: watchedOn(5) }, 14, now)).toBe(true);
+  expect(isNew({ next: ep("2026-10-25"), lastWatchedAt: watchedOn(14) }, 7, now)).toBe(false); // not out yet
+  expect(isNew({ next: ep("2026-10-20"), lastWatchedAt: null }, 7, now)).toBe(false); // never started
 });
