@@ -19,6 +19,8 @@ export class ImportService {
   private readonly passes = new Map<string, number>();
   /** Series TMDB could not give during the current or last import, per User. */
   private readonly failures = new Map<string, number[]>();
+  /** Series already queued in the current pass, so one split across two batches is fetched once. */
+  private readonly queued = new Map<string, Set<number>>();
 
   constructor(
     private readonly tracking: TrackingService,
@@ -56,12 +58,12 @@ export class ImportService {
 
   /**
    * One batch of a large import sent by an assistant (MCP): accepted even while earlier batches are still
-   * being fetched from TMDB. Idempotent: a batch sent twice records nothing new. With `dryRun`, writes nothing.
+   * being fetched from TMDB. Idempotent: a batch sent twice records nothing new.
    */
-  async importBatch(userId: string, entries: ImportEntry[], dryRun: boolean): Promise<ImportPreview> {
+  async importBatch(userId: string, entries: ImportEntry[]): Promise<ImportPreview> {
     const preview = await this.tracking.previewImport(userId, entries);
     // A batch sent again has nothing new: nothing to write, nothing to fetch.
-    if (dryRun || (!preview.newSeries && !preview.newWatches)) return preview;
+    if (!preview.newSeries && !preview.newWatches) return preview;
     await this.run(userId, entries, []);
     return preview;
   }
@@ -80,13 +82,17 @@ export class ImportService {
     return { series: entries.length, watches, unresolved };
   }
 
-  private fetchInBackground(userId: string, ids: number[]) {
+  private fetchInBackground(userId: string, all: number[]) {
     const current = this.progress.get(userId);
     const progress = current?.running ? current : { running: true, total: 0, done: 0, failed: 0 };
     if (progress !== current) {
       this.progress.set(userId, progress);
       this.failures.set(userId, []);
+      this.queued.set(userId, new Set());
     }
+    const queued = this.queued.get(userId)!;
+    const ids = all.filter((id) => !queued.has(id));
+    for (const id of ids) queued.add(id);
     progress.total += ids.length;
     this.passes.set(userId, (this.passes.get(userId) ?? 0) + 1);
     const failed = this.failures.get(userId)!;

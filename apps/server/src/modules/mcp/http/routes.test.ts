@@ -54,40 +54,40 @@ async function connect(app: Hono, token: string) {
   return client;
 }
 
-async function callImport(client: Client, args: Record<string, unknown>) {
-  const result = await client.callTool({ name: "import", arguments: args });
+async function call(client: Client, name: string, args: Record<string, unknown> = {}) {
+  const result = await client.callTool({ name, arguments: args });
   const [content] = result.content as { text: string }[];
   return { isError: result.isError === true, text: content!.text, answer: result.isError ? null : JSON.parse(content!.text) };
 }
 
 /** Asks the progress until TMDB is done. */
 async function finished(client: Client) {
-  let answer = (await callImport(client, { series: [] })).answer;
-  for (let i = 0; i < 200 && answer.tmdb.running; i++) {
+  let answer = (await call(client, "import_status")).answer;
+  for (let i = 0; i < 200 && answer.running; i++) {
     await new Promise((r) => setTimeout(r, 5));
-    answer = (await callImport(client, { series: [] })).answer;
+    answer = (await call(client, "import_status")).answer;
   }
-  return answer.tmdb;
+  return answer;
 }
 
-/** 200 series of 3 seasons of 10 episodes: 6 000 watches, the most one call takes in series. */
-const bigBatch = Array.from({ length: 200 }, (_, i) => ({
-  tmdbId: i === 199 ? UNKNOWN_ON_TMDB : 1000 + i,
-  watchedAt: "2024-02-18",
-  seasons: [1, 2, 3].map((season) => ({ season, episodes: "1-10" })),
-}));
+/** 200 series of 3 seasons of 10 episodes: 6 000 watches in one call. */
+const ids = Array.from({ length: 200 }, (_, i) => (i === 199 ? UNKNOWN_ON_TMDB : 1000 + i));
+const watches = (list: number[]) =>
+  list.flatMap((tmdbId) => [1, 2, 3].map((season) => ({ tmdbId, season, episodes: "1-10", watchedAt: "2024-02-18" })));
 
 test("an unknown token is refused", async () => {
   const { app } = setup();
   await expect(connect(app, "nope")).rejects.toThrow();
 });
 
-test("one tool, import: writes, never deletes, can be called again", async () => {
+test("three simple tools: two that add, never delete, and the progress", async () => {
   const { app, token } = setup();
   const client = await connect(app, token);
   const { tools } = await client.listTools();
-  expect(tools.map((t) => [t.name, t.annotations?.destructiveHint, t.annotations?.idempotentHint])).toEqual([
-    ["import", false, true],
+  expect(tools.map((t) => [t.name, t.annotations?.readOnlyHint, t.annotations?.destructiveHint])).toEqual([
+    ["add_series", false, false],
+    ["mark_watched", false, false],
+    ["import_status", true, undefined],
   ]);
 });
 
@@ -95,36 +95,44 @@ test("a large history in one call; sent again, nothing changes; ids TMDB doesn't
   const { app, token, tracking } = setup();
   const client = await connect(app, token);
 
-  const preview = await callImport(client, { series: bigBatch, dryRun: true });
-  expect(preview.answer).toMatchObject({ dryRun: true, series: 200, newSeries: 200, newWatches: 6000 });
-  expect(await tracking.library("u")).toHaveLength(0);
+  const added = await call(client, "add_series", { series: [{ tmdbId: 5, status: "watchlist" }] });
+  expect(added.answer).toMatchObject({ added: 1, alreadyInSnug: 0 });
 
-  const first = await callImport(client, { series: bigBatch });
-  expect(first.answer).toMatchObject({ dryRun: false, series: 200, newSeries: 200, newWatches: 6000, alreadyWatched: 0 });
-  const again = await callImport(client, { series: bigBatch });
-  expect(again.answer).toMatchObject({ newSeries: 0, newWatches: 0, alreadyWatched: 6000 });
+  const first = await call(client, "mark_watched", { watches: watches(ids) });
+  expect(first.answer).toMatchObject({ newWatches: 6000, alreadyWatched: 0, seriesAdded: 200 });
+  const again = await call(client, "mark_watched", { watches: watches(ids) });
+  expect(again.answer).toMatchObject({ newWatches: 0, alreadyWatched: 6000, seriesAdded: 0 });
 
   expect(await finished(client)).toMatchObject({ running: false, failed: 1, failedTmdbIds: [UNKNOWN_ON_TMDB] });
-  expect(await tracking.library("u")).toHaveLength(200);
+  const library = await tracking.library("u");
+  expect(library).toHaveLength(201);
+  expect(library.find((c) => c.seriesId === 5)?.status).toBe("watchlist");
 });
 
 test("batches sent while earlier ones are still fetched from TMDB share one progress", async () => {
   let open = () => {};
   const { app, token } = setup(new Promise<void>((resolve) => (open = resolve)));
   const client = await connect(app, token);
-  const half = (from: number) => bigBatch.slice(from, from + 100).map((s) => ({ ...s, tmdbId: s.tmdbId === UNKNOWN_ON_TMDB ? 1199 : s.tmdbId }));
+  const known = ids.slice(0, 199);
 
-  expect((await callImport(client, { series: half(0) })).answer.tmdb).toMatchObject({ running: true, total: 100, done: 0 });
-  expect((await callImport(client, { series: half(100) })).answer.tmdb).toMatchObject({ running: true, total: 200, done: 0 });
+  expect((await call(client, "mark_watched", { watches: watches(known.slice(0, 100)) })).answer.tmdb).toMatchObject({
+    running: true,
+    total: 100,
+  });
+  // known[99] is in both batches: fetched once.
+  expect((await call(client, "mark_watched", { watches: watches(known.slice(99)) })).answer.tmdb).toMatchObject({
+    running: true,
+    total: 199,
+  });
   open();
-  expect(await finished(client)).toEqual({ running: false, total: 200, done: 200, failed: 0, failedTmdbIds: [] });
+  expect(await finished(client)).toEqual({ running: false, total: 199, done: 199, failed: 0, failedTmdbIds: [] });
 });
 
-test("a malformed batch is refused with a message the assistant can act on", async () => {
+test("a malformed call is refused with a message the assistant can act on", async () => {
   const { app, token } = setup();
   const client = await connect(app, token);
-  const bad = await callImport(client, { series: [{ tmdbId: 1, seasons: [{ season: 1, episodes: "S01E01" }] }] });
+  const bad = await call(client, "mark_watched", { watches: [{ tmdbId: 1, season: 1, episodes: "S01E01" }] });
   expect(bad).toMatchObject({ isError: true, text: '"S01E01" is not a list of episodes like "1-10,12"' });
-  const tooMany = await callImport(client, { series: [...bigBatch, { tmdbId: 1 }] });
-  expect(tooMany.isError).toBe(true);
+  const noId = await call(client, "add_series", { series: [{ status: "watching" }] });
+  expect(noId.isError).toBe(true);
 });

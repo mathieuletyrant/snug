@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { MAX_EPISODES, parseEpisodes, toEntries } from "./import-input";
+import { MAX_EPISODES, parseEpisodes, seriesEntries, watchEntries } from "./import-input";
 
 test("episode lists: single numbers and ranges", () => {
   expect(parseEpisodes("1-3,5, 8 - 9")).toEqual([1, 2, 3, 5, 8, 9]);
@@ -9,22 +9,19 @@ test("episode lists: single numbers and ranges", () => {
   expect(() => parseEpisodes("0")).toThrow("not a valid range");
 });
 
-test("a series given twice is merged, each episode once, with its own date", () => {
+test("watches of one series are merged, each episode once, with its own date", () => {
   const now = new Date("2026-10-24T12:00:00Z");
-  const entries = toEntries(
-    {
-      dryRun: false,
-      series: [
-        { tmdbId: 1, seasons: [{ season: 1, episodes: "1-2", watchedAt: "2024-02-18" }] },
-        { tmdbId: 1, status: "completed", seasons: [{ season: 1, episodes: "2-3" }] },
-      ],
-    },
+  const entries = watchEntries(
+    [
+      { tmdbId: 1, season: 1, episodes: "1-2", watchedAt: "2024-02-18" },
+      { tmdbId: 1, season: 1, episodes: "2-3" },
+    ],
     now,
   );
   expect(entries).toEqual([
     {
       seriesId: 1,
-      status: "completed",
+      status: "watching",
       watches: [
         { season: 1, number: 1, watchedAt: new Date("2024-02-18") },
         { season: 1, number: 2, watchedAt: new Date("2024-02-18") },
@@ -34,9 +31,13 @@ test("a series given twice is merged, each episode once, with its own date", () 
   ]);
 });
 
+test("a series given twice to add_series keeps the last status", () => {
+  expect(seriesEntries([{ tmdbId: 1, status: "watchlist" }, { tmdbId: 1, status: "dropped" }])).toEqual([
+    { seriesId: 1, status: "dropped", watches: [] },
+  ]);
+});
+
 test("too many episodes in one call is refused, asking to split", () => {
-  const seasons = Array.from({ length: 11 }, (_, i) => ({ season: i + 1, episodes: "1-1000" }));
-  expect(() => toEntries({ dryRun: false, series: [{ tmdbId: 1, seasons }] }, new Date())).toThrow(
-    `More than ${MAX_EPISODES} episodes in one call: split it`,
-  );
+  const watches = Array.from({ length: 11 }, (_, i) => ({ tmdbId: 1, season: i + 1, episodes: "1-1000" }));
+  expect(() => watchEntries(watches, new Date())).toThrow(`More than ${MAX_EPISODES} episodes in one call: split it`);
 });

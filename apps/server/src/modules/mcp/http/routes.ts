@@ -6,7 +6,7 @@ import pkg from "../../../../../../package.json";
 import type { AuthEnv } from "../../../shared/http";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { ImportService } from "../../import/application/import-service";
-import { registerImportTool } from "../application/import-tool";
+import { registerImportTools } from "../application/import-tools";
 
 /**
  * MCP server (Model Context Protocol) for AI assistants, at `/api/mcp?token=<MCP token>`: the token goes in the
@@ -18,8 +18,8 @@ export const mcpServer = (identity: IdentityService, importer: ImportService) =>
       const userId = identity.mcpTokens.userIdOf(c.req.query("token") ?? "");
       if (!userId) return c.json({ error: "Unknown MCP token" }, 401);
       const server = new McpServer({ name: "snug", version: pkg.version });
-      registerImportTool(server, importer, userId);
-      // Plain JSON answers rather than an event stream: one tool, one answer per call.
+      registerImportTools(server, importer, userId);
+      // Plain JSON answers rather than an event stream: one answer per call.
       const transport = new StreamableHTTPTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
       await server.connect(transport);
       return transport.handleRequest(c);
