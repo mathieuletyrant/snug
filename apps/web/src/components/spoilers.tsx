@@ -1,5 +1,6 @@
 import { isTitleHidden } from "@snug/shared";
 import { useState } from "react";
+import { useT } from "../i18n";
 import { usePreferences } from "./preferences";
 import { cx } from "./ui";
 
@@ -19,6 +20,7 @@ export function EpisodeTitle({
   className?: string;
 }) {
   const preferences = usePreferences();
+  const t = useT();
   const [revealed, setRevealed] = useState(false);
   if (revealed || !isTitleHidden(preferences, { watched, next })) return <span className={className}>{name}</span>;
   return (
@@ -30,7 +32,7 @@ export function EpisodeTitle({
         e.stopPropagation();
         setRevealed(true);
       }}
-      aria-label="Hidden title, tap to show"
+      aria-label={t.series.hiddenTitle}
       className={cx("inline-flex max-w-full cursor-pointer items-center align-middle", className)}
     >
       <span

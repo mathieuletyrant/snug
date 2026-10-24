@@ -6,6 +6,7 @@ import type { CatalogService } from "../application/catalog-service";
 import type { CatalogSettings } from "../infrastructure/settings-store";
 import { cachedImage } from "../infrastructure/image-cache";
 import { isValidTmdbKey } from "../infrastructure/tmdb-client";
+import { t } from "../../../shared/i18n";
 
 export const catalogRoutes = (
   catalog: CatalogService,
@@ -20,14 +21,14 @@ export const catalogRoutes = (
       return c.json(q ? await catalog.search(q) : []);
     })
     .put("/settings/tmdb-key", adminOnly, async (c) => {
-      const { key } = parse(z.object({ key: z.string().trim().min(10, "This doesn't look like a TMDB key") }), await jsonBody(c));
-      if (!(await isValidTmdbKey(key))) throw new InvalidInputError("TMDB rejected this key", { key: "TMDB rejected this key" });
+      const { key } = parse(z.object({ key: z.string().trim().min(10, { error: () => t().errors.tmdbKeyShape }) }), await jsonBody(c));
+      if (!(await isValidTmdbKey(key))) throw new InvalidInputError(t().errors.tmdbKeyRejected, { key: t().errors.tmdbKeyRejected });
       settings.setTmdbKey(key);
       return c.body(null, 204);
     })
     .put("/settings/language", adminOnly, async (c) => {
       const { language } = parse(
-        z.object({ language: z.string().regex(/^[a-z]{2}-[A-Z]{2}$/, "Use a TMDB locale like fr-FR") }),
+        z.object({ language: z.string().regex(/^[a-z]{2}-[A-Z]{2}$/, { error: () => t().errors.tmdbLocale }) }),
         await jsonBody(c),
       );
       if (language !== settings.language()) {

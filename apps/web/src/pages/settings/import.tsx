@@ -4,9 +4,10 @@ import { Upload } from "lucide-react";
 import { api, queryClient } from "../../api";
 import { ImportProgressBar, useImportProgress } from "../../components/import-progress";
 import { Card, CardHeader, cx, ErrorText } from "../../components/ui";
+import { type Messages, useT } from "../../i18n";
 
 /** Reads a CSV or a JSON export and sends it to the server as such. */
-async function upload(file: File) {
+async function upload(t: Messages, file: File) {
   const text = await file.text();
   if (/\.csv$/i.test(file.name) || file.type === "text/csv") {
     return api<ImportResult>("/import", { text, contentType: "text/csv" });
@@ -15,38 +16,39 @@ async function upload(file: File) {
   try {
     body = JSON.parse(text);
   } catch {
-    throw new Error("This file is neither CSV nor JSON");
+    throw new Error(t.import.notCsvOrJson);
   }
   return api<ImportResult>("/import", { body });
 }
 
 export function ImportSection() {
+  const t = useT();
   const progress = useImportProgress();
-  const run = useMutation({ mutationFn: upload, onSuccess: () => queryClient.invalidateQueries() });
+  const run = useMutation({
+    mutationFn: (file: File) => upload(t, file),
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
   const busy = run.isPending || !!progress?.running;
 
   return (
     <Card>
-      <CardHeader title="Import">
-        Load series and history from a <b className="text-text">CSV</b> (one row per episode) or a JSON export.
-        Nothing is erased.{" "}
-        <a href="/snug-import-template.csv" download className="font-semibold text-accent underline">
-          Download the CSV template
-        </a>
+      <CardHeader title={t.import.title}>
+        {t.import.intro(
+          <b className="text-text">CSV</b>,
+          <a href="/snug-import-template.csv" download className="font-semibold text-accent underline">
+            {t.import.template}
+          </a>,
+        )}
       </CardHeader>
       <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 text-xs text-muted">
         <code className="mb-1 block font-mono break-all text-text">title,tmdb_id,season,episode,watched_at,status</code>
-        <span>
-          Only <b>title</b> or <b>tmdb_id</b> is required. No season/episode: just adds the series.
-        </span>
+        <span>{t.import.columnsHelp(<b>title</b>, <b>tmdb_id</b>)}</span>
       </p>
       {run.data && (
         <div className="mb-3 space-y-1 text-sm">
-          <p className="text-sage">
-            Imported {run.data.series} series and {run.data.watches} watches.
-          </p>
+          <p className="text-sage">{t.import.done(run.data.series, run.data.watches)}</p>
           {run.data.unresolved.length > 0 && (
-            <p className="text-rose">Not found on TMDB: {run.data.unresolved.join(", ")}. Add their tmdb_id and retry.</p>
+            <p className="text-rose">{t.import.notFound(run.data.unresolved.join(", "))}</p>
           )}
         </div>
       )}
@@ -67,7 +69,7 @@ export function ImportSection() {
           }}
         />
         <span className="inline-flex items-center gap-2 rounded-2xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink">
-          <Upload className="size-4" /> {run.isPending ? "Importing…" : progress?.running ? "Fetching details…" : "Choose file"}
+          <Upload className="size-4" /> {run.isPending ? t.import.importing : progress?.running ? t.import.fetchingDetails : t.import.chooseFile}
         </span>
       </label>
       <div className="mt-3">

@@ -1,7 +1,8 @@
 import type { SeriesCard } from "@snug/shared";
-import { airing, shortDay } from "../airing";
+import { airing, longDate, shortDay } from "../airing";
 import { PosterTile } from "../poster-tile";
 import { StatusMenu } from "../series-actions";
+import { useT } from "../../i18n";
 import { cx, ProgressBar } from "../ui";
 
 /** A series in the Library: poster with how it airs, progress, and a menu to change its status. */
@@ -29,14 +30,16 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
  * the badge tells them apart at a glance: "3 left", "Thu", "TBA".
  */
 function AiringBadge({ card }: { card: SeriesCard }) {
+  const t = useT();
   const state = airing(card);
-  const label = state.kind === "ready" ? `${state.left} left` : state.kind === "dated" ? shortDay(state.date) : "TBA";
+  const label =
+    state.kind === "ready" ? t.home.left(state.left) : state.kind === "dated" ? shortDay(t, state.date) : t.common.tba;
   const title =
     state.kind === "ready"
-      ? `${state.left} episode${state.left === 1 ? "" : "s"} to watch`
+      ? t.library.toWatch(state.left)
       : state.kind === "dated"
-        ? `Next episode on ${state.date}`
-        : "Caught up, next episode not dated yet";
+        ? t.library.nextOn(longDate(t.tag, state.date))
+        : t.library.caughtUpUndated;
   return (
     <span
       title={title}

@@ -1,6 +1,7 @@
 import type { Status } from "@snug/shared";
 import type { ImportEntry } from "../../tracking/application/tracking-service";
 import { STATUS_ALIASES } from "./import-file";
+import { t } from "../../../shared/i18n";
 
 /**
  * CSV import, one row per watched Episode (or per Series to just add it):
@@ -20,7 +21,7 @@ export interface CsvRow {
 
 export class CsvImportError extends Error {
   constructor(readonly problems: string[]) {
-    super(problems.slice(0, 5).join(" · ") + (problems.length > 5 ? ` · and ${problems.length - 5} more` : ""));
+    super(problems.slice(0, 5).join(" · ") + (problems.length > 5 ? ` · ${t().csv.andMore(problems.length - 5)}` : ""));
   }
 }
 
@@ -59,10 +60,10 @@ const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status"
 
 export function parseCsvImport(text: string): CsvRow[] {
   const [header, ...lines] = readCsv(text);
-  if (!header) throw new CsvImportError(["The file is empty"]);
+  if (!header) throw new CsvImportError([t().csv.empty]);
   const index = new Map(header.map((h, i) => [h.trim().toLowerCase(), i]));
   if (!index.has("title") && !index.has("tmdb_id")) {
-    throw new CsvImportError([`The first line must name the columns: ${COLUMNS.join(",")}`]);
+    throw new CsvImportError([t().csv.header(COLUMNS.join(","))]);
   }
 
   const problems: string[] = [];
@@ -77,34 +78,34 @@ export function parseCsvImport(text: string): CsvRow[] {
       const raw = get(column);
       if (!raw) return undefined;
       const n = Number(raw);
-      if (!Number.isInteger(n) || n < min) problems.push(`Line ${line}: ${column} must be a whole number`);
+      if (!Number.isInteger(n) || n < min) problems.push(t().csv.wholeNumber(line, column));
       return n;
     };
 
     const row: CsvRow = { line, title: get("title") || undefined, tmdbId: int("tmdb_id", 1) };
     row.season = int("season", 0);
     row.number = int("episode", 1);
-    if (!row.title && !row.tmdbId) problems.push(`Line ${line}: needs a title or a tmdb_id`);
+    if (!row.title && !row.tmdbId) problems.push(t().csv.needsTitle(line));
     if ((row.season === undefined) !== (row.number === undefined)) {
-      problems.push(`Line ${line}: season and episode go together`);
+      problems.push(t().csv.seasonAndEpisode(line));
     }
 
     const watchedAt = get("watched_at");
     if (watchedAt) {
       row.watchedAt = new Date(watchedAt);
-      if (Number.isNaN(row.watchedAt.getTime())) problems.push(`Line ${line}: watched_at is not a date (use 2024-02-18)`);
+      if (Number.isNaN(row.watchedAt.getTime())) problems.push(t().csv.notADate(line));
     }
 
     const status = get("status").toLowerCase();
     if (status) {
       row.status = STATUS_ALIASES[status];
-      if (!row.status) problems.push(`Line ${line}: unknown status "${status}"`);
+      if (!row.status) problems.push(t().csv.unknownStatus(line, status));
     }
     rows.push(row);
   });
 
   if (problems.length) throw new CsvImportError(problems);
-  if (!rows.length) throw new CsvImportError(["The file has no rows below the header"]);
+  if (!rows.length) throw new CsvImportError([t().csv.noRows]);
   return rows;
 }
 

@@ -6,6 +6,8 @@ import { api, queryClient } from "../../api";
 import { earlierUnwatched } from "../../lib/episodes";
 import { CatchUp } from "../catch-up";
 import { EpisodeTitle } from "../spoilers";
+import { useT } from "../../i18n";
+import { longDate } from "../airing";
 import { cx } from "../ui";
 
 type SeasonData = SeriesDetail["seasons"][number];
@@ -15,6 +17,7 @@ const refresh = () => queryClient.invalidateQueries();
 
 /** One season, folded unless it's the one in progress: its Episodes to tick, with catching up. */
 export function Season({ series, season }: { series: SeriesDetail; season: SeasonData }) {
+  const t = useT();
   const watched = season.episodes.filter((e) => e.watched).length;
   const aired = season.episodes.filter((e) => e.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
@@ -44,7 +47,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   return (
     <section className="overflow-hidden rounded-3xl border border-line/60 bg-surface">
       <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left">
-        <h2 className="flex-1 text-lg">Season {season.number}</h2>
+        <h2 className="flex-1 text-lg">{t.series.season(season.number)}</h2>
         <span className="text-sm font-bold text-muted">
           {watched}/{season.episodes.length}
         </span>
@@ -58,7 +61,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
               disabled={watchAll.isPending}
               className="w-full px-5 py-3 text-left text-sm font-bold text-accent hover:bg-raised"
             >
-              Mark season watched
+              {t.series.markSeasonWatched}
             </button>
           )}
           <ul>
@@ -84,6 +87,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
 }
 
 function EpisodeRow({ episode: e, next, onToggle }: { episode: EpisodeData; next: boolean; onToggle: () => void }) {
+  const t = useT();
   return (
     <li className="flex items-center gap-4 px-5 py-3 odd:bg-raised/30">
       <span className="w-8 text-sm font-bold text-muted">{e.number}</span>
@@ -92,11 +96,11 @@ function EpisodeRow({ episode: e, next, onToggle }: { episode: EpisodeData; next
           <EpisodeTitle name={e.name} watched={e.watched} next={next} />
         </p>
         <p className="text-xs text-muted">
-          {e.airDate ? new Date(e.airDate).toLocaleDateString(undefined, { dateStyle: "medium" }) : "TBA"}
+          {e.airDate ? longDate(t.tag, e.airDate) : t.common.tba}
         </p>
       </div>
       <button
-        aria-label={e.watched ? "Mark as unwatched" : "Mark as watched"}
+        aria-label={e.watched ? t.series.markUnwatched : t.series.markWatched}
         disabled={!e.aired && !e.watched}
         onClick={onToggle}
         className={cx(

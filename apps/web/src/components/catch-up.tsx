@@ -1,3 +1,4 @@
+import { useT } from "../i18n";
 import { AskSheet } from "./sheet";
 
 /**
@@ -16,14 +17,15 @@ export function CatchUp({
   onAll: () => void;
   onClose: () => void;
 }) {
+  const t = useT();
   return (
     <AskSheet
       open={earlier > 0}
       onClose={onClose}
-      title={`${earlier} earlier ${earlier === 1 ? "episode" : "episodes"} not watched`}
-      description="Mark them watched too?"
-      cancel={{ label: "Only this one", onClick: onOnlyThis }}
-      action={{ label: `Mark all ${earlier + 1}`, onClick: onAll }}
+      title={t.series.catchUpTitle(earlier)}
+      description={t.series.catchUpBody}
+      cancel={{ label: t.series.onlyThisOne, onClick: onOnlyThis }}
+      action={{ label: t.series.markAll(earlier + 1), onClick: onAll }}
     />
   );
 }

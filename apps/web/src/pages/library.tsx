@@ -1,21 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
-import { STATUS_LABELS, STATUSES, type Status } from "@snug/shared";
+import { STATUSES, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
 import { LibraryTile } from "../components/series/library-tile";
 import { PosterGridSkeleton } from "../components/skeletons";
 import { Chips, Empty, PageTitle, POSTER_GRID, SearchInput } from "../components/ui";
+import { useT } from "../i18n";
 import { libraryQuery } from "../queries";
 
 export function LibraryPage() {
   const { data, isPending } = useQuery(libraryQuery);
   const [status, setStatus] = useState<Status>("watching");
   const [filter, setFilter] = useState("");
+  const t = useT();
 
   if (isPending) {
     return (
       <>
-        <PageTitle>Library</PageTitle>
+        <PageTitle>{t.library.title}</PageTitle>
         <PosterGridSkeleton />
       </>
     );
@@ -25,26 +27,26 @@ export function LibraryPage() {
 
   return (
     <>
-      <PageTitle>Library</PageTitle>
+      <PageTitle>{t.library.title}</PageTitle>
       <Chips
-        label="Status"
+        label={t.library.statusFilter}
         value={status}
         onChange={setStatus}
         options={STATUSES.map((s) => ({
           value: s,
           label: (
             <>
-              {STATUS_LABELS[s]} <span className="opacity-60">{all.filter((c) => c.status === s).length}</span>
+              {t.status[s]} <span className="opacity-60">{all.filter((c) => c.status === s).length}</span>
             </>
           ),
         }))}
         className="-mx-4 mb-4 gap-2 px-4 pb-1 md:mx-0 md:px-0"
       />
       <SearchInput
-        aria-label="Filter the library"
+        aria-label={t.library.filterLabel}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filter…"
+        placeholder={t.library.filter}
         className="mb-6"
       />
       {shown.length ? (
@@ -54,7 +56,7 @@ export function LibraryPage() {
           ))}
         </div>
       ) : (
-        <Empty icon={<Library className="size-10" />} title={`No ${STATUS_LABELS[status].toLowerCase()} series`} />
+        <Empty icon={<Library className="size-10" />} title={t.library.empty(t.status[status])} />
       )}
     </>
   );

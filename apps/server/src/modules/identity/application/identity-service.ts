@@ -5,6 +5,7 @@ import type { Db } from "../../../shared/db";
 import { InvalidInputError } from "../../../shared/errors";
 import { type Auth, invitation } from "../infrastructure/auth";
 import { feedToken, user, userPreferences, watchlistToken, webhookToken } from "../infrastructure/schema";
+import { t } from "../../../shared/i18n";
 
 const newToken = () => Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
 
@@ -54,7 +55,7 @@ export class IdentityService {
     } catch (error) {
       if (!isAPIError(error)) throw error;
       const taken = String(error.body?.code ?? "").startsWith("USER_ALREADY_EXISTS");
-      throw new InvalidInputError(error.message, taken ? { email: "An account already uses this email" } : undefined);
+      throw new InvalidInputError(error.message, taken ? { email: t().errors.emailTaken } : undefined);
     }
   }
 

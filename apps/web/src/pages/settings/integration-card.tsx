@@ -3,6 +3,7 @@ import { ChevronDown, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { api, queryClient } from "../../api";
 import { Card } from "../../components/ui";
+import { useT } from "../../i18n";
 
 /** An app Snug talks to: its icon and name, what it does, then how to connect it. */
 export function IntegrationCard({
@@ -34,10 +35,11 @@ export function IntegrationCard({
 
 /** Numbered instructions, folded once set up so the page stays short on a phone. */
 export function SetupSteps({ open = false, children }: { open?: boolean; children: ReactNode }) {
+  const t = useT();
   return (
     <details open={open} className="group mb-4">
       <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-accent">
-        How to connect
+        {t.integrations.howToConnect}
         <ChevronDown className="size-4 transition group-open:rotate-180" />
       </summary>
       <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted">{children}</ol>
@@ -45,8 +47,12 @@ export function SetupSteps({ open = false, children }: { open?: boolean; childre
   );
 }
 
-/** A name to put in bold in setup steps: a menu, a button, an option. */
-export const UI = ({ children }: { children: ReactNode }) => <b className="text-text">{children}</b>;
+/** Puts a menu, button or option name in bold in a setup step. */
+export const bold = (text: string) => <b className="text-text">{text}</b>;
+
+/** A setup step from the catalog, with its names in bold. */
+export const steps = (list: readonly ((b: typeof bold) => ReactNode)[]) =>
+  list.map((step, i) => <li key={i}>{step(bold)}</li>);
 
 /** An integration's settings from `path`, and replacing its secret URL (`path/rotate`). */
 export function useIntegration<T>(path: string, refetchInterval?: number) {

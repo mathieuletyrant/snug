@@ -7,6 +7,7 @@ import { AUTH_SECRET, ORIGINS } from "../../../shared/config";
 import type { Db } from "../../../shared/db";
 import { LOG_LEVEL, moduleLogger } from "../../../shared/logger";
 import * as schema from "./schema";
+import { t } from "../../../shared/i18n";
 
 /** Set while an admin creates an account, the only way to sign up once the first User exists. */
 const log = moduleLogger("auth");
@@ -44,7 +45,7 @@ export function createAuth(db: Db) {
           before: async (user) => {
             const [row] = db.select({ n: count() }).from(schema.user).all();
             if ((row?.n ?? 0) > 0 && !invitation.getStore()) {
-              throw new APIError("FORBIDDEN", { message: "Sign-up is closed. Ask your admin for an account." });
+              throw new APIError("FORBIDDEN", { message: t().errors.signUpClosed });
             }
             return { data: user };
           },

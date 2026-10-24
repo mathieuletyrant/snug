@@ -8,6 +8,7 @@ import { Route, Switch } from "wouter";
 import { ApiError, api, queryClient } from "./api";
 import { Layout } from "./components/layout";
 import { ToastProvider } from "./components/toast";
+import { I18nProvider, useT } from "./i18n";
 import { Button, Empty, Spinner } from "./components/ui";
 import { AuthPage } from "./pages/auth";
 import { HomePage } from "./pages/home";
@@ -17,8 +18,18 @@ import { SeriesPage } from "./pages/series";
 import { SettingsPage } from "./pages/settings";
 import { SetupPage } from "./pages/setup";
 
-/** First run → create admin; signed out → sign in; no TMDB key → setup; then the app. */
+/** The app, in the instance's language (from /setup, public). */
 function App() {
+  const setup = useQuery({ queryKey: ["setup"], queryFn: () => api<SetupState>("/setup") });
+  return (
+    <I18nProvider language={setup.data?.language}>
+      <Screens />
+    </I18nProvider>
+  );
+}
+
+/** First run → create admin; signed out → sign in; no TMDB key → setup; then the app. */
+function Screens() {
   const setup = useQuery({ queryKey: ["setup"], queryFn: () => api<SetupState>("/setup") });
   const me = useQuery({
     queryKey: ["me"],
@@ -51,16 +62,17 @@ function App() {
 }
 
 function Unreachable({ retry }: { retry: () => unknown }) {
+  const t = useT();
   useEffect(() => {
     const timer = setInterval(retry, 3000);
     return () => clearInterval(timer);
   }, [retry]);
   return (
-    <Empty icon={<CloudOff className="size-10" />} title="Can't reach Snug">
-      The server isn't answering. Retrying every few seconds…
+    <Empty icon={<CloudOff className="size-10" />} title={t.unreachable.title}>
+      {t.unreachable.body}
       <div className="mt-5">
         <Button variant="ghost" onClick={retry}>
-          Retry now
+          {t.common.retryNow}
         </Button>
       </div>
     </Empty>

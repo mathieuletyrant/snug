@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { useT } from "../../i18n";
 import { cx } from "./cx";
 
 /** Radix popups keep this far from the screen's edges; at the bottom, clear of the phone's tab bar. */
@@ -44,8 +45,9 @@ export function SectionTitle({ children, count }: { children: ReactNode; count: 
 }
 
 export function BackButton() {
+  const t = useT();
   return (
-    <button onClick={() => history.back()} aria-label="Back" className="rounded-full bg-bg/80 p-2">
+    <button onClick={() => history.back()} aria-label={t.common.back} className="rounded-full bg-bg/80 p-2">
       <ArrowLeft className="size-5" />
     </button>
   );

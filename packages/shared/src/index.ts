@@ -87,6 +87,13 @@ export interface SetupState {
 
 export const DEFAULT_LANGUAGE = "en-US";
 
+/** Languages the app itself is written in; series details come in any TMDB language. */
+export const APP_LOCALES = ["en", "fr"] as const;
+export type Locale = (typeof APP_LOCALES)[number];
+
+/** The app's language for a TMDB language: "fr-FR" → "fr"; English for the ones the app isn't written in. */
+export const localeOf = (language: string): Locale => (language.toLowerCase().startsWith("fr") ? "fr" : "en");
+
 /** Languages offered for series details; any TMDB locale works, these are the common ones. */
 export const LANGUAGES = [
   { code: "en-US", label: "English" },
@@ -170,14 +177,6 @@ export interface JellyfinIntegration {
   events: JellyfinEventLog[];
 }
 
-export const STATUS_LABELS: Record<Status, string> = {
-  watchlist: "Watchlist",
-  watching: "Watching",
-  saving: "Saving up",
-  paused: "Paused",
-  completed: "Completed",
-  dropped: "Dropped",
-};
 
 export const episodeCode = (e: EpisodeRef) =>
   `S${String(e.season).padStart(2, "0")}E${String(e.number).padStart(2, "0")}`;

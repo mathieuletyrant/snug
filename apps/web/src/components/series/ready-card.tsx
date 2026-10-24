@@ -1,6 +1,7 @@
 import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
+import { useT } from "../../i18n";
 import { useWatchNext } from "../series-actions";
 import { EpisodeTitle } from "../spoilers";
 import { Backdrop, Badge } from "../ui";
@@ -8,6 +9,7 @@ import { Backdrop, Badge } from "../ui";
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. */
 export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {
   const watchNext = useWatchNext();
+  const t = useT();
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
   // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
@@ -23,9 +25,9 @@ export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean })
           />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
           <div className="absolute top-2 left-2 flex gap-1">
-            {card.saving && <Badge tone="accent">Saved up</Badge>}
-            {!card.saving && fresh && <Badge tone="accent">New</Badge>}
-            <Badge>{left} left</Badge>
+            {card.saving && <Badge tone="accent">{t.home.savedUp}</Badge>}
+            {!card.saving && fresh && <Badge tone="accent">{t.home.new}</Badge>}
+            <Badge>{t.home.left(left)}</Badge>
           </div>
           <div className="absolute inset-x-0 bottom-0 p-2.5 pr-12 sm:p-3 sm:pr-14">
             <h3 className="truncate text-sm leading-tight sm:text-base">{card.name}</h3>
@@ -45,7 +47,7 @@ export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean })
         </div>
       </Link>
       <button
-        aria-label={next ? `Mark ${episodeCode(next)} as watched` : "Mark next episode as watched"}
+        aria-label={next ? t.home.markWatched(episodeCode(next)) : t.home.markNextWatched}
         disabled={watchNext.isPending}
         onClick={() => watchNext.mutate(card.seriesId)}
         className="absolute right-2 bottom-3.5 flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lg shadow-black/40 transition hover:bg-accent-strong active:scale-90 disabled:opacity-60 sm:right-2.5 sm:size-10"

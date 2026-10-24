@@ -10,16 +10,18 @@ import { StatusPicker } from "../components/series/status-picker";
 import { SeriesSkeleton } from "../components/skeletons";
 import { useToast } from "../components/toast";
 import { Button, ErrorText } from "../components/ui";
+import { useT } from "../i18n";
 
 export function SeriesPage({ id }: { id: string }) {
   const { data, isPending, error } = useQuery({ queryKey: ["series", id], queryFn: () => api<SeriesDetail>(`/series/${id}`) });
   const [, navigate] = useLocation();
   const toast = useToast();
+  const t = useT();
   const remove = useMutation({
     mutationFn: () => api(`/series/${id}`, { method: "DELETE" }),
     onSuccess: async () => {
       await queryClient.invalidateQueries();
-      toast({ message: "Removed from your library" });
+      toast({ message: t.series.removed });
       navigate("/library");
     },
   });
@@ -44,12 +46,12 @@ export function SeriesPage({ id }: { id: string }) {
       {data.tracked && (
         <div className="mt-10">
           <Confirm
-            title={`Remove ${data.name}?`}
-            description="Its status and every episode you marked watched are deleted from Snug."
-            confirm="Remove"
+            title={t.series.removeTitle(data.name)}
+            description={t.series.removeBody}
+            confirm={t.series.removeConfirm}
             onConfirm={() => remove.mutate()}
           >
-            <Button variant="danger">Remove from library</Button>
+            <Button variant="danger">{t.series.remove}</Button>
           </Confirm>
         </div>
       )}

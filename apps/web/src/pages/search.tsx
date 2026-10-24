@@ -6,8 +6,10 @@ import { api } from "../api";
 import { PosterTile, TileLine } from "../components/poster-tile";
 import { PosterGridSkeleton } from "../components/skeletons";
 import { Empty, PageTitle, POSTER_GRID, SearchInput } from "../components/ui";
+import { useT } from "../i18n";
 
 export function SearchPage() {
+  const t = useT();
   const [query, setQuery] = useState("");
   const q = useDeferredValue(query.trim());
   const { data, isFetching } = useQuery({
@@ -19,14 +21,14 @@ export function SearchPage() {
 
   return (
     <>
-      <PageTitle>Search</PageTitle>
+      <PageTitle>{t.search.title}</PageTitle>
       <SearchInput
         icon
-        aria-label="Search a series"
+        aria-label={t.search.label}
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="A series title…"
+        placeholder={t.search.placeholder}
         className="mb-6"
       />
       {isFetching && !data ? (
@@ -40,7 +42,7 @@ export function SearchPage() {
           ))}
         </div>
       ) : (
-        q.length > 1 && <Empty icon={<Search className="size-10" />} title="No series found" />
+        q.length > 1 && <Empty icon={<Search className="size-10" />} title={t.search.empty} />
       )}
     </>
   );

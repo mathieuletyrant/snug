@@ -6,14 +6,15 @@ import { homeQuery, libraryQuery } from "../queries";
 import { ImportBanner } from "./import-progress";
 import { PullToRefresh } from "./pull-to-refresh";
 import { useScrollToTop } from "./scroll";
+import { useT } from "../i18n";
 import { cx } from "./ui";
 
 const TABS = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/library", label: "Library", icon: Library },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+  { href: "/", label: "home", icon: House },
+  { href: "/library", label: "library", icon: Library },
+  { href: "/search", label: "search", icon: Search },
+  { href: "/settings", label: "settings", icon: Settings },
+] as const;
 
 /** Starts loading a tab's data while the finger is still down (no-op when it is fresh in the cache). */
 const prefetch = (href: string) => {
@@ -23,6 +24,7 @@ const prefetch = (href: string) => {
 
 /** Top bar on desktop, bottom tab bar on mobile. */
 export function Layout({ children }: { children: ReactNode }) {
+  const t = useT();
   const [location] = useLocation();
   const active = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
   // The tab under the finger, lit before the page changes; cleared once it has.
@@ -54,7 +56,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   active(href) ? "bg-raised text-accent" : "text-muted hover:text-text",
                 )}
               >
-                <Icon className="size-4" /> {label}
+                <Icon className="size-4" /> {t.nav[label]}
               </Link>
             ))}
           </nav>
@@ -92,7 +94,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 )}
               >
                 <Icon className="size-6 transition-transform duration-75 group-active:scale-90" strokeWidth={on ? 2.4 : 1.8} />
-                {label}
+                {t.nav[label]}
               </Link>
             );
           })}

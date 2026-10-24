@@ -12,6 +12,7 @@ import { NotificationService } from "./modules/notifications/application/notific
 import { WebPushSender } from "./modules/notifications/infrastructure/web-push-sender";
 import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
 import { db } from "./shared/db";
+import { setLanguageSource } from "./shared/i18n";
 import { moduleLogger } from "./shared/logger";
 import { TrackingService } from "./modules/tracking/application/tracking-service";
 import { DrizzleTrackedSeriesRepository } from "./modules/tracking/infrastructure/drizzle-tracked-series-repository";
@@ -20,6 +21,7 @@ const log = moduleLogger("catalog");
 
 export const auth = createAuth(db);
 export const catalogSettings = new CatalogSettings(db);
+setLanguageSource(catalogSettings.language);
 export const trackedSeries = new DrizzleTrackedSeriesRepository(db);
 export const catalog = new CatalogService(new DrizzleCatalogRepository(db), new TmdbClient(catalogSettings.tmdbKey, catalogSettings.language));
 export const tracking = new TrackingService(trackedSeries, catalog);
