@@ -1,5 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { episodeCode, STATUS_LABELS, STATUSES, type SeriesDetail } from "@snug/shared";
+import {
+  episodeCode,
+  type Saving,
+  SAVING_TARGETS,
+  type SavingTarget,
+  STATUS_LABELS,
+  STATUSES,
+  type SeriesDetail,
+} from "@snug/shared";
 import { ArrowLeft, Check, ChevronDown, Plus } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -10,7 +18,7 @@ import { Confirm } from "../components/confirm";
 import { EpisodeTitle } from "../components/spoilers";
 import { useToast } from "../components/toast";
 import { SeriesSkeleton } from "../components/skeletons";
-import { Button, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
+import { Button, Chips, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
 
 export function SeriesPage({ id }: { id: string }) {
   const { data, isPending, error } = useQuery({ queryKey: ["series", id], queryFn: () => api<SeriesDetail>(`/series/${id}`) });
@@ -93,6 +101,9 @@ export function SeriesPage({ id }: { id: string }) {
               </>
             )}
           </div>
+          {data.tracked && data.status === "saving" && data.saving && (
+            <SavingPanel seriesId={data.seriesId} saving={data.saving} />
+          )}
           {data.overview && <p className="leading-relaxed text-muted">{data.overview}</p>}
         </div>
       </div>
@@ -122,6 +133,38 @@ export function SeriesPage({ id }: { id: string }) {
         </div>
       )}
     </article>
+  );
+}
+
+/** Saving up: what to wait for, and where the saving stands. */
+function SavingPanel({ seriesId, saving }: { seriesId: number; saving: Saving }) {
+  const save = useMutation({
+    mutationFn: (savingTarget: SavingTarget) =>
+      api(`/series/${seriesId}`, { method: "PUT", body: { status: "saving", savingTarget } }),
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
+  const date = saving.completeOn
+    ? new Date(`${saving.completeOn}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short" })
+    : null;
+  return (
+    <div className="space-y-3 rounded-3xl border border-line/60 bg-surface/80 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-semibold">Saving up until</span>
+        <Chips
+          label="Saving up until"
+          small
+          value={String(saving.target)}
+          onChange={(target) => save.mutate(Number(target) as SavingTarget)}
+          options={SAVING_TARGETS.map((t) => ({ value: String(t), label: t === 0 ? "Full season" : `${t} ep.` }))}
+        />
+      </div>
+      <ProgressBar value={saving.out} max={saving.needed} />
+      <p className="text-sm text-muted">
+        {saving.reached
+          ? `Ready to binge: ${saving.out} episodes.`
+          : `${saving.out} of ${saving.needed} out${date ? `, the last one on ${date}` : ""}.`}
+      </p>
+    </div>
   );
 }
 

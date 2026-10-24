@@ -106,3 +106,22 @@ test("catching up watches every aired Episode before the one marked, across seas
   );
   expect(watched).toEqual(["1x1", "1x2", "2x1", "2x2"]);
 });
+
+test("Saving up waits in Upcoming, then goes first in Ready once enough is out", async () => {
+  const tracking = setup([
+    series(1, false, ["2026-10-01", "2026-10-08", "2026-10-28"]),
+    series(2, false, ["2026-10-01", "2026-10-08"]),
+    series(3, false, ["2026-10-01"]),
+  ]);
+  await tracking.track("u", 1, "saving", 0); // the season's last Episode airs on 28 Oct
+  await tracking.track("u", 2, "saving", 0); // the whole season is out
+  await tracking.track("u", 3);
+
+  const home = await tracking.home("u");
+  expect(home.ready.map((c) => c.seriesId)).toEqual([2, 3]);
+  expect(home.upcoming.map((c) => [c.seriesId, c.saving?.out, c.saving?.needed])).toEqual([[1, 2, 3]]);
+
+  // Watching an Episode ends the saving.
+  await tracking.watchNext("u", 2);
+  expect((await tracking.detail("u", 2)).status).toBe("watching");
+});

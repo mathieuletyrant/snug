@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { episodeCode, type SeriesCard } from "@snug/shared";
-import { Check, Coffee, Sparkles } from "lucide-react";
+import { Check, Coffee, PiggyBank, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { homeQuery } from "../queries";
 import { isNew, relativeDay } from "../components/airing";
@@ -96,8 +96,12 @@ function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
           <div className="absolute top-2 left-2 flex gap-1">
-            {fresh && (
-              <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-ink">New</span>
+            {card.saving ? (
+              <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-ink">Saved up</span>
+            ) : (
+              fresh && (
+                <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-ink">New</span>
+              )
             )}
             <span className="rounded-full bg-bg/85 px-2 py-0.5 text-[11px] font-bold text-muted">{left} left</span>
           </div>
@@ -144,6 +148,39 @@ function UpcomingCard({ card }: { card: SeriesCard }) {
     <Link href={`/series/${card.seriesId}`} className="group space-y-1.5">
       <Poster path={card.posterPath} name={card.name} className="w-full transition group-hover:-translate-y-0.5" />
       <p className="truncate text-xs font-semibold sm:text-sm">{card.name}</p>
+      {card.saving ? (
+        <SavingLines saving={card.saving} />
+      ) : (
+        <AiringLines card={card} />
+      )}
+    </Link>
+  );
+}
+
+// "In 3 days" → "in 3 days", "Tomorrow" → "tomorrow"; a date like "3 Dec" stays as is.
+const lowerFirst = (text: string) =>
+  /^(In |Today|Tomorrow)/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+
+/** Saving up: how many Episodes are out of those needed, and when the last one airs. */
+function SavingLines({ saving }: { saving: NonNullable<SeriesCard["saving"]> }) {
+  return (
+    <>
+      <p className="flex items-center gap-1 text-[11px] leading-tight font-bold text-accent sm:text-xs">
+        <PiggyBank className="size-3 shrink-0" />
+        <span className="truncate">
+          {saving.out}/{saving.needed} out
+        </span>
+      </p>
+      <p className="text-[11px] leading-tight text-muted sm:text-xs">
+        {saving.completeOn ? `Complete ${lowerFirst(relativeDay(saving.completeOn))}` : "Date TBA"}
+      </p>
+    </>
+  );
+}
+
+function AiringLines({ card }: { card: SeriesCard }) {
+  return (
+    <>
       {/* Date and episode on their own lines: "S02E06 · In 2 days" wraps mid-date in a 4-column grid. */}
       <p
         className={cx(
@@ -155,6 +192,6 @@ function UpcomingCard({ card }: { card: SeriesCard }) {
         <span className="truncate">{relativeDay(card.next?.airDate)}</span>
       </p>
       {card.next && <p className="text-[11px] leading-tight text-muted sm:text-xs">{episodeCode(card.next)}</p>}
-    </Link>
+    </>
   );
 }

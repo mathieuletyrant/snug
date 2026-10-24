@@ -1,4 +1,4 @@
-import type { Home, SeriesCard, SeriesDetail } from "@snug/shared";
+import type { Home, SavingTarget, SeriesCard, SeriesDetail } from "@snug/shared";
 import type { Episode, Series } from "../../catalog/domain/series";
 import { today } from "../../../shared/async";
 import { NotFoundError } from "../../../shared/errors";
@@ -34,10 +34,10 @@ export class TrackingService {
   // ---- Commands
 
   /** Starts tracking a Series, or changes its Status when already tracked. */
-  async track(userId: string, seriesId: number, status: Status = "watching") {
+  async track(userId: string, seriesId: number, status: Status = "watching", savingTarget?: SavingTarget) {
     await this.catalog.ensure(seriesId);
     const tracked = (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, status, this.now());
-    tracked.changeStatus(status);
+    tracked.changeStatus(status, savingTarget);
     await this.repo.save(tracked);
   }
 
@@ -127,11 +127,17 @@ export class TrackingService {
   // ---- Queries
 
   async home(userId: string): Promise<Home> {
-    const watching = (await this.repo.listByUser(userId)).filter((t) => t.status === "watching");
-    const cards = await this.cards(watching);
-    const ready = cards.filter((c) => c.loaded && availability(c.next, today(this.now())) === "ready");
+    const list = (await this.repo.listByUser(userId)).filter((t) => t.status === "watching" || t.status === "saving");
+    const cards = await this.cards(list);
+    // Saving up: Ready only once enough is out, and then first; until then, in Upcoming.
+    const isReady = (c: SeriesCard) =>
+      c.loaded && (c.saving ? c.saving.reached : availability(c.next, today(this.now())) === "ready");
+    const ready = cards.filter(isReady);
     const upcoming = cards.filter((c) => !ready.includes(c));
-    ready.sort((a, b) => (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""));
+    ready.sort(
+      (a, b) =>
+        Number(!!b.saving) - Number(!!a.saving) || (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""),
+    );
     upcoming.sort((a, b) => (a.next?.airDate ?? "9999").localeCompare(b.next?.airDate ?? "9999"));
     return { ready, upcoming };
   }
@@ -199,6 +205,7 @@ export class TrackingService {
       posterPath: series?.posterPath ?? null,
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
+      saving: series && t.status === "saving" ? t.saving(series.episodes, today(this.now())) : null,
       progress: t.progress,
       next: series ? t.nextEpisode(series.episodes) : null,
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,

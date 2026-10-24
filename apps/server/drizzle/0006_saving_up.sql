@@ -1,0 +1,1 @@
+ALTER TABLE `tracked_series` ADD `saving_target` integer DEFAULT 0 NOT NULL;
