@@ -45,6 +45,8 @@ const en = {
     next: (code: string, name: string | null) => `Next: ${code}${name ? ` · ${name}` : ""}`,
     nextOn: (code: string, date: string) => `Next: ${code} on ${date}`,
     nextUndated: (code: string) => `Next: ${code}, date to be announced`,
+    isOut: (code: string) => `${code} is out`,
+    newEpisodes: (count: number, first: string, last: string) => `${count} new episodes: ${first} to ${last}`,
   },
   webhook: {
     specials: "Specials are not tracked",
@@ -97,6 +99,8 @@ const fr: Messages = {
     next: (code, name) => `Ensuite : ${code}${name ? ` · ${name}` : ""}`,
     nextOn: (code, date) => `Ensuite : ${code} le ${date}`,
     nextUndated: (code) => `Ensuite : ${code}, date à venir`,
+    isOut: (code) => `${code} est sorti`,
+    newEpisodes: (count, first, last) => `${count} nouveaux épisodes : ${first} à ${last}`,
   },
   webhook: {
     specials: "Les épisodes spéciaux ne sont pas suivis",

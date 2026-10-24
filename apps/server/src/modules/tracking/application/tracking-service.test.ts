@@ -125,3 +125,14 @@ test("Saving up waits in Upcoming, then goes first in Ready once enough is out",
   await tracking.watchNext("u", 2);
   expect((await tracking.detail("u", 2)).status).toBe("watching");
 });
+
+test("new Episodes on a day: Watching Series only, Episodes not watched yet", async () => {
+  const tracking = setup([series(1, false, ["2026-10-17", "2026-10-24"]), series(2, false, ["2026-10-24"])]);
+  await tracking.track("u", 1);
+  await tracking.track("u", 2, "paused");
+  await tracking.track("v", 1);
+  await tracking.watchEpisode("v", 1, { season: 1, number: 2 });
+
+  const found = await tracking.newEpisodesOn(["2026-10-24"]);
+  expect(found.map((f) => [f.userId, f.series.tmdbId, f.episodes.map((e) => e.number)])).toEqual([["u", 1, [2]]]);
+});
