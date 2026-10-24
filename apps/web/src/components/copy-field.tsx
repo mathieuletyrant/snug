@@ -27,7 +27,7 @@ export function CopyField({ label, value, onRotate }: { label: string; value: st
         {onRotate && (
           <Confirm
             title="Replace this URL?"
-            description="The current URL stops working right away: paste the new one wherever you used it."
+            description="The current URL stops working. Paste the new one where you used it."
             confirm="Replace"
             onConfirm={onRotate}
           >

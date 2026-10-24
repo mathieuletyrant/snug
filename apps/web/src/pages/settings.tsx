@@ -59,7 +59,7 @@ export function SettingsPage({ me }: { me: Me }) {
         {section === "integrations" && (
           <>
             <p className="text-sm text-muted">
-              Each app gets its own secret URL from Snug: paste it in the app, and replace it with ↻ if it leaks.
+              Each app gets its own secret URL. Replace it with ↻ if it leaks.
             </p>
             <Jellyfin />
             <Sonarr />
@@ -145,8 +145,8 @@ function Display() {
     <Card>
       <h2 className="mb-2 text-xl">Display</h2>
       <Toggle
-        label="Hide undated upcoming series"
-        description="Leave series whose next episode has no air date yet (TBA) out of Upcoming."
+        label="Hide undated series"
+        description="Hide series with no air date yet (TBA) from Upcoming."
         checked={preferences.hideUndatedUpcoming}
         onChange={(hideUndatedUpcoming) => update.mutate({ hideUndatedUpcoming })}
       />
@@ -170,18 +170,17 @@ function Notifications() {
       <h2 className="mb-2 text-xl">Notifications</h2>
       <Toggle
         label="On this device"
-        description="Get “✓ Severance S02E05”, and what's next, when Jellyfin marks an episode watched."
+        description="When Jellyfin marks an episode watched, with what's next."
         checked={push.state === "on"}
         onChange={(on) => !busy && push.state !== "unsupported" && run(on ? push.enable : push.disable)}
       />
       {push.state === "unsupported" && (
         <p className="mt-2 text-sm text-muted">
-          Not available here. On iPhone, add Snug to your Home Screen (Share → Add to Home Screen) and open it from
-          there, over HTTPS.
+          Not available here. On iPhone, add Snug to your Home Screen and open it from there (HTTPS only).
         </p>
       )}
       {push.state === "denied" && (
-        <p className="mt-2 text-sm text-rose">Notifications are blocked for Snug: allow them in your browser or phone settings.</p>
+        <p className="mt-2 text-sm text-rose">Notifications are blocked. Allow them in your browser or phone settings.</p>
       )}
       {push.state === "on" && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
@@ -217,14 +216,14 @@ function Jellyfin() {
     <IntegrationCard
       icon={Tv}
       title="Jellyfin"
-      description="Episodes you finish, or mark as played, in Jellyfin are marked watched here."
+      description="Episodes you finish in Jellyfin are marked watched here."
     >
       <SetupSteps open={data ? data.events.length === 0 : false}>
         <li>
-          Install the <b className="text-text">Webhook</b> plugin (Dashboard → Plugins → Catalog), restart Jellyfin.
+          Install the <b className="text-text">Webhook</b> plugin (Dashboard → Plugins → Catalog) and restart.
         </li>
         <li>
-          Dashboard → Plugins → Webhook → <b className="text-text">Add Generic Destination</b>, paste the URL below.
+          Plugins → Webhook → <b className="text-text">Add Generic Destination</b>, paste the URL below.
         </li>
         <li>
           Tick <b className="text-text">Playback Stop</b> and <b className="text-text">User Data Saved</b>, select your
@@ -326,7 +325,7 @@ function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) 
         <p className="rounded-xl bg-raised/40 px-4 py-6 text-center text-sm text-muted">
           {events.length
             ? "Nothing matches this filter."
-            : "No calls yet. Finish an episode in Jellyfin, or mark one as played, and it shows up here."}
+            : "No calls yet. Finish an episode in Jellyfin to see one here."}
         </p>
       )}
     </div>
@@ -348,13 +347,13 @@ function Sonarr() {
     <IntegrationCard
       icon={Download}
       title="Sonarr"
-      description="Sonarr downloads the series you pick below. The link is read-only, but anyone with it sees those series."
+      description="Sonarr downloads the series you pick below."
     >
       <SetupSteps>
         <li>
           In Sonarr: Settings → Import Lists → + → <b className="text-text">Custom Lists</b>, paste the URL below.
         </li>
-        <li>Pick a quality profile and root folder, save. Sonarr checks the list every few hours.</li>
+        <li>Pick a quality profile and root folder, save.</li>
       </SetupSteps>
       <p className="mb-2 text-sm font-semibold">Series to send</p>
       <ToggleGroup.Root
@@ -376,8 +375,7 @@ function Sonarr() {
         ))}
       </ToggleGroup.Root>
       <p className="mb-4 text-xs text-muted">
-        Only series with one of these statuses go to Sonarr. Changed your pick? Copy the URL again and paste it in
-        Sonarr.
+        Changed your pick? Paste the new URL in Sonarr.
       </p>
       <CopyField label="Sonarr list URL" value={url} onRotate={() => rotate.mutate()} />
     </IntegrationCard>
@@ -399,15 +397,15 @@ function Spotarr() {
     <IntegrationCard
       icon={Clapperboard}
       title="Spotarr"
-      description="TV shows you send from Spotarr land on your Watchlist. A series you already follow stays where it is."
+      description="TV shows sent from Spotarr land on your Watchlist."
     >
       <SetupSteps>
         <li>
           In Spotarr: Settings → Connections → <b className="text-text">Snug</b>, paste the URL below, save.
         </li>
         <li>
-          Add a rule with <b className="text-text">TV shows only</b> and the action{" "}
-          <b className="text-text">Add to Snug's Watchlist</b>, or use the Watchlist button on a TV show.
+          Add a rule with the action <b className="text-text">Add to Snug's Watchlist</b>, or use the button on a TV
+          show.
         </li>
       </SetupSteps>
       <CopyField label="Spotarr URL" value={url} onRotate={() => rotate.mutate()} />
@@ -439,8 +437,8 @@ function Import() {
     <Card>
       <h2 className="mb-1 text-xl">Import</h2>
       <p className="mb-4 text-sm text-muted">
-        Load series and watch history from a <b className="text-text">CSV</b> (one row per watched episode) or a JSON
-        export. Existing data is kept.{" "}
+        Load series and history from a <b className="text-text">CSV</b> (one row per episode) or a JSON export.
+        Nothing is erased.{" "}
         <a href="/snug-import-template.csv" download className="font-semibold text-accent underline">
           Download the CSV template
         </a>
@@ -448,7 +446,7 @@ function Import() {
       <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 text-xs text-muted">
         <code className="mb-1 block font-mono break-all text-text">title,tmdb_id,season,episode,watched_at,status</code>
         <span>
-          Only <b>title</b> or <b>tmdb_id</b> is required. Leave season/episode empty to just add a series.
+          Only <b>title</b> or <b>tmdb_id</b> is required. No season/episode: just adds the series.
         </span>
       </p>
       {run.data && (
@@ -458,7 +456,7 @@ function Import() {
           </p>
           {run.data.unresolved.length > 0 && (
             <p className="text-rose">
-              Not found on TMDB, skipped: {run.data.unresolved.join(", ")}. Add their tmdb_id and import again.
+              Not found on TMDB: {run.data.unresolved.join(", ")}. Add their tmdb_id and retry.
             </p>
           )}
         </div>
@@ -512,7 +510,7 @@ function Users() {
   return (
     <Card>
       <h2 className="mb-1 text-xl">People</h2>
-      <p className="mb-4 text-sm text-muted">Sign-up is closed. Create accounts for people sharing this Snug.</p>
+      <p className="mb-4 text-sm text-muted">Sign-up is closed. Create accounts here.</p>
       <ul className="mb-5 space-y-1 text-sm">
         {data?.map((u) => (
           <li key={u.id}>

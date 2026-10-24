@@ -52,15 +52,15 @@ export function LanguageSelect() {
     onSuccess: async (_, language) => {
       await queryClient.invalidateQueries({ queryKey: ["setup"] });
       const label = LANGUAGES.find((l) => l.code === language)?.label ?? language;
-      toast({ message: `Series details switch to ${label} over the next few minutes` });
+      toast({ message: `Switching to ${label}…` });
     },
     onError: (e) => toast({ message: e.message }),
   });
 
   return (
     <Select
-      label="Language of descriptions, episode titles and posters"
-      hint="Missing translations fall back to English."
+      label="Language"
+      hint="For descriptions, episode titles and posters. Falls back to English."
       value={setup?.language ?? DEFAULT_LANGUAGE}
       disabled={!setup || save.isPending}
       onChange={(e) => save.mutate(e.target.value)}
