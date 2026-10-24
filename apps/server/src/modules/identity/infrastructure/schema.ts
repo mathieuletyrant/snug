@@ -85,3 +85,11 @@ export const watchlistToken = sqliteTable("watchlist_token", {
     .references(() => user.id, { onDelete: "cascade" }),
   token: text("token").notNull().unique(),
 });
+
+/** Secret token letting an AI assistant (MCP) import a history: it can add series and watches, never delete. */
+export const mcpToken = sqliteTable("mcp_token", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+});

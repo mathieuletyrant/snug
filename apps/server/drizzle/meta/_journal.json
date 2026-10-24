@@ -57,6 +57,13 @@
       "when": 1792865966417,
       "tag": "0007_episode_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792874864905,
+      "tag": "0008_mcp_token",
+      "breakpoints": true
     }
   ]
 }

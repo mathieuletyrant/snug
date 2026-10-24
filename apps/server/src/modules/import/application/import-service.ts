@@ -3,7 +3,7 @@ import type { CatalogService } from "../../catalog/application/catalog-service";
 import { forEachLimit } from "../../../shared/async";
 import { InvalidInputError } from "../../../shared/errors";
 import { moduleLogger, reason } from "../../../shared/logger";
-import type { ImportEntry, TrackingService } from "../../tracking/application/tracking-service";
+import type { ImportEntry, ImportPreview, TrackingService } from "../../tracking/application/tracking-service";
 import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "../domain/csv-import";
 import { parseImportFile } from "../domain/import-file";
 import { t } from "../../../shared/i18n";
@@ -15,6 +15,10 @@ const log = moduleLogger("import");
 export class ImportService {
   /** ponytail: in memory, lost on restart; the periodic Catalog refresh fetches whatever is still missing. */
   private readonly progress = new Map<string, ImportProgress>();
+  /** Background passes still running per User: batches sent one after another share one progress. */
+  private readonly passes = new Map<string, number>();
+  /** Series TMDB could not give during the current or last import, per User. */
+  private readonly failures = new Map<string, number[]>();
 
   constructor(
     private readonly tracking: TrackingService,
@@ -50,6 +54,18 @@ export class ImportService {
     return this.run(userId, entries, titles.filter((t) => !ids.get(t)));
   }
 
+  /**
+   * One batch of a large import sent by an assistant (MCP): accepted even while earlier batches are still
+   * being fetched from TMDB. Idempotent: a batch sent twice records nothing new. With `dryRun`, writes nothing.
+   */
+  async importBatch(userId: string, entries: ImportEntry[], dryRun: boolean): Promise<ImportPreview> {
+    const preview = await this.tracking.previewImport(userId, entries);
+    // A batch sent again has nothing new: nothing to write, nothing to fetch.
+    if (dryRun || (!preview.newSeries && !preview.newWatches)) return preview;
+    await this.run(userId, entries, []);
+    return preview;
+  }
+
   /** Imports right away; Series metadata is then fetched in the background (see `progressOf`). */
   private async run(userId: string, entries: ImportEntry[], unresolved: string[]): Promise<ImportResult> {
     const ids = await this.tracking.import(userId, entries);
@@ -60,8 +76,20 @@ export class ImportService {
         (unresolved.length ? `; not found on TMDB: ${unresolved.join(", ")}` : "") +
         `. Fetching ${ids.length} series from TMDB…`,
     );
-    const progress: ImportProgress = { running: true, total: ids.length, done: 0, failed: 0 };
-    this.progress.set(userId, progress);
+    this.fetchInBackground(userId, ids);
+    return { series: entries.length, watches, unresolved };
+  }
+
+  private fetchInBackground(userId: string, ids: number[]) {
+    const current = this.progress.get(userId);
+    const progress = current?.running ? current : { running: true, total: 0, done: 0, failed: 0 };
+    if (progress !== current) {
+      this.progress.set(userId, progress);
+      this.failures.set(userId, []);
+    }
+    progress.total += ids.length;
+    this.passes.set(userId, (this.passes.get(userId) ?? 0) + 1);
+    const failed = this.failures.get(userId)!;
     void forEachLimit(
       ids,
       6,
@@ -72,14 +100,21 @@ export class ImportService {
       },
       (id, error) => {
         progress.failed++;
+        if (!failed.includes(id)) failed.push(id);
         log.warn(`Could not fetch series ${id}: ${reason(error)}`);
       },
     ).finally(() => {
+      const left = (this.passes.get(userId) ?? 1) - 1;
+      this.passes.set(userId, left);
+      if (left > 0) return;
       progress.running = false;
       log.info(`Import finished: ${progress.done} series fetched, ${progress.failed} failed`);
     });
+  }
 
-    return { series: entries.length, watches, unresolved };
+  /** Series ids TMDB could not give during the current or last import. */
+  failuresOf(userId: string): number[] {
+    return this.failures.get(userId) ?? [];
   }
 
   private assertIdle(userId: string) {

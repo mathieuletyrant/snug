@@ -1,5 +1,12 @@
-import { type Feeds, type JellyfinIntegration, STATUSES, type Status, type WatchlistIntegration } from "@snug/shared";
-import { Clapperboard, Download, Tv } from "lucide-react";
+import {
+  type Feeds,
+  type JellyfinIntegration,
+  type McpIntegration,
+  STATUSES,
+  type Status,
+  type WatchlistIntegration,
+} from "@snug/shared";
+import { Bot, Clapperboard, Download, Tv } from "lucide-react";
 import { useState } from "react";
 import { CopyField } from "../../components/copy-field";
 import { MultiChips } from "../../components/ui";
@@ -15,6 +22,7 @@ export function IntegrationsSection() {
       <Jellyfin />
       <Sonarr />
       <Spotarr />
+      <Assistant />
     </>
   );
 }
@@ -68,6 +76,19 @@ function Spotarr() {
     <IntegrationCard icon={Clapperboard} title="Spotarr" description={t.integrations.spotarr.description}>
       <SetupSteps>{steps(t.integrations.spotarr.steps)}</SetupSteps>
       <CopyField label={t.integrations.spotarr.url} value={url} onRotate={rotate} />
+    </IntegrationCard>
+  );
+}
+
+function Assistant() {
+  const t = useT();
+  const { data, rotate } = useIntegration<McpIntegration>("/integrations/mcp");
+  const url = data ? location.origin + data.mcpPath : "…";
+
+  return (
+    <IntegrationCard icon={Bot} title={t.integrations.mcp.title} description={t.integrations.mcp.description}>
+      <SetupSteps>{steps(t.integrations.mcp.steps)}</SetupSteps>
+      <CopyField label={t.integrations.mcp.url} value={url} onRotate={rotate} />
     </IntegrationCard>
   );
 }

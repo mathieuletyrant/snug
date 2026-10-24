@@ -18,6 +18,7 @@ import { catalogRoutes, imageRoutes } from "./modules/catalog/http/routes";
 import { authHandler, identityRoutes, requireAdmin, requireSession } from "./modules/identity/http/routes";
 import { importRoutes } from "./modules/import/http/routes";
 import { jellyfinRoutes, jellyfinWebhook } from "./modules/jellyfin/http/routes";
+import { mcpRoutes, mcpServer } from "./modules/mcp/http/routes";
 import { notificationRoutes } from "./modules/notifications/http/routes";
 import { trackingRoutes } from "./modules/tracking/http/routes";
 import { watchlistRoutes, watchlistWebhook } from "./modules/watchlist/http/routes";
@@ -31,6 +32,7 @@ const api = new Hono<AuthEnv>()
   .route("/images", imageRoutes())
   .route("/feeds", feedRoutes(feeds, identity))
   .route("/watchlist", watchlistWebhook(tracking, identity))
+  .route("/mcp", mcpServer(identity, importer))
   .get("/setup", (c) =>
     c.json<SetupState>({
       hasUsers: identity.hasUsers(),
@@ -47,6 +49,7 @@ const api = new Hono<AuthEnv>()
   .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, identity))
   .route("/integrations/feeds", feedSettingsRoutes(identity))
   .route("/integrations/watchlist", watchlistRoutes(identity))
+  .route("/integrations/mcp", mcpRoutes(identity))
   .route("/push", notificationRoutes(notifications))
   .all("/*", (c) => c.json({ error: "Not found" }, 404));
 

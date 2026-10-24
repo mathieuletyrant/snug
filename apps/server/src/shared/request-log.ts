@@ -17,7 +17,7 @@ export function maskTokens(path: string): string {
 }
 
 /** Calls other apps make (webhooks, Sonarr list): worth a line even when they succeed. */
-const isIntegration = (path: string) => TOKEN_PREFIXES.some((p) => path.startsWith(p));
+const isIntegration = (path: string) => path === "/api/mcp" || TOKEN_PREFIXES.some((p) => path.startsWith(p));
 
 export function levelFor(path: string, status: number): "error" | "warn" | "info" | "debug" {
   if (status >= 500) return "error";

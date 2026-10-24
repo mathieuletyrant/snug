@@ -25,6 +25,13 @@ export interface ImportEntry {
   watches: Watch[];
 }
 
+export interface ImportPreview {
+  series: number;
+  newSeries: number;
+  newWatches: number;
+  alreadyWatched: number;
+}
+
 export class TrackingService {
   constructor(
     private readonly repo: TrackedSeriesRepository,
@@ -112,6 +119,20 @@ export class TrackingService {
       await this.repo.save(tracked);
     }
     return entries.map((e) => e.seriesId);
+  }
+
+  /** What `import` would change, without writing: Series not tracked yet, watches not recorded yet. */
+  async previewImport(userId: string, entries: ImportEntry[]): Promise<ImportPreview> {
+    const preview: ImportPreview = { series: entries.length, newSeries: 0, newWatches: 0, alreadyWatched: 0 };
+    for (const entry of entries) {
+      const existing = await this.repo.find(userId, entry.seriesId);
+      if (!existing) preview.newSeries++;
+      for (const w of entry.watches) {
+        if (existing?.hasWatched(w)) preview.alreadyWatched++;
+        else preview.newWatches++;
+      }
+    }
+    return preview;
   }
 
   /** Re-applies the Completed rule for everyone tracking a Series, e.g. after a Catalog refresh. */
