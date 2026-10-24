@@ -20,3 +20,11 @@ export const jellyfinEvents = sqliteTable("jellyfin_events", {
   seriesId: integer("series_id"),
   payload: text("payload"),
 });
+
+/** The Jellyfin user each Snug User plays as (Play button). */
+export const jellyfinUsers = sqliteTable("jellyfin_users", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  jellyfinUserId: text("jellyfin_user_id").notNull(),
+});

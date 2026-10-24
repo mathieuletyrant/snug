@@ -6,6 +6,8 @@ import {
   type ImportResult,
   type JellyfinEventLog,
   type JellyfinIntegration,
+  type JellyfinServer,
+  type JellyfinUser,
   type Me,
   STATUS_LABELS,
   STATUSES,
@@ -23,7 +25,7 @@ import { useFormErrors } from "../components/form";
 import { Toggle, usePreferences, useUpdatePreferences } from "../components/preferences";
 import { ImportProgressBar, useImportProgress } from "../components/import-progress";
 import { useToast } from "../components/toast";
-import { Button, Card, Chips, cx, ErrorText, Input, PageTitle, Skeleton } from "../components/ui";
+import { Button, Card, Chips, cx, ErrorText, Input, PageTitle, Select, Skeleton } from "../components/ui";
 import { LanguageSelect, TmdbKeyForm } from "./setup";
 
 const SECTIONS = [
@@ -80,6 +82,7 @@ export function SettingsPage({ me }: { me: Me }) {
               <LanguageSelect />
               <TmdbKeyForm />
             </Card>
+            <JellyfinServerCard />
           </>
         )}
       </div>
@@ -252,6 +255,7 @@ function Jellyfin() {
         </li>
       </SetupSteps>
       <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
+      {data?.playback.server && <JellyfinUserSelect current={data.playback.jellyfinUserId} />}
       <WebhookHistory events={data?.events} />
     </IntegrationCard>
   );
@@ -558,6 +562,109 @@ function Users() {
           <ErrorText error={formError} />
           <Button disabled={invite.isPending}>Create account</Button>
         </div>
+      </form>
+    </Card>
+  );
+}
+
+/** Play button: which Jellyfin user this person plays as (their players are listed). */
+function JellyfinUserSelect({ current }: { current: string | null }) {
+  const toast = useToast();
+  const users = useQuery({
+    queryKey: ["jellyfin-users"],
+    queryFn: () => api<JellyfinUser[]>("/integrations/jellyfin/users"),
+  });
+  const save = useMutation({
+    mutationFn: (jellyfinUserId: string | null) =>
+      api("/integrations/jellyfin/user", { method: "PUT", body: { jellyfinUserId } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["jellyfin"] });
+      await queryClient.invalidateQueries({ queryKey: ["play"] });
+    },
+    onError: (e) => toast({ message: e.message }),
+  });
+  return (
+    <div className="mt-5">
+      <Select
+        label="Your Jellyfin user"
+        hint="For the ▶︎ button: your Jellyfin players show up there."
+        value={current ?? ""}
+        disabled={!users.data || save.isPending}
+        onChange={(e) => save.mutate(e.target.value || null)}
+      >
+        <option value="">None (no ▶︎ button)</option>
+        {users.data?.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
+      </Select>
+      <ErrorText error={users.error} />
+    </div>
+  );
+}
+
+/** Admin: the Jellyfin server behind the ▶︎ button. */
+function JellyfinServerCard() {
+  const toast = useToast();
+  const { data } = useQuery({
+    queryKey: ["jellyfin-server"],
+    queryFn: () => api<JellyfinServer>("/integrations/jellyfin/server"),
+  });
+  const [form, setForm] = useState<{ url: string; apiKey: string; publicUrl: string } | null>(null);
+  const values = form ?? { url: data?.url ?? "", apiKey: "", publicUrl: data?.publicUrl ?? "" };
+  const { errors, formError, onSubmit, fromError, clear, formProps } = useFormErrors();
+  const save = useMutation({
+    mutationFn: () =>
+      api("/integrations/jellyfin/server", { method: "PUT", body: { ...values, apiKey: values.apiKey || undefined } }),
+    onSuccess: async () => {
+      setForm(null);
+      await queryClient.invalidateQueries();
+      toast({ message: values.url ? "Jellyfin connected" : "Play button turned off" });
+    },
+    onError: fromError,
+  });
+  const set = (field: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...values, [field]: e.target.value });
+    clear(field);
+  };
+
+  return (
+    <Card>
+      <h2 className="mb-1 text-xl">Jellyfin server</h2>
+      <p className="mb-4 text-sm text-muted">
+        For the ▶︎ button, which starts an episode on a Jellyfin player. Leave the URL empty to turn it off.
+      </p>
+      <form {...formProps} onSubmit={onSubmit(() => save.mutate())} className="space-y-4">
+        <Input
+          label="URL"
+          name="url"
+          value={values.url}
+          onChange={set("url")}
+          error={errors.url}
+          placeholder="http://jellyfin_server_1:8096"
+        />
+        <Input
+          label="API key"
+          name="apiKey"
+          type="password"
+          autoComplete="off"
+          value={values.apiKey}
+          onChange={set("apiKey")}
+          error={errors.apiKey}
+          placeholder={data?.hasApiKey ? "Saved (paste a new one to replace it)" : "Dashboard → API Keys → +"}
+        />
+        <Input
+          label="Public URL"
+          name="publicUrl"
+          value={values.publicUrl}
+          onChange={set("publicUrl")}
+          error={errors.publicUrl}
+          placeholder="https://tv.example.com"
+          hint="Where phones open Jellyfin, for the Open in Jellyfin link."
+        />
+        <ErrorText error={formError} />
+        <Button disabled={save.isPending}>{save.isPending ? "Checking…" : "Save"}</Button>
       </form>
     </Card>
   );

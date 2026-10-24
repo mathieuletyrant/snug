@@ -6,6 +6,7 @@ import { homeQuery } from "../queries";
 import { relativeDay } from "../components/airing";
 import { useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
+import { PlayButton, usePlayback } from "../components/play";
 import { HomeSkeleton } from "../components/skeletons";
 import { EpisodeTitle } from "../components/spoilers";
 import { Backdrop, Button, cx, Empty, PageTitle, Poster, POSTER_GRID, Skeleton } from "../components/ui";
@@ -77,6 +78,7 @@ function SectionTitle({ children, count }: { children: string; count: number }) 
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop. */
 function ReadyCard({ card }: { card: SeriesCard }) {
   const watchNext = useWatchNext();
+  const playback = usePlayback();
   const next = card.next;
   const left = card.airedCount - card.watchedCount;
   // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
@@ -119,6 +121,14 @@ function ReadyCard({ card }: { card: SeriesCard }) {
       >
         <Check className="size-5" strokeWidth={3} />
       </button>
+      {/* Same right edge as ✓, in the corner the status menu used to take. */}
+      {playback && next && (
+        <PlayButton
+          seriesId={card.seriesId}
+          episode={next}
+          className="absolute top-1.5 right-2 flex size-9 items-center justify-center rounded-full bg-bg/80 text-text transition hover:bg-bg sm:right-2.5 sm:size-10"
+        />
+      )}
     </article>
   );
 }
