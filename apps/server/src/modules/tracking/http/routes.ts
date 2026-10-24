@@ -28,6 +28,11 @@ export const trackingRoutes = (tracking: TrackingService) =>
       await tracking.watchEpisode(c.var.user.id, p.id, p);
       return c.body(null, 204);
     })
+    .put("/series/:id/episodes/:season/:number/through", async (c) => {
+      const p = parse(episodeParams, c.req.param());
+      await tracking.watchThrough(c.var.user.id, p.id, p);
+      return c.body(null, 204);
+    })
     .delete("/series/:id/episodes/:season/:number", async (c) => {
       const p = parse(episodeParams, c.req.param());
       await tracking.unwatchEpisode(c.var.user.id, p.id, p);

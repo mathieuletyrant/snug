@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { api, image, queryClient } from "../api";
 import { useSetStatus } from "../components/series-actions";
+import { CatchUp } from "../components/catch-up";
 import { Confirm } from "../components/confirm";
 import { useToast } from "../components/toast";
 import { SeriesSkeleton } from "../components/skeletons";
@@ -97,7 +98,12 @@ export function SeriesPage({ id }: { id: string }) {
 
       <div className="mt-8 space-y-3">
         {data.seasons.map((season) => (
-          <Season key={season.number} seriesId={data.seriesId} season={season} />
+          <Season
+            key={season.number}
+            seriesId={data.seriesId}
+            season={season}
+            earlier={(n) => earlierUnwatched(data, season.number, n)}
+          />
         ))}
       </div>
 
@@ -117,7 +123,22 @@ export function SeriesPage({ id }: { id: string }) {
   );
 }
 
-function Season({ seriesId, season }: { seriesId: number; season: SeriesDetail["seasons"][number] }) {
+/** Aired Episodes before SxxEyy, in any season, not watched yet. */
+function earlierUnwatched(data: SeriesDetail, season: number, number: number) {
+  return data.seasons
+    .flatMap((s) => s.episodes.map((e) => ({ ...e, season: s.number })))
+    .filter((e) => e.aired && !e.watched && (e.season < season || (e.season === season && e.number < number))).length;
+}
+
+function Season({
+  seriesId,
+  season,
+  earlier,
+}: {
+  seriesId: number;
+  season: SeriesDetail["seasons"][number];
+  earlier: (number: number) => number;
+}) {
   const watched = season.episodes.filter((e) => e.watched).length;
   const aired = season.episodes.filter((e) => e.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
@@ -128,6 +149,18 @@ function Season({ seriesId, season }: { seriesId: number; season: SeriesDetail["
       api(`/series/${seriesId}/episodes/${season.number}/${e.number}`, { method: e.watched ? "DELETE" : "PUT" }),
     onSuccess: refresh,
   });
+  const watchThrough = useMutation({
+    mutationFn: (number: number) =>
+      api(`/series/${seriesId}/episodes/${season.number}/${number}/through`, { method: "PUT" }),
+    onSuccess: refresh,
+  });
+  // The Episode being marked while the catch-up question is open.
+  const [asking, setAsking] = useState<{ number: number; earlier: number } | null>(null);
+  const onToggle = (e: { number: number; watched: boolean }) => {
+    const count = e.watched ? 0 : earlier(e.number);
+    if (count > 0) setAsking({ number: e.number, earlier: count });
+    else toggle.mutate(e);
+  };
   const watchAll = useMutation({
     mutationFn: () => api(`/series/${seriesId}/seasons/${season.number}`, { method: "PUT" }),
     onSuccess: refresh,
@@ -166,7 +199,7 @@ function Season({ seriesId, season }: { seriesId: number; season: SeriesDetail["
                 <button
                   aria-label={e.watched ? "Mark as unwatched" : "Mark as watched"}
                   disabled={!e.aired && !e.watched}
-                  onClick={() => toggle.mutate(e)}
+                  onClick={() => onToggle(e)}
                   className={cx(
                     "flex size-9 items-center justify-center rounded-full border-2 transition active:scale-90 disabled:opacity-30",
                     e.watched ? "border-accent bg-accent text-accent-ink" : "border-line text-transparent hover:border-accent",
@@ -179,6 +212,12 @@ function Season({ seriesId, season }: { seriesId: number; season: SeriesDetail["
           </ul>
         </div>
       )}
+      <CatchUp
+        earlier={asking?.earlier ?? 0}
+        onOnlyThis={() => asking && toggle.mutate({ number: asking.number, watched: false })}
+        onAll={() => asking && watchThrough.mutate(asking.number)}
+        onClose={() => setAsking(null)}
+      />
     </section>
   );
 }
