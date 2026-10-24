@@ -1,6 +1,6 @@
 /** API contract between apps/server and apps/web. Types only, plus a few pure constants. */
 
-export const STATUSES = ["watchlist", "watching", "paused", "completed", "dropped"] as const;
+export const STATUSES = ["watchlist", "watching", "saving", "paused", "completed", "dropped"] as const;
 export type Status = (typeof STATUSES)[number];
 
 export interface EpisodeRef {
@@ -23,12 +23,29 @@ export interface SeriesCard {
   posterPath: string | null;
   backdropPath: string | null;
   status: Status;
+  /** With the Saving up status: how far the saving is. */
+  saving: Saving | null;
   progress: EpisodeRef | null;
   next: Episode | null;
   watchedCount: number;
   airedCount: number;
   /** ISO datetime. */
   lastWatchedAt: string | null;
+}
+
+/** Saving up until a full season (target 0) or a number of Episodes is out. */
+export const SAVING_TARGETS = [0, 3, 5, 10] as const;
+export type SavingTarget = (typeof SAVING_TARGETS)[number];
+
+export interface Saving {
+  target: SavingTarget;
+  /** Episodes saved so far: aired, not watched. */
+  out: number;
+  /** How many are needed: the target, or the season's Episodes left. */
+  needed: number;
+  reached: boolean;
+  /** Air date of the last Episode needed, when known. */
+  completeOn: string | null;
 }
 
 export interface Home {
@@ -156,6 +173,7 @@ export interface JellyfinIntegration {
 export const STATUS_LABELS: Record<Status, string> = {
   watchlist: "Watchlist",
   watching: "Watching",
+  saving: "Saving up",
   paused: "Paused",
   completed: "Completed",
   dropped: "Dropped",

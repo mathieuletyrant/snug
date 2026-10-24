@@ -1,5 +1,6 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "../../identity/infrastructure/schema";
+import type { SavingTarget } from "@snug/shared";
 import type { Status } from "../domain/tracked-series";
 
 export const trackedSeries = sqliteTable(
@@ -10,6 +11,8 @@ export const trackedSeries = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     seriesId: integer("series_id").notNull(),
     status: text("status").$type<Status>().notNull(),
+    /** Saving up until a full season (0) or this many Episodes. */
+    savingTarget: integer("saving_target").$type<SavingTarget>().notNull().default(0),
     addedAt: integer("added_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.seriesId] })],

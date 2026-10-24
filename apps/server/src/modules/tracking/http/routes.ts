@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { STATUSES } from "@snug/shared";
+import { SAVING_TARGETS, STATUSES } from "@snug/shared";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { TrackingService } from "../application/tracking-service";
 
@@ -14,8 +14,11 @@ export const trackingRoutes = (tracking: TrackingService) =>
     .get("/library", async (c) => c.json(await tracking.library(c.var.user.id)))
     .get("/series/:id", async (c) => c.json(await tracking.detail(c.var.user.id, parse(id, c.req.param("id")))))
     .put("/series/:id", async (c) => {
-      const { status } = parse(z.object({ status: z.enum(STATUSES) }), await jsonBody(c));
-      await tracking.track(c.var.user.id, parse(id, c.req.param("id")), status);
+      const { status, savingTarget } = parse(
+        z.object({ status: z.enum(STATUSES), savingTarget: z.union(SAVING_TARGETS.map((t) => z.literal(t))).optional() }),
+        await jsonBody(c),
+      );
+      await tracking.track(c.var.user.id, parse(id, c.req.param("id")), status, savingTarget);
       return c.body(null, 204);
     })
     .delete("/series/:id", async (c) => {

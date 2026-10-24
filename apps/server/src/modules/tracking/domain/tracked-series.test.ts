@@ -19,8 +19,14 @@ describe("TrackedSeries", () => {
     expect(TrackedSeries.start("u", 1, "watching", now).nextEpisode(episodes)).toEqual(ep(1, 1));
   });
 
-  test("a Watch pulls Paused and Watchlist back to Watching, never Dropped", () => {
-    for (const [from, to] of [["paused", "watching"], ["watchlist", "watching"], ["dropped", "dropped"]] as const) {
+  test("a Watch pulls Paused, Saving up and Watchlist back to Watching, never Dropped", () => {
+    const cases = [
+      ["paused", "watching"],
+      ["saving", "watching"],
+      ["watchlist", "watching"],
+      ["dropped", "dropped"],
+    ] as const;
+    for (const [from, to] of cases) {
       const t = TrackedSeries.start("u", 1, from, now);
       t.watch(ep(1, 1), now);
       expect(t.status).toBe(to);
@@ -55,4 +61,21 @@ test("availability: Ready once the Next Episode has aired, Upcoming otherwise", 
   expect(availability(ep(1, 1, "2026-10-22"), today)).toBe("upcoming");
   expect(availability(ep(1, 1, null), today)).toBe("upcoming");
   expect(availability(null, today)).toBe("upcoming");
+});
+
+test("Saving up a full season: reached once every Episode of the next season has aired", () => {
+  // Season 1 watched; season 2 has 3 Episodes, 2 aired, the last one on 28 Oct.
+  const list = [ep(1, 1), ep(2, 1, "2026-10-07"), ep(2, 2, "2026-10-14"), ep(2, 3, "2026-10-28")];
+  const t = TrackedSeries.start("u", 1, "watching", now);
+  t.watch(ep(1, 1), now);
+  t.changeStatus("saving", 0);
+  expect(t.saving(list, today)).toEqual({ target: 0, out: 2, needed: 3, reached: false, completeOn: "2026-10-28" });
+  expect(t.saving(list, "2026-10-28").reached).toBe(true);
+});
+
+test("Saving up a number of Episodes counts across seasons", () => {
+  const list = [ep(1, 1), ep(1, 2), ep(2, 1, "2026-10-07"), ep(2, 2, "2026-11-04")];
+  const t = TrackedSeries.start("u", 1, "saving", now);
+  t.changeStatus("saving", 3);
+  expect(t.saving(list, today)).toEqual({ target: 3, out: 3, needed: 3, reached: true, completeOn: "2026-10-07" });
 });

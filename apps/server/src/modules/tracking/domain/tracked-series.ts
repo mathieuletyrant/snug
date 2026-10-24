@@ -1,4 +1,4 @@
-import type { EpisodeRef, Status } from "@snug/shared";
+import type { EpisodeRef, Saving, SavingTarget, Status } from "@snug/shared";
 
 export { STATUSES, type EpisodeRef, type Status } from "@snug/shared";
 
@@ -24,18 +24,31 @@ export class TrackedSeries {
     private _status: Status,
     private readonly _watches: Map<string, Watch>,
     readonly addedAt: Date,
+    private _savingTarget: SavingTarget = 0,
   ) {}
 
   static start(userId: string, seriesId: number, status: Status, now: Date) {
     return new TrackedSeries(userId, seriesId, status, new Map(), now);
   }
 
-  static restore(p: { userId: string; seriesId: number; status: Status; watches: Watch[]; addedAt: Date }) {
-    return new TrackedSeries(p.userId, p.seriesId, p.status, new Map(p.watches.map((w) => [keyOf(w), w])), p.addedAt);
+  static restore(p: {
+    userId: string;
+    seriesId: number;
+    status: Status;
+    watches: Watch[];
+    addedAt: Date;
+    savingTarget: SavingTarget;
+  }) {
+    const watches = new Map(p.watches.map((w) => [keyOf(w), w]));
+    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget);
   }
 
   get status() {
     return this._status;
+  }
+
+  get savingTarget() {
+    return this._savingTarget;
   }
 
   get watches(): Watch[] {
@@ -46,19 +59,51 @@ export class TrackedSeries {
     return this._watches.has(keyOf(ep));
   }
 
-  /** Watching again pulls a Paused or Watchlist Series back to Watching; Dropped stays Dropped. */
+  /** Watching again pulls a Paused, Saving up or Watchlist Series back to Watching; Dropped stays Dropped. */
   watch(ep: EpisodeRef, at: Date) {
     const key = keyOf(ep);
     if (!this._watches.has(key)) this._watches.set(key, { season: ep.season, number: ep.number, watchedAt: at });
-    if (this._status === "paused" || this._status === "watchlist") this._status = "watching";
+    if (this._status === "paused" || this._status === "saving" || this._status === "watchlist") this._status = "watching";
   }
 
   unwatch(ep: EpisodeRef) {
     this._watches.delete(keyOf(ep));
   }
 
-  changeStatus(status: Status) {
+  /** `savingTarget` only matters for Saving up: a full season (0) or a number of Episodes. */
+  changeStatus(status: Status, savingTarget?: SavingTarget) {
     this._status = status;
+    if (savingTarget !== undefined) this._savingTarget = savingTarget;
+  }
+
+  /**
+   * Saving up: the Episodes after the Progress not watched yet, and how many of them aired. A full season
+   * counts the Next Episode's season as TMDB lists it; a number counts across seasons.
+   */
+  saving(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string): Saving {
+    const next = this.nextEpisode(episodes);
+    const ahead = [...episodes]
+      .sort(compareEpisodes)
+      .filter((e) => next && compareEpisodes(e, next) >= 0 && !this.hasWatched(e));
+    const out = ahead.filter((e) => hasAired(e, today)).length;
+    if (this._savingTarget === 0) {
+      const season = ahead.filter((e) => e.season === next?.season);
+      const last = season.at(-1);
+      return {
+        target: 0,
+        out: season.filter((e) => hasAired(e, today)).length,
+        needed: season.length,
+        reached: season.length > 0 && season.every((e) => hasAired(e, today)),
+        completeOn: last?.airDate ?? null,
+      };
+    }
+    return {
+      target: this._savingTarget,
+      out,
+      needed: this._savingTarget,
+      reached: out >= this._savingTarget,
+      completeOn: ahead[this._savingTarget - 1]?.airDate ?? null,
+    };
   }
 
   /** Furthest Episode watched, regardless of rewatches. */

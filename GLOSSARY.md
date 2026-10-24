@@ -35,6 +35,7 @@ Where a Series stands for a User: Watchlist, Watching, Paused, Completed or Drop
 
 - **Watchlist**: not started yet.
 - **Watching**: in progress; the only Status shown on the home screen.
+- **Saving up**: waiting for a full season, or a number of Episodes, before watching; Ready once enough is out, returns to Watching when a new Watch arrives.
 - **Paused**: hidden; returns to Watching when a new Watch arrives.
 - **Completed**: the Series has ended (ended or canceled) and no Episode is left after the Progress.
 - **Dropped**: hidden for good; never returns on its own.
