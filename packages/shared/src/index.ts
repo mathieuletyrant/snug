@@ -97,13 +97,18 @@ export interface Preferences {
   hideUndatedUpcoming: boolean;
   /** Spoiler shield: which titles of Episodes not watched yet are hidden. */
   episodeTitles: EpisodeTitles;
+  /** New mode: for how many days a fresh Episode of a Series you were caught up on goes first on Home; 0 = off. */
+  newForDays: NewForDays;
 }
 
 /** "hideUnwatched" keeps the Next Episode's title; "hideAll" hides it too. */
 export const EPISODE_TITLES = ["show", "hideUnwatched", "hideAll"] as const;
 export type EpisodeTitles = (typeof EPISODE_TITLES)[number];
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show" };
+export const NEW_FOR_DAYS = [0, 3, 7, 14] as const;
+export type NewForDays = (typeof NEW_FOR_DAYS)[number];
+
+export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show", newForDays: 7 };
 
 /** Whether the spoiler shield hides an Episode's title. */
 export function isTitleHidden(p: Preferences, e: { watched: boolean; next: boolean }) {

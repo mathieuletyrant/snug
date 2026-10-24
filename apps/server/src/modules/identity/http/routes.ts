@@ -1,6 +1,6 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
-import { EPISODE_TITLES } from "@snug/shared";
+import { EPISODE_TITLES, NEW_FOR_DAYS } from "@snug/shared";
 import { ForbiddenError } from "../../../shared/errors";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { IdentityService } from "../application/identity-service";
@@ -30,7 +30,11 @@ export const identityRoutes = (identity: IdentityService) =>
     .get("/preferences", (c) => c.json(identity.preferences(c.var.user.id)))
     .patch("/preferences", async (c) => {
       const changes = parse(z
-        .object({ hideUndatedUpcoming: z.boolean(), episodeTitles: z.enum(EPISODE_TITLES) })
+        .object({
+          hideUndatedUpcoming: z.boolean(),
+          episodeTitles: z.enum(EPISODE_TITLES),
+          newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
+        })
         .partial()
         .strict(), await jsonBody(c));
       return c.json(identity.updatePreferences(c.var.user.id, changes));

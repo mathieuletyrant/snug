@@ -7,6 +7,8 @@ import {
   type JellyfinEventLog,
   type JellyfinIntegration,
   type Me,
+  NEW_FOR_DAYS,
+  type NewForDays,
   STATUS_LABELS,
   STATUSES,
   type Status,
@@ -169,6 +171,19 @@ function Display() {
           value={preferences.episodeTitles}
           onChange={(episodeTitles) => update.mutate({ episodeTitles: episodeTitles as EpisodeTitles })}
           options={EPISODE_TITLES.map((value) => ({ value, label: TITLE_LABELS[value] }))}
+        />
+      </div>
+      <div className="py-2">
+        <span className="block font-semibold">New episodes first</span>
+        <span className="mb-2 block text-sm text-muted">
+          A new episode of a series you were caught up on goes first on Home, with a New badge.
+        </span>
+        <Chips
+          label="New episodes first"
+          small
+          value={String(preferences.newForDays)}
+          onChange={(days) => update.mutate({ newForDays: Number(days) as NewForDays })}
+          options={NEW_FOR_DAYS.map((d) => ({ value: String(d), label: d === 0 ? "Off" : `${d} days` }))}
         />
       </div>
     </Card>

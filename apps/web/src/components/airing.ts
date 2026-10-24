@@ -14,6 +14,17 @@ export function airing(card: Pick<SeriesCard, "next" | "airedCount" | "watchedCo
   return { kind: "dated", date };
 }
 
+/**
+ * New mode: the Next Episode aired in the last `days` days, after the last Watch, so you were caught up and
+ * waiting for it. A Series being binged (last Watch after the air date) is not new.
+ */
+export function isNew(card: Pick<SeriesCard, "next" | "lastWatchedAt">, days: number, now = new Date()) {
+  const date = card.next?.airDate;
+  if (!date || !card.lastWatchedAt || date > localDay(now)) return false;
+  if (daysUntil(date, now) < -days) return false;
+  return localDay(new Date(card.lastWatchedAt)) <= date;
+}
+
 const daysUntil = (date: string, now: Date) =>
   Math.round((new Date(`${date}T00:00:00`).getTime() - new Date(now.toDateString()).getTime()) / 86_400_000);
 
