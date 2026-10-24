@@ -134,6 +134,29 @@ export interface JellyfinEventLog {
 export interface JellyfinIntegration {
   webhookPath: string;
   events: JellyfinEventLog[];
+  /** Play button: whether the admin set up the Jellyfin server, and this User's Jellyfin user. */
+  playback: { server: boolean; jellyfinUserId: string | null };
+}
+
+/** The Jellyfin server Snug talks to for the Play button (admin). The API key is never sent back. */
+export interface JellyfinServer {
+  /** How Snug reaches Jellyfin, e.g. http://jellyfin_server_1:8096. */
+  url: string;
+  /** How phones reach Jellyfin, for "Open in Jellyfin" links, e.g. https://tv.example.com. */
+  publicUrl: string;
+  hasApiKey: boolean;
+}
+
+export interface JellyfinUser {
+  id: string;
+  name: string;
+}
+
+/** Where an Episode can be played: Jellyfin players accepting remote control, and a link to its page. */
+export interface PlayOptions {
+  players: { sessionId: string; name: string }[];
+  /** Null without a public URL. */
+  openUrl: string | null;
 }
 
 export const STATUS_LABELS: Record<Status, string> = {
