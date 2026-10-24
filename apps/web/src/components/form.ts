@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import { ApiError } from "../api";
 
 type Field = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -17,7 +17,7 @@ function messageFor(el: Field): string {
  * Field-level errors for a form: client checks on submit (required, email, minLength),
  * then field errors returned by the API. Each error clears as soon as its field is edited.
  */
-export function useFormErrors() {
+function useFormErrors() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -53,4 +53,23 @@ export function useFormErrors() {
   };
 
   return { errors, formError, onSubmit, fromError, clear, formProps: { noValidate: true } };
+}
+
+/**
+ * A form's text fields with their errors: `field("email")` gives an Input its name, value, onChange and
+ * error, and editing a field clears its error.
+ */
+export function useForm<T extends Record<string, string>>(initial: T) {
+  const form = useFormErrors();
+  const [values, setValues] = useState(initial);
+  const field = (name: keyof T & string) => ({
+    name,
+    value: values[name],
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
+      setValues((current) => ({ ...current, [name]: e.target.value }));
+      form.clear(name);
+    },
+    error: form.errors[name],
+  });
+  return { ...form, values, field, reset: () => setValues(initial) };
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ApiError, authClient, queryClient } from "../api";
-import { useFormErrors } from "../components/form";
-import { Button, Card, ErrorText, Input } from "../components/ui";
+import { useForm } from "../components/form";
+import { Button, Card, CenteredPage, ErrorText, Input } from "../components/ui";
 
 /** better-auth error codes that belong to a single field. */
 const FIELD_OF_CODE: Record<string, string> = {
@@ -14,67 +14,47 @@ const FIELD_OF_CODE: Record<string, string> = {
 
 /** Sign in, or create the admin account on first run. */
 export function AuthPage({ firstRun }: { firstRun: boolean }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const form = useForm({ name: "", email: "", password: "" });
   const [pending, setPending] = useState(false);
-  const { errors, formError, onSubmit, fromError, clear, formProps } = useFormErrors();
-
-  const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [field]: e.target.value });
-    clear(field);
-  };
 
   const submit = async () => {
     setPending(true);
+    const { name, email, password } = form.values;
     const { error } = firstRun
-      ? await authClient.signUp.email(form)
-      : await authClient.signIn.email({ email: form.email, password: form.password });
+      ? await authClient.signUp.email({ name, email, password })
+      : await authClient.signIn.email({ email, password });
     setPending(false);
     if (!error) return queryClient.invalidateQueries();
     const field = FIELD_OF_CODE[error.code ?? ""];
     const message = error.status === 429 ? "Too many attempts, wait a minute and try again" : (error.message ?? "Something went wrong");
-    fromError(new ApiError(error.status, message, field ? { [field]: message } : undefined));
+    form.fromError(new ApiError(error.status, message, field ? { [field]: message } : undefined));
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4 py-10">
-      <img src="/icon.svg" alt="" className="mb-6 size-16 rounded-2xl" />
-      <h1 className="mb-1 text-4xl font-semibold">{firstRun ? "Welcome to Snug" : "Welcome back"}</h1>
-      <p className="mb-8 text-muted">
-        {firstRun ? "Create your account. You'll be the admin of this Snug." : "Grab a blanket and sign in."}
-      </p>
+    <CenteredPage
+      icon={<img src="/icon.svg" alt="" className="size-16 rounded-2xl" />}
+      title={firstRun ? "Welcome to Snug" : "Welcome back"}
+      intro={firstRun ? "Create your account. You'll be the admin of this Snug." : "Grab a blanket and sign in."}
+    >
       <Card>
-        <form {...formProps} onSubmit={onSubmit(submit)} className="space-y-4">
-          {firstRun && (
-            <Input label="Name" name="name" required autoComplete="name" value={form.name} onChange={set("name")} error={errors.name} />
-          )}
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            value={form.email}
-            onChange={set("email")}
-            error={errors.email}
-          />
+        <form {...form.formProps} onSubmit={form.onSubmit(submit)} className="space-y-4">
+          {firstRun && <Input label="Name" required autoComplete="name" {...form.field("name")} />}
+          <Input label="Email" type="email" required autoComplete="email" {...form.field("email")} />
           <Input
             label="Password"
-            name="password"
             type="password"
             required
             minLength={firstRun ? 10 : undefined}
             autoComplete={firstRun ? "new-password" : "current-password"}
-            value={form.password}
-            onChange={set("password")}
-            error={errors.password}
             hint={firstRun ? "At least 10 characters" : undefined}
+            {...form.field("password")}
           />
-          <ErrorText error={formError} />
+          <ErrorText error={form.formError} />
           <Button className="w-full" disabled={pending}>
             {firstRun ? "Create account" : "Sign in"}
           </Button>
         </form>
       </Card>
-    </div>
+    </CenteredPage>
   );
 }

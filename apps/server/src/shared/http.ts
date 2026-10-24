@@ -26,7 +26,7 @@ export const jsonBody = (c: Context) =>
   });
 
 /** HTTPS directly, or through a reverse proxy terminating TLS. */
-export const isHttps = (req: Request) =>
+const isHttps = (req: Request) =>
   new URL(req.url).protocol === "https:" || req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
 
 /**

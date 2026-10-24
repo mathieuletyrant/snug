@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { SeriesSummary } from "@snug/shared";
 import { Search } from "lucide-react";
 import { useDeferredValue, useState } from "react";
-import { Link } from "wouter";
 import { api } from "../api";
+import { PosterTile, TileLine } from "../components/poster-tile";
 import { PosterGridSkeleton } from "../components/skeletons";
-import { Empty, PageTitle, Poster, POSTER_GRID } from "../components/ui";
+import { Empty, PageTitle, POSTER_GRID, SearchInput } from "../components/ui";
 
 export function SearchPage() {
   const [query, setQuery] = useState("");
@@ -20,26 +20,23 @@ export function SearchPage() {
   return (
     <>
       <PageTitle>Search</PageTitle>
-      <div className="relative mb-6">
-        <Search className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted" />
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="A series title…"
-          className="w-full rounded-2xl border border-line bg-surface py-3.5 pr-4 pl-12 placeholder:text-muted/60 focus:border-accent focus:outline-none"
-        />
-      </div>
+      <SearchInput
+        icon
+        aria-label="Search a series"
+        autoFocus
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="A series title…"
+        className="mb-6"
+      />
       {isFetching && !data ? (
         <PosterGridSkeleton count={8} />
       ) : data?.length ? (
         <div className={POSTER_GRID}>
           {data.map((s) => (
-            <Link key={s.tmdbId} href={`/series/${s.tmdbId}`} className="group space-y-1.5">
-              <Poster path={s.posterPath} name={s.name} className="w-full transition group-hover:-translate-y-0.5" />
-              <p className="truncate text-xs font-semibold sm:text-sm">{s.name}</p>
-              <p className="text-[11px] text-muted sm:text-xs">{s.year ?? "—"}</p>
-            </Link>
+            <PosterTile key={s.tmdbId} href={`/series/${s.tmdbId}`} posterPath={s.posterPath} name={s.name}>
+              <TileLine>{s.year ?? "—"}</TileLine>
+            </PosterTile>
           ))}
         </div>
       ) : (

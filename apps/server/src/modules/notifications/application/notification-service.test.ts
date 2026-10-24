@@ -1,18 +1,10 @@
-import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
-import { join } from "node:path";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
-import type { Db } from "../../../shared/db";
+import { testDb } from "../../../shared/testing";
 import type { PushTarget, WebPushSender } from "../infrastructure/web-push-sender";
 import { NotificationService } from "./notification-service";
 
 function setup(statusByEndpoint: Record<string, number>) {
-  const sqlite = new Database(":memory:");
-  const db = drizzle({ client: sqlite }) as unknown as Db;
-  migrate(db, { migrationsFolder: join(import.meta.dir, "../../../../drizzle") });
-  const now = Math.floor(Date.now() / 1000);
-  sqlite.run(`insert into user (id, name, email, email_verified, created_at, updated_at) values ('u', 'U', 'u@x.io', 0, ${now}, ${now})`);
+  const { db } = testDb();
   const sent: string[] = [];
   const sender = {
     publicKey: "key",

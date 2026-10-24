@@ -72,7 +72,6 @@ export class IdentityService {
       .run();
     return data;
   }
-
 }
 
 /** One secret token per User, created on first use, rotatable. */

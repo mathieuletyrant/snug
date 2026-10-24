@@ -90,6 +90,10 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     notifications  Web Push to the User's devices
     import       JSON export → TrackedSeries
 apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA
+  src/pages        one file per screen (settings/: one per tab), made of components
+  src/components   ui/ building blocks (Button, Chips, Card, Poster…), series/ series pieces,
+                   layout, sheets, forms
+  src/lib          pure helpers (formatting, episode rules), tested
 packages/shared  API contract types
 ```
 
