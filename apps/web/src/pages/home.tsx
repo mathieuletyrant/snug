@@ -7,6 +7,7 @@ import { relativeDay } from "../components/airing";
 import { useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
+import { EpisodeTitle } from "../components/spoilers";
 import { Backdrop, Button, cx, Empty, PageTitle, Poster, POSTER_GRID, Skeleton } from "../components/ui";
 
 const greeting = () => {
@@ -98,7 +99,10 @@ function ReadyCard({ card }: { card: SeriesCard }) {
             {next && (
               <p className="truncate text-xs text-muted">
                 <span className="font-bold text-accent">{episodeCode(next)}</span>
-                <span className="hidden sm:inline"> · {next.name}</span>
+                <span className="hidden sm:inline">
+                  {" · "}
+                  <EpisodeTitle name={next.name} watched={false} next />
+                </span>
               </p>
             )}
           </div>

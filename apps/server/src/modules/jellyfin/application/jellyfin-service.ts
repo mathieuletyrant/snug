@@ -1,5 +1,5 @@
 import { desc, eq, and, ne, notInArray } from "drizzle-orm";
-import { type EpisodeRef, episodeCode, type JellyfinEventLog } from "@snug/shared";
+import { type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
 import type { CatalogService } from "../../catalog/application/catalog-service";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { Db } from "../../../shared/db";
@@ -106,12 +106,13 @@ export class JellyfinService {
     try {
       const { next } = await this.tracking.detail(userId, seriesId);
       const today = new Date().toISOString().slice(0, 10);
+      const title = next && !isTitleHidden(this.identity.preferences(userId), { watched: false, next: true });
       await this.notifier.notify(userId, {
         title: `✓ ${name} ${episodeCode(ep)}`,
         body: !next
           ? "You're all caught up."
           : next.airDate && next.airDate <= today
-            ? `Next: ${episodeCode(next)} · ${next.name}`
+            ? `Next: ${episodeCode(next)}${title ? ` · ${next.name}` : ""}`
             : `Next: ${episodeCode(next)}${next.airDate ? ` on ${next.airDate}` : ", date to be announced"}`,
         url: `/series/${seriesId}`,
         tag: `series-${seriesId}`,
