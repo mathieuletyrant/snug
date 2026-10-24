@@ -2,6 +2,7 @@
  * Payloads from the Jellyfin Webhook plugin (Generic destination, default template or "Send All Properties").
  * Values may arrive as booleans or strings ("True"), numbers or numeric strings.
  */
+import { t } from "../../../shared/i18n";
 
 export type JellyfinEvent =
   | {
@@ -36,7 +37,7 @@ export function parseJellyfinEvent(body: Record<string, unknown>): JellyfinEvent
   const number = int(body.EpisodeNumber);
   const seriesName = str(body.SeriesName);
   if (season === undefined || number === undefined || !seriesName) {
-    return { kind: "ignored", reason: "Missing series name, season or episode number" };
+    return { kind: "ignored", reason: t().webhook.incomplete };
   }
   return {
     kind: "episode-watched",

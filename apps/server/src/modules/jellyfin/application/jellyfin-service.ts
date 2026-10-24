@@ -9,6 +9,7 @@ import type { Notifier } from "../../notifications/application/notification-serv
 import type { TrackingService } from "../../tracking/application/tracking-service";
 import { type JellyfinEvent, parseJellyfinEvent } from "../domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "../infrastructure/schema";
+import { t } from "../../../shared/i18n";
 
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;
@@ -44,7 +45,7 @@ export class JellyfinService {
     const userId = this.identity.webhookTokens.userIdOf(token);
     if (!userId) {
       log.warn("Webhook call with an unknown token (rotated? copied from another Snug?)");
-      throw new ForbiddenError("Unknown webhook token");
+      throw new ForbiddenError(t().errors.unknownWebhookToken);
     }
 
     const event = parseJellyfinEvent(body);
@@ -86,10 +87,10 @@ export class JellyfinService {
   }
 
   private async watch(userId: string, event: Extract<JellyfinEvent, { kind: "episode-watched" }>): Promise<Outcome> {
-    if (event.season === 0) return { outcome: "ignored", message: "Specials are not tracked" };
+    if (event.season === 0) return { outcome: "ignored", message: t().webhook.specials };
 
     const seriesId = await this.resolveSeries(event);
-    if (!seriesId) return { outcome: "error", message: "Could not find this series on TMDB" };
+    if (!seriesId) return { outcome: "error", message: t().webhook.notFound };
 
     // An Episode newer than the cached Catalog means the Series needs a refresh.
     const series = await this.catalog.ensure(seriesId);
@@ -98,7 +99,7 @@ export class JellyfinService {
     }
     await this.tracking.watchEpisode(userId, seriesId, event);
     void this.announce(userId, seriesId, series.name, event);
-    return { outcome: "watched", message: `Marked ${series.name} ${episodeCode(event)} as watched`, seriesId };
+    return { outcome: "watched", message: t().webhook.marked(series.name, episodeCode(event)), seriesId };
   }
 
   /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
@@ -110,10 +111,12 @@ export class JellyfinService {
       await this.notifier.notify(userId, {
         title: `✓ ${name} ${episodeCode(ep)}`,
         body: !next
-          ? "You're all caught up."
+          ? t().push.caughtUp
           : next.airDate && next.airDate <= today
-            ? `Next: ${episodeCode(next)}${title ? ` · ${next.name}` : ""}`
-            : `Next: ${episodeCode(next)}${next.airDate ? ` on ${next.airDate}` : ", date to be announced"}`,
+            ? t().push.next(episodeCode(next), title ? next.name : null)
+            : next.airDate
+              ? t().push.nextOn(episodeCode(next), next.airDate)
+              : t().push.nextUndated(episodeCode(next)),
         url: `/series/${seriesId}`,
         tag: `series-${seriesId}`,
       });

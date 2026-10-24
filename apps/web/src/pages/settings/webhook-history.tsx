@@ -3,14 +3,15 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Chips, cx, Skeleton } from "../../components/ui";
+import { useT } from "../../i18n";
 import { ago } from "../../lib/format";
 
 const OUTCOMES = ["all", "watched", "ignored", "error"] as const;
-const OUTCOME_LABELS = { all: "All", watched: "Watched", ignored: "Ignored", error: "Errors" };
 const DOT = { watched: "bg-sage", ignored: "bg-muted/50", error: "bg-rose" };
 
 /** Every call Jellyfin made to the webhook, newest first, with what Snug did and the raw payload. */
 export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) {
+  const t = useT();
   const [filter, setFilter] = useState<(typeof OUTCOMES)[number]>("all");
   const [all, setAll] = useState(false);
   const matching = events?.filter((e) => filter === "all" || e.outcome === filter) ?? [];
@@ -19,13 +20,13 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
   return (
     <div className="mt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-sans text-sm font-bold text-muted">Webhook history</h3>
+        <h3 className="font-sans text-sm font-bold text-muted">{t.integrations.jellyfin.history}</h3>
         <Chips
-          label="Webhook history filter"
+          label={t.integrations.jellyfin.historyFilter}
           small
           value={filter}
           onChange={setFilter}
-          options={OUTCOMES.map((o) => ({ value: o, label: OUTCOME_LABELS[o] }))}
+          options={OUTCOMES.map((o) => ({ value: o, label: t.integrations.jellyfin.outcomes[o] }))}
           className="-mx-1 px-1"
         />
       </div>
@@ -39,14 +40,14 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
           {!all && matching.length > shown.length && (
             <li>
               <button onClick={() => setAll(true)} className="w-full rounded-xl py-2 text-sm font-bold text-accent">
-                Show {matching.length - shown.length} more
+                {t.integrations.jellyfin.showMore(matching.length - shown.length)}
               </button>
             </li>
           )}
         </ul>
       ) : (
         <p className="rounded-xl bg-raised/40 px-4 py-6 text-center text-sm text-muted">
-          {events.length ? "Nothing matches this filter." : "No calls yet. Finish an episode in Jellyfin to see one here."}
+          {events.length ? t.integrations.jellyfin.noMatch : t.integrations.jellyfin.noCalls}
         </p>
       )}
     </div>
@@ -54,6 +55,7 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
 }
 
 function EventRow({ event: e }: { event: JellyfinEventLog }) {
+  const t = useT();
   return (
     <li className="rounded-xl px-3 py-2 odd:bg-raised/40">
       <details className="group">
@@ -70,7 +72,7 @@ function EventRow({ event: e }: { event: JellyfinEventLog }) {
               )}
             </p>
             <p className="text-xs text-muted">
-              {ago(e.receivedAt)} · {e.message}
+              {ago(t, e.receivedAt)} · {e.message}
             </p>
           </div>
           {e.payload && <ChevronDown className="mt-1 size-4 shrink-0 text-muted transition group-open:rotate-180" />}

@@ -1,15 +1,16 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import { ApiError } from "../api";
+import { type Messages, useT } from "../i18n";
 
 type Field = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /** Our own wording for the browser's constraint checks (its messages follow the OS language, not the app's). */
-function messageFor(el: Field): string {
+function messageFor(t: Messages, el: Field): string {
   const v = el.validity;
-  const label = el.dataset.label ?? "This field";
-  if (v.valueMissing) return `${label} is required`;
-  if (v.typeMismatch && el.type === "email") return "Enter a valid email, like you@example.com";
-  if (v.tooShort && el instanceof HTMLInputElement) return `Use at least ${el.minLength} characters`;
+  const label = el.dataset.label ?? t.form.thisField;
+  if (v.valueMissing) return t.form.required(label);
+  if (v.typeMismatch && el.type === "email") return t.form.email;
+  if (v.tooShort && el instanceof HTMLInputElement) return t.form.minLength(el.minLength);
   return el.validationMessage;
 }
 
@@ -18,6 +19,7 @@ function messageFor(el: Field): string {
  * then field errors returned by the API. Each error clears as soon as its field is edited.
  */
 function useFormErrors() {
+  const t = useT();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -29,8 +31,8 @@ function useFormErrors() {
       if (!el.name || !el.willValidate) continue;
       // `tooShort` is only reported for user-typed values; check minLength ourselves too.
       const short = el instanceof HTMLInputElement && el.minLength > 0 && el.value.length > 0 && el.value.length < el.minLength;
-      if (short) found[el.name] ??= `Use at least ${(el as HTMLInputElement).minLength} characters`;
-      else if (!el.checkValidity()) found[el.name] ??= messageFor(el);
+      if (short) found[el.name] ??= t.form.minLength((el as HTMLInputElement).minLength);
+      else if (!el.checkValidity()) found[el.name] ??= messageFor(t, el);
     }
     setErrors(found);
     setFormError(null);

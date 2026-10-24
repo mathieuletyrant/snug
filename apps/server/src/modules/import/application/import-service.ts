@@ -6,6 +6,7 @@ import { moduleLogger, reason } from "../../../shared/logger";
 import type { ImportEntry, TrackingService } from "../../tracking/application/tracking-service";
 import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "../domain/csv-import";
 import { parseImportFile } from "../domain/import-file";
+import { t } from "../../../shared/i18n";
 
 const IDLE: ImportProgress = { running: false, total: 0, done: 0, failed: 0 };
 
@@ -27,7 +28,7 @@ export class ImportService {
     try {
       entries = parseImportFile(json);
     } catch {
-      throw new InvalidInputError("This file is not a valid export");
+      throw new InvalidInputError(t().errors.invalidExport);
     }
     return this.run(userId, entries, []);
   }
@@ -82,7 +83,7 @@ export class ImportService {
   }
 
   private assertIdle(userId: string) {
-    if (this.progressOf(userId).running) throw new InvalidInputError("An import is still running, wait for it to finish");
+    if (this.progressOf(userId).running) throw new InvalidInputError(t().errors.importRunning);
   }
 
   progressOf(userId: string): ImportProgress {

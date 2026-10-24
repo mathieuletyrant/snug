@@ -11,6 +11,7 @@ import {
   type TrackedSeriesRepository,
   type Watch,
 } from "../domain/tracked-series";
+import { t } from "../../../shared/i18n";
 
 /** What tracking needs from the Catalog. */
 export interface CatalogPort {
@@ -86,7 +87,7 @@ export class TrackingService {
   async watchNext(userId: string, seriesId: number): Promise<Episode> {
     const [tracked, series] = await Promise.all([this.get(userId, seriesId), this.catalog.ensure(seriesId)]);
     const next = tracked.nextEpisode(this.aired(series));
-    if (!next) throw new NotFoundError("No aired Episode left to watch");
+    if (!next) throw new NotFoundError(t().errors.nothingToWatch);
     tracked.watch(next, this.now());
     await this.saveReconciled(tracked, series);
     return next;
@@ -176,7 +177,7 @@ export class TrackingService {
 
   private async get(userId: string, seriesId: number) {
     const tracked = await this.repo.find(userId, seriesId);
-    if (!tracked) throw new NotFoundError("Series is not tracked");
+    if (!tracked) throw new NotFoundError(t().errors.notTracked);
     return tracked;
   }
 

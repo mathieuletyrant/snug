@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ForbiddenError, InvalidInputError, NotFoundError } from "./errors";
 import { moduleLogger } from "./logger";
 import { maskTokens } from "./request-log";
+import { t } from "./i18n";
 
 const log = moduleLogger("http");
 
@@ -15,14 +16,14 @@ export const parse = <T>(schema: z.ZodType<T>, value: unknown): T => {
   if (!result.success) {
     const fields: Record<string, string> = {};
     for (const issue of result.error.issues) fields[String(issue.path[0] ?? "")] ??= issue.message;
-    throw new InvalidInputError("Please fix the highlighted fields", fields);
+    throw new InvalidInputError(t().errors.fixFields, fields);
   }
   return result.data;
 };
 
 export const jsonBody = (c: Context) =>
   c.req.json().catch(() => {
-    throw new InvalidInputError("Expected a JSON body");
+    throw new InvalidInputError(t().errors.expectedJson);
   });
 
 /** HTTPS directly, or through a reverse proxy terminating TLS. */
@@ -49,5 +50,5 @@ export const onError = (err: Error, c: Context) => {
     err instanceof NotFoundError ? 404 : err instanceof ForbiddenError ? 403 : err instanceof InvalidInputError ? 400 : 500;
   if (status === 500) log.error({ err }, `${c.req.method} ${maskTokens(c.req.path)} failed`);
   const fields = err instanceof InvalidInputError ? err.fields : undefined;
-  return c.json({ error: status === 500 ? "Something went wrong" : err.message, fields }, status);
+  return c.json({ error: status === 500 ? t().errors.somethingWrong : err.message, fields }, status);
 };

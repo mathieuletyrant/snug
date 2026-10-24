@@ -24,7 +24,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 🎬 **Spotarr**: a series identified from a shared reel lands on your Watchlist (series you already track keep their status).
 - 📡 **Sonarr import list**: your Watchlist as a Sonarr *Custom List* (TVDB ids), so adding a series in Snug gets it downloaded.
 - 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
-- 🌍 **Your language**: descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
+- 🌍 **Your language**: the whole app in English or French, notifications included; descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
 - 📱 **PWA**: installable, works offline for what you've already seen, mobile-first.
 - 🔐 **Accounts**: email + password, the first account is admin, sign-up closed afterwards.
 - ⚡ **Fast**: Bun + SQLite, TMDB images cached on disk, home served in ~20 ms for 190 series.

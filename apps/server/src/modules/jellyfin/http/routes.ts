@@ -4,12 +4,13 @@ import { InvalidInputError } from "../../../shared/errors";
 import { type AuthEnv, jsonBody } from "../../../shared/http";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { JellyfinService } from "../application/jellyfin-service";
+import { t } from "../../../shared/i18n";
 
 /** Called by Jellyfin; the token in the URL identifies the User. */
 export const jellyfinWebhook = (jellyfin: JellyfinService) =>
   new Hono().post("/:token", async (c) => {
     const body = await jsonBody(c);
-    if (!body || typeof body !== "object") throw new InvalidInputError("Expected a JSON object");
+    if (!body || typeof body !== "object") throw new InvalidInputError(t().errors.expectedJsonObject);
     return c.json(await jellyfin.handle(c.req.param("token"), body));
   });
 

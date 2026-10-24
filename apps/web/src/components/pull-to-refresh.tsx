@@ -1,6 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { queryClient } from "../api";
+import { useT } from "../i18n";
 import { cx } from "./ui";
 
 /** How far the finger must pull (after resistance) to refresh, and the furthest the page follows it. */
@@ -16,6 +17,7 @@ const standalone = () =>
  * an amber spinner turns with it and locks in past the threshold.
  */
 export function PullToRefresh({ children }: { children: ReactNode }) {
+  const t = useT();
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const start = useRef<{ x: number; y: number } | null>(null);
@@ -81,7 +83,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
             className={cx("size-5", refreshing && "animate-spin")}
             style={refreshing ? undefined : { transform: `rotate(${pull * 3}deg)` }}
           />
-          {refreshing && <span className="sr-only">Refreshing</span>}
+          {refreshing && <span className="sr-only">{t.refreshing}</span>}
         </div>
       </div>
       <div

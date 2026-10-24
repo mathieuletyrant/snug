@@ -6,6 +6,7 @@ import { moduleLogger } from "../../../shared/logger";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { IdentityService } from "../../identity/application/identity-service";
 import type { TrackingService } from "../../tracking/application/tracking-service";
+import { t } from "../../../shared/i18n";
 
 const log = moduleLogger("watchlist");
 
@@ -18,7 +19,7 @@ const body = z.object({ tmdbId: z.number().int().positive() });
 export const watchlistWebhook = (tracking: TrackingService, identity: IdentityService) =>
   new Hono().post("/:token", async (c) => {
     const userId = identity.watchlistTokens.userIdOf(c.req.param("token"));
-    if (!userId) throw new NotFoundError("Unknown watchlist token");
+    if (!userId) throw new NotFoundError(t().errors.unknownWatchlistToken);
     const { tmdbId } = parse(body, await jsonBody(c));
     const result = await tracking.addToWatchlist(userId, tmdbId);
     const who = identity.nameOf(userId);

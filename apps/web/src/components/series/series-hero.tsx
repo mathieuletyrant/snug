@@ -1,6 +1,7 @@
 import { episodeCode, type SeriesDetail } from "@snug/shared";
 import type { ReactNode } from "react";
 import { image } from "../../api";
+import { useT } from "../../i18n";
 import { BackButton, Poster, ProgressBar } from "../ui";
 
 /**
@@ -8,6 +9,7 @@ import { BackButton, Poster, ProgressBar } from "../ui";
  * (actions, overview). Phones: poster + title, then children full width. Desktop: everything right of the poster.
  */
 export function SeriesHero({ series, children }: { series: SeriesDetail; children: ReactNode }) {
+  const t = useT();
   const backdrop = image(series.backdropPath, "w1280");
   return (
     <>
@@ -31,8 +33,8 @@ export function SeriesHero({ series, children }: { series: SeriesDetail; childre
         <header className="flex flex-col justify-end gap-2 md:justify-start md:pt-6">
           <h1 className="text-3xl leading-tight font-semibold md:text-5xl">{series.name}</h1>
           <p className="text-sm text-muted">
-            {series.year ?? "—"} · {series.ended ? "Ended" : "Airing"}
-            {series.progress && ` · at ${episodeCode(series.progress)}`}
+            {series.year ?? "—"} · {series.ended ? t.series.ended : t.series.airing}
+            {series.progress && ` · ${t.series.at(episodeCode(series.progress))}`}
           </p>
           {series.airedCount > 0 && (
             <ProgressBar value={series.watchedCount} max={series.airedCount} className="max-w-xs" />
