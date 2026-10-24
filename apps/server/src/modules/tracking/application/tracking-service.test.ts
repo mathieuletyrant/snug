@@ -84,3 +84,25 @@ test("adding to the Watchlist from another app never changes a Series already tr
   expect(await tracking.addToWatchlist("u", 2)).toEqual({ status: "watching", added: false });
   await expect(tracking.addToWatchlist("u", 99)).rejects.toThrow();
 });
+
+test("catching up watches every aired Episode before the one marked, across seasons", async () => {
+  const twoSeasons: Series = {
+    ...series(1, false, []),
+    episodes: [
+      { season: 1, number: 1, name: "", airDate: "2026-01-01" },
+      { season: 1, number: 2, name: "", airDate: "2026-01-08" },
+      { season: 2, number: 1, name: "", airDate: "2026-10-01" },
+      { season: 2, number: 2, name: "", airDate: "2026-10-08" },
+      { season: 2, number: 3, name: "", airDate: "2026-10-15" },
+    ],
+  };
+  const tracking = setup([twoSeasons]);
+  await tracking.watchEpisode("u", 1, { season: 1, number: 1 });
+
+  await tracking.watchThrough("u", 1, { season: 2, number: 2 });
+
+  const watched = (await tracking.detail("u", 1)).seasons.flatMap((s) =>
+    s.episodes.filter((e) => e.watched).map((e) => `${s.number}x${e.number}`),
+  );
+  expect(watched).toEqual(["1x1", "1x2", "2x1", "2x2"]);
+});

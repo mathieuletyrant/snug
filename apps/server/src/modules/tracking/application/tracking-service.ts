@@ -4,6 +4,7 @@ import { today } from "../../../shared/async";
 import { NotFoundError } from "../../../shared/errors";
 import {
   availability,
+  compareEpisodes,
   type EpisodeRef,
   type Status,
   TrackedSeries,
@@ -62,6 +63,16 @@ export class TrackingService {
     const tracked =
       (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
     tracked.watch(ep, at);
+    await this.saveReconciled(tracked, series);
+  }
+
+  /** Catch up: watches an Episode and every aired Episode before it not watched yet. */
+  async watchThrough(userId: string, seriesId: number, ep: EpisodeRef) {
+    const series = await this.catalog.ensure(seriesId);
+    const tracked =
+      (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
+    for (const earlier of this.aired(series).filter((e) => compareEpisodes(e, ep) < 0)) tracked.watch(earlier, this.now());
+    tracked.watch(ep, this.now());
     await this.saveReconciled(tracked, series);
   }
 
