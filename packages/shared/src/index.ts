@@ -97,13 +97,46 @@ export interface Preferences {
   hideUndatedUpcoming: boolean;
   /** Spoiler shield: which titles of Episodes not watched yet are hidden. */
   episodeTitles: EpisodeTitles;
+  /** The app the ▶︎ sheet opens an Episode in. */
+  watchApp: WatchApp;
+  /** With watchApp "custom": a link with {tmdbId}, {season}, {episode} and {itemId} in it. */
+  watchLink: string;
 }
+
+export const WATCH_APPS = ["jellyfin", "jellytv", "custom"] as const;
+export type WatchApp = (typeof WATCH_APPS)[number];
 
 /** "hideUnwatched" keeps the Next Episode's title; "hideAll" hides it too. */
 export const EPISODE_TITLES = ["show", "hideUnwatched", "hideAll"] as const;
 export type EpisodeTitles = (typeof EPISODE_TITLES)[number];
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show" };
+export const DEFAULT_PREFERENCES: Preferences = {
+  hideUndatedUpcoming: false,
+  episodeTitles: "show",
+  watchApp: "jellyfin",
+  watchLink: "",
+};
+
+/**
+ * The link that opens an Episode in the chosen app. Jellyfin's page needs the server's public URL and the
+ * Episode's Jellyfin id; JellyTV plays the Jellyfin id when known, else opens the Episode by its TMDB id.
+ * Null when the app can't be reached with what is known.
+ */
+export function watchLink(
+  p: Pick<Preferences, "watchApp" | "watchLink">,
+  e: { tmdbId: number; season: number; episode: number; itemId: string | null; jellyfinUrl: string | null },
+): string | null {
+  if (p.watchApp === "jellyfin") return e.jellyfinUrl && e.itemId && `${e.jellyfinUrl}/web/#/details?id=${e.itemId}`;
+  if (p.watchApp === "jellytv") {
+    return e.itemId ? `jellytv://play/${e.itemId}` : `jellytv://tv/${e.tmdbId}/season/${e.season}/episode/${e.episode}`;
+  }
+  if (!p.watchLink || (p.watchLink.includes("{itemId}") && !e.itemId)) return null;
+  return p.watchLink
+    .replaceAll("{tmdbId}", String(e.tmdbId))
+    .replaceAll("{season}", String(e.season))
+    .replaceAll("{episode}", String(e.episode))
+    .replaceAll("{itemId}", e.itemId ?? "");
+}
 
 /** Whether the spoiler shield hides an Episode's title. */
 export function isTitleHidden(p: Preferences, e: { watched: boolean; next: boolean }) {
@@ -166,9 +199,12 @@ export interface JellyfinUser {
 
 /** Where an Episode can be played: Jellyfin players accepting remote control, and a link to its page. */
 export interface PlayOptions {
+  /** Empty until the admin sets up Jellyfin and the User picks their Jellyfin user. */
   players: { sessionId: string; name: string }[];
-  /** Null without a public URL. */
-  openUrl: string | null;
+  /** The Episode's Jellyfin id; null without a Jellyfin server, or when Jellyfin doesn't have it. */
+  itemId: string | null;
+  /** The server's public URL, for links to its pages; null when not set. */
+  jellyfinUrl: string | null;
 }
 
 export const STATUS_LABELS: Record<Status, string> = {

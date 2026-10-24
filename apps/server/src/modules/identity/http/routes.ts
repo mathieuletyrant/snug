@@ -1,6 +1,6 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
-import { EPISODE_TITLES } from "@snug/shared";
+import { EPISODE_TITLES, WATCH_APPS } from "@snug/shared";
 import { ForbiddenError } from "../../../shared/errors";
 import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
 import type { IdentityService } from "../application/identity-service";
@@ -29,10 +29,22 @@ export const identityRoutes = (identity: IdentityService) =>
     .get("/me", (c) => c.json(identity.me(c.var.user)))
     .get("/preferences", (c) => c.json(identity.preferences(c.var.user.id)))
     .patch("/preferences", async (c) => {
-      const changes = parse(z
-        .object({ hideUndatedUpcoming: z.boolean(), episodeTitles: z.enum(EPISODE_TITLES) })
-        .partial()
-        .strict(), await jsonBody(c));
+      const changes = parse(
+        z
+          .object({
+            hideUndatedUpcoming: z.boolean(),
+            episodeTitles: z.enum(EPISODE_TITLES),
+            watchApp: z.enum(WATCH_APPS),
+            // An app's link (scheme://…) or a web page; never a script.
+            watchLink: z.union([
+              z.literal(""),
+              z.string().trim().max(500).regex(/^(?!javascript:|data:)[a-z][a-z0-9+.-]*:\S+$/i, "Use a link like app://…"),
+            ]),
+          })
+          .partial()
+          .strict(),
+        await jsonBody(c),
+      );
       return c.json(identity.updatePreferences(c.var.user.id, changes));
     })
     .get("/users", requireAdmin(identity), (c) => c.json(identity.listUsers()))

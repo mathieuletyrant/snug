@@ -50,8 +50,11 @@ test("plays an Episode on a player that accepts remote control, never on another
   const ep = { season: 1, number: 4 };
   expect(await playback.options("u", 95396, ep)).toEqual({
     players: [{ sessionId: "tv", name: "Living room · JellyTV" }],
-    openUrl: "https://tv.example.com/web/#/details?id=e4",
+    itemId: "e4",
+    jellyfinUrl: "https://tv.example.com",
   });
+  // Not in Jellyfin: no players and no id, the app can still be opened by TMDB id.
+  expect(await playback.options("u", 1, ep)).toEqual({ players: [], itemId: null, jellyfinUrl: "https://tv.example.com" });
 
   await playback.play("u", 95396, ep, "tv");
   expect(calls).toContain("POST /Sessions/tv/Playing?playCommand=PlayNow&itemIds=e4");
@@ -65,4 +68,5 @@ test("a server that doesn't answer is not saved", async () => {
     "Jellyfin refused the API key",
   );
   expect(playback.server()).toEqual({ url: "", publicUrl: "", hasApiKey: false });
+  expect(await playback.options("u", 95396, { season: 1, number: 4 })).toEqual({ players: [], itemId: null, jellyfinUrl: null });
 });

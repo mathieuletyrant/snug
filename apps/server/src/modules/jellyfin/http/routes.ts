@@ -59,7 +59,10 @@ export const jellyfinRoutes = (
 /** The Play button: whether it shows, where an Episode can play, and playing it. */
 export const playRoutes = (playback: PlaybackService) =>
   new Hono<AuthEnv>()
-    .get("/", (c) => c.json({ enabled: playback.enabled(c.var.user.id) }))
+    .get("/", (c) => {
+      const server = playback.server();
+      return c.json({ players: playback.enabled(c.var.user.id), jellyfinWeb: !!server.url && !!server.publicUrl });
+    })
     .get("/:id/:season/:number", async (c) => {
       const p = parse(episodeParams, c.req.param());
       return c.json(await playback.options(c.var.user.id, p.id, p));

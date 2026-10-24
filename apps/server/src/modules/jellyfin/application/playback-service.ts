@@ -54,21 +54,28 @@ export class PlaybackService {
       .run();
   }
 
-  /** The button shows once the server is set up and the User picked their Jellyfin user. */
+  /** Whether the ▶︎ sheet can list this User's Jellyfin players. */
   enabled(userId: string) {
     return !!this.read("jellyfin_url") && !!this.linkedUser(userId);
   }
 
   // ---- Playing
 
+  /**
+   * What the ▶︎ sheet offers. Without a Jellyfin server it's empty, and the sheet still opens the chosen app
+   * by TMDB id; an Episode Jellyfin doesn't have only leaves out the players and the Jellyfin id.
+   */
   async options(userId: string, seriesId: number, ep: EpisodeRef): Promise<PlayOptions> {
+    const jellyfinUrl = this.read("jellyfin_public_url");
+    if (!this.read("jellyfin_url") || !this.read("jellyfin_api_key")) return { players: [], itemId: null, jellyfinUrl };
     const client = this.client();
-    const itemId = await this.episodeItem(client, seriesId, ep);
-    const publicUrl = this.read("jellyfin_public_url");
-    return {
-      players: await client.players(this.jellyfinUser(userId)),
-      openUrl: publicUrl ? `${publicUrl}/web/#/details?id=${itemId}` : null,
-    };
+    const itemId = await this.episodeItem(client, seriesId, ep).catch((error) => {
+      if (error instanceof NotFoundError) return null;
+      throw error;
+    });
+    const jellyfinUser = this.linkedUser(userId);
+    const players = itemId && jellyfinUser ? await client.players(jellyfinUser) : [];
+    return { players, itemId, jellyfinUrl };
   }
 
   async play(userId: string, seriesId: number, ep: EpisodeRef, sessionId: string) {

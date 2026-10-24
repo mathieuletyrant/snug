@@ -2,6 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   EPISODE_TITLES,
   type EpisodeTitles,
+  WATCH_APPS,
+  type WatchApp,
   type Feeds as FeedsUrls,
   type ImportResult,
   type JellyfinEventLog,
@@ -255,6 +257,7 @@ function Jellyfin() {
         </li>
       </SetupSteps>
       <CopyField label="webhook URL" value={url} onRotate={() => rotate.mutate()} />
+      <WatchAppChoice />
       {data?.playback.server && <JellyfinUserSelect current={data.playback.jellyfinUserId} />}
       <WebhookHistory events={data?.events} />
     </IntegrationCard>
@@ -567,6 +570,46 @@ function Users() {
   );
 }
 
+const WATCH_APP_LABELS: Record<WatchApp, string> = { jellyfin: "Jellyfin", jellytv: "JellyTV", custom: "Other app" };
+
+/** The app the ▶︎ sheet opens an episode in; any app with links through "Other app". */
+function WatchAppChoice() {
+  const preferences = usePreferences();
+  const update = useUpdatePreferences();
+  const [link, setLink] = useState<string | null>(null);
+  return (
+    <div className="mt-5">
+      <p className="mb-1.5 text-sm font-semibold text-muted">Open episodes in</p>
+      <Chips
+        label="Open episodes in"
+        small
+        value={preferences.watchApp}
+        onChange={(watchApp) => update.mutate({ watchApp: watchApp as WatchApp })}
+        options={WATCH_APPS.map((value) => ({ value, label: WATCH_APP_LABELS[value] }))}
+      />
+      {preferences.watchApp === "jellyfin" && (
+        <p className="mt-1.5 text-sm text-muted">Needs the Jellyfin server set up by the admin, with its public URL.</p>
+      )}
+      {preferences.watchApp === "custom" && (
+        <div className="mt-3">
+          <Input
+            label="App link"
+            name="watchLink"
+            value={link ?? preferences.watchLink}
+            onChange={(e) => setLink(e.target.value)}
+            onBlur={() => link !== null && update.mutate({ watchLink: link.trim() }, { onSuccess: () => setLink(null) })}
+            error={update.error?.message}
+            placeholder="myapp://show/{tmdbId}/{season}/{episode}"
+            hint="Use {tmdbId}, {season}, {episode}, or {itemId} (the Jellyfin id)."
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Play button: which Jellyfin user this person plays as (their players are listed). */
 function JellyfinUserSelect({ current }: { current: string | null }) {
   const toast = useToast();
@@ -587,12 +630,12 @@ function JellyfinUserSelect({ current }: { current: string | null }) {
     <div className="mt-5">
       <Select
         label="Your Jellyfin user"
-        hint="For the ▶︎ button: your Jellyfin players show up there."
+        hint="For the ▶︎ button: your TVs show up there."
         value={current ?? ""}
         disabled={!users.data || save.isPending}
         onChange={(e) => save.mutate(e.target.value || null)}
       >
-        <option value="">None (no ▶︎ button)</option>
+        <option value="">None</option>
         {users.data?.map((u) => (
           <option key={u.id} value={u.id}>
             {u.name}
