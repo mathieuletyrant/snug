@@ -31,6 +31,7 @@ const preferencesPatch = z
     hideUndatedUpcoming: z.boolean(),
     episodeTitles: z.enum(EPISODE_TITLES),
     newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
+    notifyNewEpisodes: z.boolean(),
   })
   .partial()
   .strict();

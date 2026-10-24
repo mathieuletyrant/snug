@@ -168,6 +168,25 @@ export class TrackingService {
     };
   }
 
+  /** For every User, the un-watched Episodes of their Watching Series that air on one of these days. */
+  async newEpisodesOn(days: readonly string[]): Promise<{ userId: string; series: Series; episodes: Episode[] }[]> {
+    const ids = [...new Set(await this.repo.seriesIdsWithStatus(["watching"]))];
+    const catalog = await this.catalog.getMany(ids);
+    const found = [];
+    for (const id of ids) {
+      const series = catalog.get(id);
+      if (!series) continue;
+      const airing = series.episodes.filter((e) => e.airDate !== null && days.includes(e.airDate));
+      if (!airing.length) continue;
+      for (const tracked of await this.repo.listBySeries(id)) {
+        if (tracked.status !== "watching") continue;
+        const episodes = airing.filter((e) => !tracked.hasWatched(e));
+        if (episodes.length) found.push({ userId: tracked.userId, series, episodes });
+      }
+    }
+    return found;
+  }
+
   /** Series ids tracked with one of these Statuses. */
   async seriesIdsWithStatus(userId: string, statuses: readonly Status[]): Promise<number[]> {
     return (await this.repo.listByUser(userId)).filter((t) => statuses.includes(t.status)).map((t) => t.seriesId);

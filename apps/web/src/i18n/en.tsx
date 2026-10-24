@@ -161,6 +161,8 @@ export const en = {
     notifications: "Notifications",
     onThisDevice: "On this device",
     onThisDeviceHelp: "When Jellyfin marks an episode watched, with what's next.",
+    newEpisodes: "New episodes",
+    newEpisodesHelp: "When an episode of a series you're watching comes out.",
     pushUnsupported: "Not available here. On iPhone, add Snug to your Home Screen and open it from there (HTTPS only).",
     pushDenied: "Notifications are blocked. Allow them in your browser or phone settings.",
     devices: (n: number) => (n === 1 ? "1 device receives notifications." : `${n} devices receive notifications.`),

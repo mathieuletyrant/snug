@@ -89,6 +89,8 @@ function Notifications() {
   const toast = useToast();
   const t = useT();
   const push = usePush();
+  const preferences = usePreferences();
+  const update = useUpdatePreferences();
   const [busy, setBusy] = useState(false);
   const run = (action: () => Promise<unknown>) => {
     setBusy(true);
@@ -111,6 +113,14 @@ function Notifications() {
       )}
       {push.state === "denied" && (
         <p className="mt-2 text-sm text-rose">{t.settings.pushDenied}</p>
+      )}
+      {push.state === "on" && (
+        <Toggle
+          label={t.settings.newEpisodes}
+          description={t.settings.newEpisodesHelp}
+          checked={preferences.notifyNewEpisodes}
+          onChange={(notifyNewEpisodes) => update.mutate({ notifyNewEpisodes })}
+        />
       )}
       {push.state === "on" && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">

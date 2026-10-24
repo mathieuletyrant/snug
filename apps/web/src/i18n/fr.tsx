@@ -155,6 +155,8 @@ export const fr: Messages = {
     notifications: "Notifications",
     onThisDevice: "Sur cet appareil",
     onThisDeviceHelp: "Quand Jellyfin marque un épisode comme vu, avec la suite.",
+    newEpisodes: "Nouveaux épisodes",
+    newEpisodesHelp: "Quand un épisode d'une série que vous regardez sort.",
     pushUnsupported:
       "Indisponible ici. Sur iPhone, ajoutez Snug à l'écran d'accueil et ouvrez-le depuis là (HTTPS uniquement).",
     pushDenied: "Les notifications sont bloquées. Autorisez-les dans les réglages du navigateur ou du téléphone.",
