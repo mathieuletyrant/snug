@@ -1,12 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { episodeCode, STATUS_LABELS, STATUSES, type SeriesDetail } from "@snug/shared";
-import { ArrowLeft, Check, ChevronDown, Plus } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Play, Plus } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { api, image, queryClient } from "../api";
 import { useSetStatus } from "../components/series-actions";
 import { CatchUp } from "../components/catch-up";
 import { Confirm } from "../components/confirm";
+import { PlayButton, usePlayback } from "../components/play";
 import { useToast } from "../components/toast";
 import { SeriesSkeleton } from "../components/skeletons";
 import { Button, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
@@ -14,6 +15,7 @@ import { Button, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
 export function SeriesPage({ id }: { id: string }) {
   const { data, isPending, error } = useQuery({ queryKey: ["series", id], queryFn: () => api<SeriesDetail>(`/series/${id}`) });
   const setStatus = useSetStatus();
+  const playback = usePlayback();
   const [, navigate] = useLocation();
   const toast = useToast();
   const remove = useMutation({
@@ -67,6 +69,15 @@ export function SeriesPage({ id }: { id: string }) {
         </header>
 
         <div className="col-span-2 space-y-5 md:col-span-1 md:col-start-2">
+          {playback && data.next && airedNext(data) && (
+            <PlayButton
+              seriesId={data.seriesId}
+              episode={data.next}
+              className="inline-flex items-center gap-2 rounded-2xl bg-accent px-5 py-3 text-sm font-bold text-accent-ink transition hover:bg-accent-strong active:scale-[0.97]"
+            >
+              <Play className="size-4 fill-current" /> Play {episodeCode(data.next)}
+            </PlayButton>
+          )}
           <div className="flex flex-wrap gap-2">
             {data.tracked ? (
               STATUSES.map((s) => (
@@ -122,6 +133,12 @@ export function SeriesPage({ id }: { id: string }) {
     </article>
   );
 }
+
+/** The Next Episode is out: there's something to play. */
+const airedNext = (data: SeriesDetail) =>
+  data.seasons
+    .find((s) => s.number === data.next?.season)
+    ?.episodes.some((e) => e.number === data.next?.number && e.aired) ?? false;
 
 /** Aired Episodes before SxxEyy, in any season, not watched yet. */
 function earlierUnwatched(data: SeriesDetail, season: number, number: number) {
