@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { Button } from "./ui";
 
 /** A sheet from the bottom on phones (under the thumb), a centered dialog on wider screens. */
-const SHEET_OVERLAY = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in";
-const SHEET_CONTENT =
+export const SHEET_OVERLAY = "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-fade-in";
+export const SHEET_CONTENT =
   "pb-safe fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-line bg-surface px-5 pt-6 data-[state=open]:animate-sheet-in sm:inset-x-auto sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl sm:border sm:pb-5";
 
 /**

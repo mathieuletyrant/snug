@@ -5,6 +5,7 @@ import { CopyField } from "../../components/copy-field";
 import { MultiChips } from "../../components/ui";
 import { useT } from "../../i18n";
 import { IntegrationCard, SetupSteps, steps, useIntegration } from "./integration-card";
+import { JellyfinUserSelect, WatchAppChoice } from "./playback";
 import { WebhookHistory } from "./webhook-history";
 
 export function IntegrationsSection() {
@@ -28,6 +29,8 @@ function Jellyfin() {
     <IntegrationCard icon={Tv} title="Jellyfin" description={t.integrations.jellyfin.description}>
       <SetupSteps open={data ? data.events.length === 0 : false}>{steps(t.integrations.jellyfin.steps)}</SetupSteps>
       <CopyField label={t.integrations.jellyfin.url} value={url} onRotate={rotate} />
+      <WatchAppChoice />
+      {data?.playback.server && <JellyfinUserSelect current={data.playback.jellyfinUserId} />}
       <WebhookHistory events={data?.events} />
     </IntegrationCard>
   );
