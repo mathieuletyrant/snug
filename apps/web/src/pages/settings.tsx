@@ -150,6 +150,21 @@ function Display() {
         checked={preferences.hideUndatedUpcoming}
         onChange={(hideUndatedUpcoming) => update.mutate({ hideUndatedUpcoming })}
       />
+      <Toggle
+        label="Spoiler shield"
+        description="Blur the titles of episodes you haven't watched. Tap one to show it."
+        checked={preferences.hideUnwatchedTitles}
+        onChange={(hideUnwatchedTitles) => update.mutate({ hideUnwatchedTitles })}
+      />
+      {preferences.hideUnwatchedTitles && (
+        <div className="ml-4 border-l-2 border-line/60 pl-4">
+          <Toggle
+            label="Show the next episode's title"
+            checked={preferences.showNextTitle}
+            onChange={(showNextTitle) => update.mutate({ showNextTitle })}
+          />
+        </div>
+      )}
     </Card>
   );
 }

@@ -95,9 +95,21 @@ export interface Me {
 export interface Preferences {
   /** Hide Upcoming Series whose next Episode has no air date yet. */
   hideUndatedUpcoming: boolean;
+  /** Spoiler shield: hide the titles of Episodes not watched yet. */
+  hideUnwatchedTitles: boolean;
+  /** With the shield on, still show the Next Episode's title. */
+  showNextTitle: boolean;
 }
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false };
+export const DEFAULT_PREFERENCES: Preferences = {
+  hideUndatedUpcoming: false,
+  hideUnwatchedTitles: false,
+  showNextTitle: true,
+};
+
+/** Whether the spoiler shield hides an Episode's title. */
+export const isTitleHidden = (p: Preferences, e: { watched: boolean; next: boolean }) =>
+  p.hideUnwatchedTitles && !e.watched && !(e.next && p.showNextTitle);
 
 /** Web Push: the server's public key, and how many devices of this User receive notifications. */
 export interface PushSettings {

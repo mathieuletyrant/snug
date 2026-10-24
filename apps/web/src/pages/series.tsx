@@ -7,6 +7,7 @@ import { api, image, queryClient } from "../api";
 import { useSetStatus } from "../components/series-actions";
 import { CatchUp } from "../components/catch-up";
 import { Confirm } from "../components/confirm";
+import { EpisodeTitle } from "../components/spoilers";
 import { useToast } from "../components/toast";
 import { SeriesSkeleton } from "../components/skeletons";
 import { Button, cx, ErrorText, Poster, ProgressBar } from "../components/ui";
@@ -102,6 +103,7 @@ export function SeriesPage({ id }: { id: string }) {
             key={season.number}
             seriesId={data.seriesId}
             season={season}
+            next={data.next}
             earlier={(n) => earlierUnwatched(data, season.number, n)}
           />
         ))}
@@ -133,10 +135,12 @@ function earlierUnwatched(data: SeriesDetail, season: number, number: number) {
 function Season({
   seriesId,
   season,
+  next,
   earlier,
 }: {
   seriesId: number;
   season: SeriesDetail["seasons"][number];
+  next: SeriesDetail["next"];
   earlier: (number: number) => number;
 }) {
   const watched = season.episodes.filter((e) => e.watched).length;
@@ -191,7 +195,13 @@ function Season({
               <li key={e.number} className="flex items-center gap-4 px-5 py-3 odd:bg-raised/30">
                 <span className="w-8 text-sm font-bold text-muted">{e.number}</span>
                 <div className="min-w-0 flex-1">
-                  <p className={cx("truncate text-sm font-semibold", !e.aired && "text-muted")}>{e.name}</p>
+                  <p className={cx("truncate text-sm font-semibold", !e.aired && "text-muted")}>
+                    <EpisodeTitle
+                      name={e.name}
+                      watched={e.watched}
+                      next={next?.season === season.number && next.number === e.number}
+                    />
+                  </p>
                   <p className="text-xs text-muted">
                     {e.airDate ? new Date(e.airDate).toLocaleDateString(undefined, { dateStyle: "medium" }) : "TBA"}
                   </p>
