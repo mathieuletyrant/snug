@@ -4,7 +4,7 @@ import { Check, Coffee, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { homeQuery } from "../queries";
 import { relativeDay } from "../components/airing";
-import { StatusMenu, useWatchNext } from "../components/series-actions";
+import { useWatchNext } from "../components/series-actions";
 import { usePreferences } from "../components/preferences";
 import { HomeSkeleton } from "../components/skeletons";
 import { Backdrop, Button, cx, Empty, PageTitle, Poster, POSTER_GRID, Skeleton } from "../components/ui";
@@ -115,10 +115,6 @@ function ReadyCard({ card }: { card: SeriesCard }) {
       >
         <Check className="size-5" strokeWidth={3} />
       </button>
-      {/* Same right edge as ✓ and centered on the same vertical line: 36px button, 40px ✓ from sm. */}
-      <div className="absolute top-1.5 right-2 rounded-full bg-bg/80 sm:right-3">
-        <StatusMenu seriesId={card.seriesId} status={card.status} />
-      </div>
     </article>
   );
 }
