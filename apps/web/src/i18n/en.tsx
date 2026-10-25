@@ -178,7 +178,7 @@ export const en = {
     showRatingsHelp: "Rate series and seasons out of 10.",
     seasonProgress: "Season progress",
     seasonProgressHelp: "On a series page, one segment per episode: watched, out, coming.",
-    seasonProgressChoices: { all: "Every season", last: "Last season only" } satisfies Record<SeasonProgress, string>,
+    seasonProgressChoices: { all: "Every season", current: "Current season only" } satisfies Record<SeasonProgress, string>,
     off: "Off",
     days: (n: number) => `${n} days`,
     notifications: "Notifications",
