@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0](https://github.com/mathieuletyrant/snug/compare/v0.9.0...v0.10.0) (2026-10-25)
+
+
+### ✨ Features
+
+* MCP server to import a history from another tracker ([#54](https://github.com/mathieuletyrant/snug/issues/54)) ([2b233d5](https://github.com/mathieuletyrant/snug/commit/2b233d50922336467d6fb68120556b14a94a078c))
+* push a notification when a new episode is out ([#51](https://github.com/mathieuletyrant/snug/issues/51)) ([edf1f04](https://github.com/mathieuletyrant/snug/commit/edf1f0413a358dab9cf461296864aa873d506b5d)), closes [#33](https://github.com/mathieuletyrant/snug/issues/33)
+
 ## [0.9.0](https://github.com/mathieuletyrant/snug/compare/v0.8.1...v0.9.0) (2026-10-24)
 
 
