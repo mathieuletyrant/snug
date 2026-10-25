@@ -90,6 +90,13 @@ export interface McpIntegration {
   mcpPath: string;
 }
 
+/** What the MCP server offers, as shown in Integrations; a test checks it against the server. */
+export const MCP_FEATURES = [
+  ["prompt", "import_history"],
+  ["tool", "find_series"],
+  ["tool", "import"],
+] as const;
+
 export interface WatchlistIntegration {
   addPath: string;
 }

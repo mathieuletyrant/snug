@@ -1,6 +1,7 @@
 import {
   type Feeds,
   type JellyfinIntegration,
+  MCP_FEATURES,
   type McpIntegration,
   STATUSES,
   type Status,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { CopyField } from "@/components/copy-field";
-import { MultiChips } from "@/components/ui";
+import { Badge, MultiChips } from "@/components/ui";
 import { useT } from "@/i18n";
 import { IntegrationCard, SetupSteps, steps, useIntegration } from "./integration-card";
 import { WebhookHistory } from "./webhook-history";
@@ -28,9 +29,9 @@ export function IntegrationsSection() {
   return (
     <>
       <Group icon={ArrowDownToLine} title={t.integrations.toSnug} help={t.integrations.toSnugHelp}>
+        <Assistant />
         <Jellyfin />
         <Spotarr />
-        <Assistant />
       </Group>
       <Group icon={ArrowUpFromLine} title={t.integrations.fromSnug} help={t.integrations.fromSnugHelp}>
         <Sonarr />
@@ -148,6 +149,18 @@ function Assistant() {
     <IntegrationCard icon={Bot} title={t.integrations.mcp.title} description={t.integrations.mcp.description}>
       <SetupSteps>{steps(t.integrations.mcp.steps)}</SetupSteps>
       <CopyField label={t.integrations.mcp.url} value={url} onRotate={rotate} />
+      <p className="mt-5 mb-2 text-sm font-semibold">{t.integrations.mcp.canDo}</p>
+      <ul className="space-y-2.5">
+        {MCP_FEATURES.map(([kind, name]) => (
+          <li key={name} className="text-sm">
+            <div className="flex items-center gap-2">
+              <Badge tone={kind === "prompt" ? "accent" : "plain"}>{t.integrations.mcp.kind[kind]}</Badge>
+              <code className="text-xs">{name}</code>
+            </div>
+            <p className="mt-0.5 text-muted">{t.integrations.mcp.features[name]}</p>
+          </li>
+        ))}
+      </ul>
     </IntegrationCard>
   );
 }
