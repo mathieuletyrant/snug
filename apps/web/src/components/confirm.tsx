@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useT } from "../i18n";
+import { useT } from "@/i18n";
 import { AskSheet } from "./sheet";
 
 /** Asks before a destructive action. `children` is the trigger. */

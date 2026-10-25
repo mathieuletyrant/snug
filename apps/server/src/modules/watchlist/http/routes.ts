@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { WatchlistIntegration } from "@snug/shared";
-import { NotFoundError } from "../../../shared/errors";
-import { moduleLogger } from "../../../shared/logger";
-import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { TrackingService } from "../../tracking/application/tracking-service";
-import { t } from "../../../shared/i18n";
+import { NotFoundError } from "@/shared/errors";
+import { moduleLogger } from "@/shared/logger";
+import { type AuthEnv, jsonBody, parse } from "@/shared/http";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { t } from "@/shared/i18n";
 
 const log = moduleLogger("watchlist");
 

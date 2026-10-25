@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { type AuthEnv, jsonBody } from "../../../shared/http";
-import type { ImportService } from "../application/import-service";
+import { type AuthEnv, jsonBody } from "@/shared/http";
+import type { ImportService } from "@/modules/import/application/import-service";
 
 export const importRoutes = (importer: ImportService) =>
   new Hono<AuthEnv>()

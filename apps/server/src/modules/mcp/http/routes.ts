@@ -2,12 +2,12 @@ import { StreamableHTTPTransport } from "@hono/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Hono } from "hono";
 import type { McpIntegration } from "@snug/shared";
-import pkg from "../../../../../../package.json";
-import type { AuthEnv } from "../../../shared/http";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { ImportService } from "../../import/application/import-service";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import { registerTools } from "../tools";
+import type { AuthEnv } from "@/shared/http";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { ImportService } from "@/modules/import/application/import-service";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import { registerTools } from "@/modules/mcp/tools";
+import { VERSION } from "@/shared/version";
 
 /**
  * MCP server (Model Context Protocol) for AI assistants, at `/api/mcp?token=<MCP token>`: the token goes in the
@@ -18,7 +18,7 @@ export const mcpServer = (identity: IdentityService, catalog: CatalogService, im
     .post("/", async (c) => {
       const userId = identity.mcpTokens.userIdOf(c.req.query("token") ?? "");
       if (!userId) return c.json({ error: "Unknown MCP token" }, 401);
-      const server = new McpServer({ name: "snug", version: pkg.version });
+      const server = new McpServer({ name: "snug", version: VERSION });
       registerTools(server, catalog, importer, userId);
       // Plain JSON answers rather than an event stream: one answer per call.
       const transport = new StreamableHTTPTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });

@@ -1,9 +1,9 @@
 import { episodeCode, type SeriesCard } from "@snug/shared";
 import { PiggyBank, Sparkles } from "lucide-react";
-import { useT } from "../../i18n";
-import { relativeDay } from "../airing";
-import { PosterTile, PosterTileSkeleton, TileLine } from "../poster-tile";
-import { cx } from "../ui";
+import { useT } from "@/i18n";
+import { relativeDay } from "@/components/airing";
+import { PosterTile, PosterTileSkeleton, TileLine } from "@/components/poster-tile";
+import { cx } from "@/components/ui";
 
 /** A caught-up series on Home: when its next Episode airs, or how far its saving up is. */
 export function UpcomingTile({ card }: { card: SeriesCard }) {

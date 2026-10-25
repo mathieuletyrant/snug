@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { SAVING_TARGETS, STATUSES } from "@snug/shared";
-import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
-import type { TrackingService } from "../application/tracking-service";
+import { type AuthEnv, jsonBody, parse } from "@/shared/http";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
 
 const id = z.coerce.number().int().positive();
 const seasonParams = z.object({ id, season: z.coerce.number().int().min(1) });

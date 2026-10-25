@@ -1,6 +1,6 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { JellyfinEventLog } from "@snug/shared";
-import { user } from "../../identity/infrastructure/schema";
+import { user } from "@/modules/identity/infrastructure/schema";
 
 /** Jellyfin series id → TMDB id, so each series is resolved against TMDB only once. */
 export const jellyfinSeries = sqliteTable("jellyfin_series", {

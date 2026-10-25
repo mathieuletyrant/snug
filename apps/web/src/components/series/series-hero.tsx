@@ -1,8 +1,8 @@
 import { episodeCode, type SeriesDetail } from "@snug/shared";
 import type { ReactNode } from "react";
-import { image } from "../../api";
-import { useT } from "../../i18n";
-import { BackButton, Poster, ProgressBar } from "../ui";
+import { image } from "@/api";
+import { useT } from "@/i18n";
+import { BackButton, Poster, ProgressBar } from "@/components/ui";
 
 /**
  * The top of a series page: its backdrop faded into the page, poster, name and progress, then `children`

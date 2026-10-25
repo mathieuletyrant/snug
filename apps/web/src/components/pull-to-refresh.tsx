@@ -1,7 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { queryClient } from "../api";
-import { useT } from "../i18n";
+import { queryClient } from "@/api";
+import { useT } from "@/i18n";
 import { cx } from "./ui";
 
 /** How far the finger must pull (after resistance) to refresh, and the furthest the page follows it. */

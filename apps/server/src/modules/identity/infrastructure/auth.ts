@@ -3,11 +3,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { count } from "drizzle-orm";
-import { AUTH_SECRET, ORIGINS } from "../../../shared/config";
-import type { Db } from "../../../shared/db";
-import { LOG_LEVEL, moduleLogger } from "../../../shared/logger";
+import { AUTH_SECRET, ORIGINS } from "@/shared/config";
+import type { Db } from "@/shared/db";
+import { LOG_LEVEL, moduleLogger } from "@/shared/logger";
 import * as schema from "./schema";
-import { t } from "../../../shared/i18n";
+import { t } from "@/shared/i18n";
 
 /** Set while an admin creates an account, the only way to sign up once the first User exists. */
 const log = moduleLogger("auth");

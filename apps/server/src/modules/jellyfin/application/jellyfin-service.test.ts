@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { Notifier } from "../../notifications/application/notification-service";
-import type { TrackingService } from "../../tracking/application/tracking-service";
-import { testDb } from "../../../shared/testing";
-import { jellyfinEvents } from "../infrastructure/schema";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { Notifier } from "@/modules/notifications/application/notification-service";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { testDb } from "@/shared/testing";
+import { jellyfinEvents } from "@/modules/jellyfin/infrastructure/schema";
 import { JellyfinService } from "./jellyfin-service";
 
 function setup() {

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import type { Series } from "../../catalog/domain/series";
-import type { TrackedSeries, TrackedSeriesRepository } from "../domain/tracked-series";
+import type { Series } from "@/modules/catalog/domain/series";
+import type { TrackedSeries, TrackedSeriesRepository } from "@/modules/tracking/domain/tracked-series";
 import { type CatalogPort, TrackingService } from "./tracking-service";
 
 const now = new Date("2026-10-21T20:00:00Z");

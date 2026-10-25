@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, lt } from "drizzle-orm";
-import type { Db } from "../../../shared/db";
-import type { CatalogRepository, Episode, Series } from "../domain/series";
+import type { Db } from "@/shared/db";
+import type { CatalogRepository, Episode, Series } from "@/modules/catalog/domain/series";
 import { episodes, series } from "./schema";
 
 export class DrizzleCatalogRepository implements CatalogRepository {

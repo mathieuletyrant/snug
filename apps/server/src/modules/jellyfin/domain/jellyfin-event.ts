@@ -2,7 +2,7 @@
  * Payloads from the Jellyfin Webhook plugin (Generic destination, default template or "Send All Properties").
  * Values may arrive as booleans or strings ("True"), numbers or numeric strings.
  */
-import { t } from "../../../shared/i18n";
+import { t } from "@/shared/i18n";
 
 export type JellyfinEvent =
   | {

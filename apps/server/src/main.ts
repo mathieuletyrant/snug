@@ -1,9 +1,10 @@
 import { join, normalize } from "node:path";
 import { catalogSettings, identity, newEpisodeAlerts, refreshCatalog } from "./container";
 import { app } from "./app";
-import { ORIGINS, PORT } from "./shared/config";
-import { withSecureCookies } from "./shared/http";
-import { LOG_LEVEL, logger } from "./shared/logger";
+import { ORIGINS, PORT } from "@/shared/config";
+import { withSecureCookies } from "@/shared/http";
+import { LOG_LEVEL, logger } from "@/shared/logger";
+import { VERSION } from "@/shared/version";
 
 const WEB_DIST = normalize(process.env.WEB_DIST ?? join(import.meta.dir, "../../web/dist"));
 
@@ -29,10 +30,9 @@ Bun.serve({
     return withSecureCookies(req, await app.fetch(new Request(req, { headers })));
   },
 });
-const { version } = await Bun.file(join(import.meta.dir, "../../../package.json")).json();
 const users = identity.listUsers().length;
 logger.info(
-  `Snug ${version} listening on :${PORT} · origins ${ORIGINS.join(", ") || "none (set SNUG_ORIGINS)"} · ` +
+  `Snug ${VERSION} listening on :${PORT} · origins ${ORIGINS.join(", ") || "none (set SNUG_ORIGINS)"} · ` +
     `TMDB key ${catalogSettings.tmdbKey() ? "set" : "missing"} · ${users} user${users === 1 ? "" : "s"} · log level ${LOG_LEVEL}`,
 );
 

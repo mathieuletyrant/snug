@@ -1,7 +1,7 @@
 import type { Status } from "@snug/shared";
-import type { ImportEntry } from "../../tracking/application/tracking-service";
+import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
 import { STATUS_ALIASES } from "./import-file";
-import { t } from "../../../shared/i18n";
+import { t } from "@/shared/i18n";
 
 /**
  * CSV import, one row per watched Episode (or per Series to just add it):

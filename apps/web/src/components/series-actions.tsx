@@ -2,8 +2,8 @@ import { useMutation } from "@tanstack/react-query";
 import { type Episode, episodeCode, STATUSES, type Status } from "@snug/shared";
 import { Check, EllipsisVertical } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
-import { api, queryClient } from "../api";
-import { useT } from "../i18n";
+import { api, queryClient } from "@/api";
+import { useT } from "@/i18n";
 import { useToast } from "./toast";
 import { COLLISION_PADDING, cx, MENU, MENU_ITEM } from "./ui";
 

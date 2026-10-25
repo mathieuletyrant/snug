@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import type { SeriesSummary } from "@snug/shared";
 import { Search } from "lucide-react";
 import { useDeferredValue, useState } from "react";
-import { api } from "../api";
-import { PosterTile, TileLine } from "../components/poster-tile";
-import { PosterGridSkeleton } from "../components/skeletons";
-import { Empty, PageTitle, POSTER_GRID, SearchInput } from "../components/ui";
-import { useT } from "../i18n";
+import { api } from "@/api";
+import { PosterTile, TileLine } from "@/components/poster-tile";
+import { PosterGridSkeleton } from "@/components/skeletons";
+import { Empty, PageTitle, POSTER_GRID, SearchInput } from "@/components/ui";
+import { useT } from "@/i18n";
 
 export function SearchPage() {
   const t = useT();

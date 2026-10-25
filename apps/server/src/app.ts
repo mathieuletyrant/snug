@@ -13,17 +13,17 @@ import {
   refreshCatalog,
   tracking,
 } from "./container";
-import { feedRoutes, feedSettingsRoutes } from "./modules/feeds/http/routes";
-import { catalogRoutes, imageRoutes } from "./modules/catalog/http/routes";
-import { authHandler, identityRoutes, requireAdmin, requireSession } from "./modules/identity/http/routes";
-import { importRoutes } from "./modules/import/http/routes";
-import { jellyfinRoutes, jellyfinWebhook } from "./modules/jellyfin/http/routes";
-import { mcpRoutes, mcpServer } from "./modules/mcp/http/routes";
-import { notificationRoutes } from "./modules/notifications/http/routes";
-import { trackingRoutes } from "./modules/tracking/http/routes";
-import { watchlistRoutes, watchlistWebhook } from "./modules/watchlist/http/routes";
-import { type AuthEnv, onError } from "./shared/http";
-import { requestLog } from "./shared/request-log";
+import { feedRoutes, feedSettingsRoutes } from "@/modules/feeds/http/routes";
+import { catalogRoutes, imageRoutes } from "@/modules/catalog/http/routes";
+import { authHandler, identityRoutes, requireAdmin, requireSession } from "@/modules/identity/http/routes";
+import { importRoutes } from "@/modules/import/http/routes";
+import { jellyfinRoutes, jellyfinWebhook } from "@/modules/jellyfin/http/routes";
+import { mcpRoutes, mcpServer } from "@/modules/mcp/http/routes";
+import { notificationRoutes } from "@/modules/notifications/http/routes";
+import { trackingRoutes } from "@/modules/tracking/http/routes";
+import { watchlistRoutes, watchlistWebhook } from "@/modules/watchlist/http/routes";
+import { type AuthEnv, onError } from "@/shared/http";
+import { requestLog } from "@/shared/request-log";
 
 const api = new Hono<AuthEnv>()
   // Public

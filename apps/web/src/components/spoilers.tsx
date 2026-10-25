@@ -1,6 +1,6 @@
 import { isTitleHidden } from "@snug/shared";
 import { useState } from "react";
-import { useT } from "../i18n";
+import { useT } from "@/i18n";
 import { usePreferences } from "./preferences";
 import { cx } from "./ui";
 

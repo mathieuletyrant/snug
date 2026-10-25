@@ -1,9 +1,9 @@
 import type { SeriesCard } from "@snug/shared";
-import { airing, longDate, shortDay } from "../airing";
-import { PosterTile } from "../poster-tile";
-import { StatusMenu } from "../series-actions";
-import { useT } from "../../i18n";
-import { cx, ProgressBar } from "../ui";
+import { airing, longDate, shortDay } from "@/components/airing";
+import { PosterTile } from "@/components/poster-tile";
+import { StatusMenu } from "@/components/series-actions";
+import { useT } from "@/i18n";
+import { cx, ProgressBar } from "@/components/ui";
 
 /** A series in the Library: poster with how it airs, progress, and a menu to change its status. */
 export function LibraryTile({ card }: { card: SeriesCard }) {

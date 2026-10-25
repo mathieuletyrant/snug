@@ -1,12 +1,12 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
-import { InvalidInputError } from "../../../shared/errors";
-import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
-import type { CatalogService } from "../application/catalog-service";
-import type { CatalogSettings } from "../infrastructure/settings-store";
-import { cachedImage } from "../infrastructure/image-cache";
-import { isValidTmdbKey } from "../infrastructure/tmdb-client";
-import { t } from "../../../shared/i18n";
+import { InvalidInputError } from "@/shared/errors";
+import { type AuthEnv, jsonBody, parse } from "@/shared/http";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { CatalogSettings } from "@/modules/catalog/infrastructure/settings-store";
+import { cachedImage } from "@/modules/catalog/infrastructure/image-cache";
+import { isValidTmdbKey } from "@/modules/catalog/infrastructure/tmdb-client";
+import { t } from "@/shared/i18n";
 
 export const catalogRoutes = (
   catalog: CatalogService,

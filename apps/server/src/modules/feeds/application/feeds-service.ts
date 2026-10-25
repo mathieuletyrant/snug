@@ -1,7 +1,7 @@
 import type { Status } from "@snug/shared";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import type { TrackingService } from "../../tracking/application/tracking-service";
-import { moduleLogger } from "../../../shared/logger";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { moduleLogger } from "@/shared/logger";
 
 const log = moduleLogger("feeds");
 

@@ -1,11 +1,11 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
 import { EPISODE_TITLES, NEW_FOR_DAYS } from "@snug/shared";
-import { ForbiddenError } from "../../../shared/errors";
-import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
-import type { IdentityService } from "../application/identity-service";
-import type { Auth } from "../infrastructure/auth";
-import { t } from "../../../shared/i18n";
+import { ForbiddenError } from "@/shared/errors";
+import { type AuthEnv, jsonBody, parse } from "@/shared/http";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { Auth } from "@/modules/identity/infrastructure/auth";
+import { t } from "@/shared/i18n";
 
 export const authHandler = (auth: Auth) => new Hono().on(["GET", "POST"], "/*", (c) => auth.handler(c.req.raw));
 

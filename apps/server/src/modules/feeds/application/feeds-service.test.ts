@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import type { TrackingService } from "../../tracking/application/tracking-service";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
 import { FeedsService } from "./feeds-service";
 
 test("the Sonarr list carries TVDB ids, and leaves out Series without one", async () => {

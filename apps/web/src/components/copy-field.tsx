@@ -1,7 +1,7 @@
 import { Copy, RefreshCw } from "lucide-react";
 import { Confirm } from "./confirm";
 import { useToast } from "./toast";
-import { useT } from "../i18n";
+import { useT } from "@/i18n";
 import { Button } from "./ui";
 
 /**

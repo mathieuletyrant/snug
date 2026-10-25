@@ -8,9 +8,9 @@ import {
 } from "@snug/shared";
 import { Bot, Clapperboard, Download, Tv } from "lucide-react";
 import { useState } from "react";
-import { CopyField } from "../../components/copy-field";
-import { MultiChips } from "../../components/ui";
-import { useT } from "../../i18n";
+import { CopyField } from "@/components/copy-field";
+import { MultiChips } from "@/components/ui";
+import { useT } from "@/i18n";
 import { IntegrationCard, SetupSteps, steps, useIntegration } from "./integration-card";
 import { WebhookHistory } from "./webhook-history";
 

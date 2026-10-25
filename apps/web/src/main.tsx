@@ -6,17 +6,17 @@ import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Route, Switch } from "wouter";
 import { ApiError, api, queryClient } from "./api";
-import { Layout } from "./components/layout";
-import { ToastProvider } from "./components/toast";
+import { Layout } from "@/components/layout";
+import { ToastProvider } from "@/components/toast";
 import { I18nProvider, useT } from "./i18n";
-import { Button, Empty, Spinner } from "./components/ui";
-import { AuthPage } from "./pages/auth";
-import { HomePage } from "./pages/home";
-import { LibraryPage } from "./pages/library";
-import { SearchPage } from "./pages/search";
-import { SeriesPage } from "./pages/series";
-import { SettingsPage } from "./pages/settings";
-import { SetupPage } from "./pages/setup";
+import { Button, Empty, Spinner } from "@/components/ui";
+import { AuthPage } from "@/pages/auth";
+import { HomePage } from "@/pages/home";
+import { LibraryPage } from "@/pages/library";
+import { SearchPage } from "@/pages/search";
+import { SeriesPage } from "@/pages/series";
+import { SettingsPage } from "@/pages/settings";
+import { SetupPage } from "@/pages/setup";
 
 /** The app, in the instance's language (from /setup, public). */
 function App() {

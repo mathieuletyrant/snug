@@ -2,11 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { STATUSES, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
-import { LibraryTile } from "../components/series/library-tile";
-import { PosterGridSkeleton } from "../components/skeletons";
-import { Chips, Empty, PageTitle, POSTER_GRID, SearchInput } from "../components/ui";
-import { useT } from "../i18n";
-import { libraryQuery } from "../queries";
+import { LibraryTile } from "@/components/series/library-tile";
+import { PosterGridSkeleton } from "@/components/skeletons";
+import { Chips, Empty, PageTitle, POSTER_GRID, SearchInput } from "@/components/ui";
+import { useT } from "@/i18n";
+import { libraryQuery } from "@/queries";
 
 export function LibraryPage() {
   const { data, isPending } = useQuery(libraryQuery);

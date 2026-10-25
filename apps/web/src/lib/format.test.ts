@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { en } from "../i18n/en";
-import { fr } from "../i18n/fr";
+import { en } from "@/i18n/en";
+import { fr } from "@/i18n/fr";
 import { ago, greeting } from "./format";
 
 test("greeting follows the hour, in the app's language", () => {

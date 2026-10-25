@@ -1,10 +1,10 @@
 import { episodeCode, type Episode, type Preferences } from "@snug/shared";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "../../../shared/db";
-import { today } from "../../../shared/async";
-import { t } from "../../../shared/i18n";
-import { moduleLogger } from "../../../shared/logger";
-import { episodeAlerts } from "../infrastructure/schema";
+import type { Db } from "@/shared/db";
+import { today } from "@/shared/async";
+import { t } from "@/shared/i18n";
+import { moduleLogger } from "@/shared/logger";
+import { episodeAlerts } from "@/modules/notifications/infrastructure/schema";
 import type { Notifier } from "./notification-service";
 
 const log = moduleLogger("push");

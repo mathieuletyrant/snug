@@ -2,15 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import type { SeriesCard } from "@snug/shared";
 import { Coffee } from "lucide-react";
 import { Link } from "wouter";
-import { isNew } from "../components/airing";
-import { usePreferences } from "../components/preferences";
-import { ReadyCard } from "../components/series/ready-card";
-import { UpcomingTile } from "../components/series/upcoming-tile";
-import { HomeSkeleton } from "../components/skeletons";
-import { Button, Empty, PageTitle, POSTER_GRID, SectionTitle } from "../components/ui";
-import { useT } from "../i18n";
-import { greeting } from "../lib/format";
-import { homeQuery } from "../queries";
+import { isNew } from "@/components/airing";
+import { usePreferences } from "@/components/preferences";
+import { ReadyCard } from "@/components/series/ready-card";
+import { UpcomingTile } from "@/components/series/upcoming-tile";
+import { HomeSkeleton } from "@/components/skeletons";
+import { Button, Empty, PageTitle, POSTER_GRID, SectionTitle } from "@/components/ui";
+import { useT } from "@/i18n";
+import { greeting } from "@/lib/format";
+import { homeQuery } from "@/queries";
 
 export function HomePage() {
   const { data, isPending } = useQuery(homeQuery);

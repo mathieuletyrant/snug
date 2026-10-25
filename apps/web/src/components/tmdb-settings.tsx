@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { DEFAULT_LANGUAGE, LANGUAGES, type SetupState } from "@snug/shared";
-import { api, queryClient } from "../api";
-import { useT } from "../i18n";
+import { api, queryClient } from "@/api";
+import { useT } from "@/i18n";
 import { useForm } from "./form";
 import { useToast } from "./toast";
 import { Button, ErrorText, Input, Select } from "./ui";

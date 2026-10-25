@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "../../../shared/db";
-import { moduleLogger, reason } from "../../../shared/logger";
-import { pushSubscriptions } from "../infrastructure/schema";
-import type { WebPushSender } from "../infrastructure/web-push-sender";
+import type { Db } from "@/shared/db";
+import { moduleLogger, reason } from "@/shared/logger";
+import { pushSubscriptions } from "@/modules/notifications/infrastructure/schema";
+import type { WebPushSender } from "@/modules/notifications/infrastructure/web-push-sender";
 
 const log = moduleLogger("push");
 

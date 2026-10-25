@@ -1,8 +1,8 @@
 import { type SeriesDetail, STATUSES } from "@snug/shared";
 import { Plus } from "lucide-react";
-import { useT } from "../../i18n";
-import { useSetStatus } from "../series-actions";
-import { Button, Chips } from "../ui";
+import { useT } from "@/i18n";
+import { useSetStatus } from "@/components/series-actions";
+import { Button, Chips } from "@/components/ui";
 
 /** A tracked series' status as pills; an untracked one gets two ways in. */
 export function StatusPicker({ series }: { series: SeriesDetail }) {

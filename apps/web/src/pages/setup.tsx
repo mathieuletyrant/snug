@@ -1,8 +1,8 @@
 import type { Me } from "@snug/shared";
 import { KeyRound } from "lucide-react";
-import { LanguageSelect, TmdbKeyForm } from "../components/tmdb-settings";
-import { Card, CenteredPage } from "../components/ui";
-import { useT } from "../i18n";
+import { LanguageSelect, TmdbKeyForm } from "@/components/tmdb-settings";
+import { Card, CenteredPage } from "@/components/ui";
+import { useT } from "@/i18n";
 
 /** Shown after the first sign-up until the instance has a TMDB key. */
 export function SetupPage({ me }: { me: Me }) {
