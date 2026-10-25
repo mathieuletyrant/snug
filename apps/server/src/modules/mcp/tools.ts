@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type Preferences, SAVING_TARGETS, STATUSES, isTitleHidden } from "@snug/shared";
 import { z } from "zod";
 import { forEachLimit } from "@/shared/async";
-import { startOf, today } from "@/shared/day";
+import { addDays, startOf, today } from "@/shared/day";
 import { InvalidInputError, NotFoundError } from "@/shared/errors";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { ImportService } from "@/modules/import/application/import-service";
@@ -192,7 +192,7 @@ export function registerTools(
     "series",
     {
       description:
-        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. Titles of unwatched episodes may be hidden by the user's spoiler shield.",
+        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere.",
       inputSchema: { tmdbId },
       annotations: { readOnlyHint: true },
     },
@@ -224,6 +224,30 @@ export function registerTools(
           })),
         };
       }),
+  );
+
+  server.registerTool(
+    "calendar",
+    {
+      description:
+        "The episodes airing from today to the next `days` days in the series the user watches or saves up, by air date, with the day each one was watched (watchedAt, null when not watched). An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere.",
+      inputSchema: { days: z.int().min(0).max(90).default(7).describe("How many days ahead; 0 for today only.") },
+      annotations: { readOnlyHint: true },
+    },
+    async ({ days }) => {
+      const from = today();
+      return text(
+        (await tracking.airing(userId, from, addDays(from, days))).map(({ series, episode, watchedAt, next }) => ({
+          airDate: episode.airDate,
+          tmdbId: series.tmdbId,
+          series: series.name,
+          season: episode.season,
+          number: episode.number,
+          name: isTitleHidden(preferences, { watched: !!watchedAt, next }) ? null : episode.name,
+          watchedAt: dayOf(watchedAt?.toISOString() ?? null),
+        })),
+      );
+    },
   );
 
   server.registerTool(

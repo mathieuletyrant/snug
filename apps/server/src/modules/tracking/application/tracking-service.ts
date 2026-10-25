@@ -227,6 +227,30 @@ export class TrackingService {
     };
   }
 
+  /**
+   * The Episodes of the User's Watching and Saving up Series airing from `from` to `to` (both included), by air
+   * date: what the calendar Feed and the Assistant's calendar show.
+   */
+  async airing(
+    userId: string,
+    from: string,
+    to = "9999-12-31",
+  ): Promise<{ series: Series; episode: Episode & { airDate: string }; watchedAt: Date | null; next: boolean }[]> {
+    const list = (await this.repo.listByUser(userId)).filter((tracked) => tracked.status === "watching" || tracked.status === "saving");
+    const catalog = await this.catalog.getMany(list.map((tracked) => tracked.seriesId));
+    const found = [];
+    for (const tracked of list) {
+      const series = catalog.get(tracked.seriesId);
+      if (!series) continue;
+      const next = tracked.nextEpisode(series.episodes);
+      for (const episode of series.episodes) {
+        if (!episode.airDate || episode.airDate < from || episode.airDate > to) continue;
+        found.push({ series, episode: { ...episode, airDate: episode.airDate }, watchedAt: tracked.watchedAt(episode), next: episode === next });
+      }
+    }
+    return found.sort((a, b) => a.episode.airDate.localeCompare(b.episode.airDate));
+  }
+
   /** For every User, the un-watched Episodes of their Watching Series that air on one of these days. */
   async newEpisodesOn(days: readonly string[]): Promise<{ userId: string; series: Series; episodes: Episode[] }[]> {
     const ids = [...new Set(await this.repo.seriesIdsWithStatus(["watching"]))];

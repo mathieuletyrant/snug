@@ -12,7 +12,7 @@ import { TrackingService } from "@/modules/tracking/application/tracking-service
 import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
 import { testDb } from "@/shared/testing";
 import { mcpServer } from "@/modules/mcp/http/routes";
-import { today } from "@/shared/day";
+import { addDays, today } from "@/shared/day";
 import { parseEpisodes } from "./tools";
 
 const series = (tmdbId: number): Series => ({
@@ -28,12 +28,26 @@ const series = (tmdbId: number): Series => ({
   fetchedAt: new Date(),
 });
 
+// Series 9 and up air around today: yesterday, today, in 3 days and in 10 days.
+const seriesOf = (tmdbId: number): Series =>
+  tmdbId < 9
+    ? series(tmdbId)
+    : {
+        ...series(tmdbId),
+        episodes: [-1, 0, 3, 10].map((offset, index) => ({
+          season: 1,
+          number: index + 1,
+          name: `Episode ${index + 1}`,
+          airDate: addDays(today(), offset),
+        })),
+      };
+
 // A real MCP client, its HTTP calls answered by the app without a network.
 async function setup() {
   const { db } = testDb();
   const catalog = {
-    ensure: async (id: number) => series(id),
-    getMany: async (ids: readonly number[]) => new Map(ids.map((id) => [id, series(id)])),
+    ensure: async (id: number) => seriesOf(id),
+    getMany: async (ids: readonly number[]) => new Map(ids.map((id) => [id, seriesOf(id)])),
     search: async (title: string) => [
       { tmdbId: 2316, name: "The Office", year: 2005, overview: `US remake, searched as "${title}"`, posterPath: null },
       { tmdbId: 2996, name: "The Office", year: 2001, overview: "The original", posterPath: null },
@@ -154,6 +168,20 @@ test("series and library give the day episodes were watched; today when none is 
     null,
   ]);
   expect(await call("library", {})).toMatchObject([{ tmdbId: 5, lastWatchedAt: today() }]);
+});
+
+test("calendar: episodes airing in the next days in watched series, with the day watched and the spoiler shield", async () => {
+  const { call, identity } = await setup();
+  await call("watch", { tmdbId: 9, season: 1, episodes: "2" });
+  await call("set_status", { tmdbId: 10, status: "dropped" });
+  expect(await call("calendar", {})).toEqual([
+    { airDate: today(), tmdbId: 9, series: "Series 9", season: 1, number: 2, name: "Episode 2", watchedAt: today() },
+    { airDate: addDays(today(), 3), tmdbId: 9, series: "Series 9", season: 1, number: 3, name: "Episode 3", watchedAt: null },
+  ]);
+
+  identity.updatePreferences("u", { episodeTitles: "hideUnwatched" });
+  const names = (await call("calendar", { days: 10 })).map((episode: { name: string | null }) => episode.name);
+  expect(names).toEqual(["Episode 2", "Episode 3", null]);
 });
 
 test("rate a series and a season; null clears", async () => {

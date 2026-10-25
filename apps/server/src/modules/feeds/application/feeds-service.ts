@@ -46,23 +46,18 @@ export class FeedsService {
    * Episode titles are left out: the calendar can't apply the spoiler shield.
    */
   async calendar(userId: string, now = new Date()): Promise<string> {
-    const ids = await this.tracking.seriesIdsWithStatus(userId, ["watching", "saving"]);
-    const from = addDays(today(now), -CALENDAR_PAST_DAYS);
     const stamp = now.toISOString().replace(/[-:]|\.\d+/g, "");
     const events: string[] = [];
-    for (const series of (await this.catalog.getMany(ids)).values()) {
-      for (const episode of series.episodes) {
-        if (!episode.airDate || episode.airDate < from) continue;
-        events.push(
-          "BEGIN:VEVENT",
-          `UID:${series.tmdbId}-${episode.season}-${episode.number}@snug`,
-          `DTSTAMP:${stamp}`,
-          `DTSTART;VALUE=DATE:${episode.airDate.replaceAll("-", "")}`,
-          `DTEND;VALUE=DATE:${addDays(episode.airDate, 1).replaceAll("-", "")}`,
-          `SUMMARY:${escapeText(`${series.name} ${episodeCode(episode)}`)}`,
-          "END:VEVENT",
-        );
-      }
+    for (const { series, episode } of await this.tracking.airing(userId, addDays(today(now), -CALENDAR_PAST_DAYS))) {
+      events.push(
+        "BEGIN:VEVENT",
+        `UID:${series.tmdbId}-${episode.season}-${episode.number}@snug`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${episode.airDate.replaceAll("-", "")}`,
+        `DTEND;VALUE=DATE:${addDays(episode.airDate, 1).replaceAll("-", "")}`,
+        `SUMMARY:${escapeText(`${series.name} ${episodeCode(episode)}`)}`,
+        "END:VEVENT",
+      );
     }
     const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Snug//EN", "X-WR-CALNAME:Snug", ...events, "END:VCALENDAR"];
     return lines.map(fold).join("\r\n") + "\r\n";

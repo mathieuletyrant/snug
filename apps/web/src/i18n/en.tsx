@@ -269,6 +269,7 @@ export const en = {
         import: "Adds series, watched episodes and ratings; what is already in Snug is kept.",
         library: "Your series, with status, progress, rating and last watch.",
         series: "A series in detail: seasons, episodes, the day each one was watched. Respects the spoiler shield.",
+        calendar: "The episodes airing in the next days in the series you watch or save up. Respects the spoiler shield.",
         set_status: "Changes a series' status, or adds it.",
         watch: "Marks episodes watched.",
         unwatch: "Marks episodes not watched.",
