@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { DEFAULT_PREFERENCES, type Preferences } from "@snug/shared";
 import { api, queryClient } from "@/api";
+import { homeQuery, libraryQuery } from "@/queries";
 
 const KEY = ["preferences"];
 
@@ -19,6 +20,11 @@ export function useUpdatePreferences() {
       return previous;
     },
     onError: (_e, _changes, previous) => queryClient.setQueryData(KEY, previous),
-    onSuccess: (saved) => queryClient.setQueryData(KEY, saved),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(KEY, saved);
+      // The server sorts and filters Home with them (New mode, undated Upcoming).
+      void queryClient.invalidateQueries({ queryKey: homeQuery.queryKey });
+      void queryClient.invalidateQueries({ queryKey: libraryQuery.queryKey });
+    },
   });
 }

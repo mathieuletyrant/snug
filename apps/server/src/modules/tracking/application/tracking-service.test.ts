@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { DEFAULT_PREFERENCES, type Preferences } from "@snug/shared";
 import type { Series } from "@/modules/catalog/domain/series";
 import type { TrackedSeries, TrackedSeriesRepository } from "@/modules/tracking/domain/tracked-series";
 import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
@@ -7,7 +8,7 @@ import { type CatalogPort, TrackingService } from "./tracking-service";
 
 const now = new Date("2026-10-21T20:00:00Z");
 
-function setup(series: Series[]) {
+function setup(series: Series[], preferences: Partial<Preferences> = {}) {
   const store = new Map<string, TrackedSeries>();
   const key = (u: string, s: number) => `${u}:${s}`;
   const repo: TrackedSeriesRepository = {
@@ -23,10 +24,10 @@ function setup(series: Series[]) {
     ensure: async (id) => byId.get(id) ?? Promise.reject(new Error("unknown")),
     getMany: async (ids) => new Map(ids.flatMap((id) => (byId.has(id) ? [[id, byId.get(id)!] as const] : []))),
   };
-  return new TrackingService(repo, catalog, () => now);
+  return new TrackingService(repo, catalog, () => ({ ...DEFAULT_PREFERENCES, ...preferences }), () => now);
 }
 
-const series = (tmdbId: number, ended: boolean, airDates: string[]): Series => ({
+const series = (tmdbId: number, ended: boolean, airDates: (string | null)[]): Series => ({
   tmdbId,
   tvdbId: null,
   name: `Series ${tmdbId}`,
@@ -136,7 +137,7 @@ test("overlapping Watches of one Series are all kept", async () => {
     ensure: async () => series(1, false, ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"]),
     getMany: async () => new Map(),
   };
-  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog, () => now);
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog, undefined, () => now);
 
   await Promise.all([1, 2, 3, 4].map((number) => tracking.watchEpisode("u", 1, { season: 1, number })));
 
@@ -152,4 +153,23 @@ test("new Episodes on a day: Watching Series only, Episodes not watched yet", as
 
   const found = await tracking.newEpisodesOn(["2026-10-24"]);
   expect(found.map((f) => [f.userId, f.series.tmdbId, f.episodes.map((e) => e.number)])).toEqual([["u", 1, [2]]]);
+});
+
+test("home: fresh Episodes first, undated Upcoming hidden on demand", async () => {
+  const catalog = [
+    series(1, false, ["2026-10-01", "2026-10-02"]), // binged long ago
+    series(2, false, ["2026-10-01", "2026-10-20"]), // E2 out yesterday, while waiting for it
+    series(3, false, ["2026-10-01", null]), // caught up, no date yet
+  ];
+  const tracking = setup(catalog, { hideUndatedUpcoming: true });
+  await tracking.watchEpisode("u", 2, { season: 1, number: 1 }, new Date("2026-10-14T21:00:00Z"));
+  await tracking.watchEpisode("u", 1, { season: 1, number: 1 }, new Date("2026-10-15T21:00:00Z"));
+  await tracking.watchEpisode("u", 3, { season: 1, number: 1 });
+
+  const home = await tracking.home("u");
+  expect(home.ready.map((c) => [c.seriesId, c.fresh, c.airing])).toEqual([
+    [2, true, { kind: "ready", left: 1 }],
+    [1, false, { kind: "ready", left: 1 }],
+  ]);
+  expect(home.upcoming).toEqual([]);
 });

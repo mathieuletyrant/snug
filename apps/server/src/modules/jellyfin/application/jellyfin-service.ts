@@ -10,6 +10,7 @@ import type { TrackingService } from "@/modules/tracking/application/tracking-se
 import { type JellyfinEvent, parseJellyfinEvent } from "@/modules/jellyfin/domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "@/modules/jellyfin/infrastructure/schema";
 import { t } from "@/shared/i18n";
+import { today } from "@/shared/day";
 
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;
@@ -105,13 +106,13 @@ export class JellyfinService {
   /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
   private async announce(userId: string, seriesId: number, name: string, ep: EpisodeRef, next: Episode | null) {
     try {
-      const today = new Date().toISOString().slice(0, 10);
+      const day = today();
       const title = next && !isTitleHidden(this.identity.preferences(userId), { watched: false, next: true });
       await this.notifier.notify(userId, {
         title: `✓ ${name} ${episodeCode(ep)}`,
         body: !next
           ? t().push.caughtUp
-          : next.airDate && next.airDate <= today
+          : next.airDate && next.airDate <= day
             ? t().push.next(episodeCode(next), title ? next.name : null)
             : next.airDate
               ? t().push.nextOn(episodeCode(next), next.airDate)

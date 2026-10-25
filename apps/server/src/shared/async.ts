@@ -20,5 +20,3 @@ export async function forEachLimit<T>(
   };
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
 }
-
-export const today = (now: Date = new Date()) => now.toISOString().slice(0, 10);

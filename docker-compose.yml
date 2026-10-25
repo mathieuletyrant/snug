@@ -8,3 +8,4 @@ services:
       - ./data:/data
     environment:
       SNUG_ORIGINS: "http://localhost:3000"
+      TZ: "Europe/Paris"

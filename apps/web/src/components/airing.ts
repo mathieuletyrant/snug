@@ -1,30 +1,4 @@
-import type { SeriesCard } from "@snug/shared";
 import type { Messages } from "@/i18n";
-
-/** Where a Watching Series stands: Episodes out to catch up on, the Next Episode's air date, or no date yet. */
-export type Airing = { kind: "ready"; left: number } | { kind: "dated"; date: string } | { kind: "tba" };
-
-/** The viewer's calendar day as YYYY-MM-DD (air dates are plain days, compared in local time). */
-const localDay = (now: Date) =>
-  `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-export function airing(card: Pick<SeriesCard, "next" | "airedCount" | "watchedCount">, now = new Date()): Airing {
-  const date = card.next?.airDate;
-  if (!date) return { kind: "tba" };
-  if (date <= localDay(now)) return { kind: "ready", left: Math.max(1, card.airedCount - card.watchedCount) };
-  return { kind: "dated", date };
-}
-
-/**
- * New mode: the Next Episode aired in the last `days` days, after the last Watch, so you were caught up and
- * waiting for it. A Series being binged (last Watch after the air date) is not new.
- */
-export function isNew(card: Pick<SeriesCard, "next" | "lastWatchedAt">, days: number, now = new Date()) {
-  const date = card.next?.airDate;
-  if (!date || !card.lastWatchedAt || date > localDay(now)) return false;
-  if (daysUntil(date, now) < -days) return false;
-  return localDay(new Date(card.lastWatchedAt)) <= date;
-}
 
 const daysUntil = (date: string, now: Date) =>
   Math.round((new Date(`${date}T00:00:00`).getTime() - new Date(now.toDateString()).getTime()) / 86_400_000);
