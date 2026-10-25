@@ -159,7 +159,7 @@ export const en = {
     signOut: "Sign out",
     display: "Display",
     hideUndated: "Hide undated series",
-    hideUndatedHelp: "Hide series with no air date yet (TBA) from Upcoming, and from Watching in the Library.",
+    hideUndatedHelp: "Hide series with no air date yet (TBA) from Upcoming.",
     episodeTitles: "Episode titles",
     episodeTitlesHelp: "Blur titles of episodes you haven't watched, against spoilers. Tap one to show it.",
     titleChoices: { show: "Show all", hideUnwatched: "Hide unwatched", hideAll: "Hide all" } satisfies Record<

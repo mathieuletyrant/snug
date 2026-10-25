@@ -187,11 +187,8 @@ export class TrackingService {
   }
 
   async library(userId: string): Promise<SeriesCard[]> {
-    const hideUndated = this.preferences(userId).hideUndatedUpcoming;
     const cards = await this.cards(userId, await this.repo.listByUser(userId));
-    return cards
-      .filter((c) => !hideUndated || c.status !== "watching" || !c.loaded || c.airing.kind !== "tba")
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return cards.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async detail(userId: string, seriesId: number): Promise<SeriesDetail> {

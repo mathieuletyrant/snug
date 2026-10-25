@@ -154,7 +154,7 @@ export const fr: Messages = {
     signOut: "Se déconnecter",
     display: "Affichage",
     hideUndated: "Masquer les séries sans date",
-    hideUndatedHelp: "Retire de « À venir », et des séries « En cours » de la Bibliothèque, celles dont le prochain épisode n'a pas encore de date.",
+    hideUndatedHelp: "Retire de « À venir » les séries dont le prochain épisode n'a pas encore de date.",
     episodeTitles: "Titres d'épisodes",
     episodeTitlesHelp: "Floute les titres des épisodes pas encore vus, contre les spoilers. Touchez-en un pour l'afficher.",
     titleChoices: { show: "Tout afficher", hideUnwatched: "Masquer les non vus", hideAll: "Tout masquer" },
