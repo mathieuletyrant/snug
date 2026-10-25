@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { startOf } from "@/shared/day";
 import { CsvImportError, csvRowsToEntries, parseCsvImport, readCsv } from "./csv-import";
 
 const now = new Date("2026-10-21T12:00:00Z");
@@ -17,9 +18,14 @@ describe("parseCsvImport", () => {
   test("reads the documented columns, in any order and case", () => {
     const rows = parseCsvImport("Status,Episode,Season,TMDB_ID,Title,Watched_At\n,1,1,95396,Severance,2024-02-18\npaused,,,,The Bear,\n");
     expect(rows).toEqual([
-      { line: 2, title: "Severance", tmdbId: 95396, season: 1, number: 1, watchedAt: new Date("2024-02-18") },
+      { line: 2, title: "Severance", tmdbId: 95396, season: 1, number: 1, watchedAt: startOf("2024-02-18") },
       { line: 3, title: "The Bear", tmdbId: undefined, season: undefined, number: undefined, status: "paused" },
     ]);
+  });
+
+  test("watched_at: a day starts in the instance's time zone, a datetime is kept as is", () => {
+    const rows = parseCsvImport("tmdb_id,season,episode,watched_at\n1,1,1,2024-02-18\n1,1,2,2024-02-18T21:30:00Z\n");
+    expect(rows.map((row) => row.watchedAt)).toEqual([startOf("2024-02-18"), new Date("2024-02-18T21:30:00Z")]);
   });
 
   test("reports every bad line at once", () => {

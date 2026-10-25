@@ -12,6 +12,7 @@ import { TrackingService } from "@/modules/tracking/application/tracking-service
 import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
 import { testDb } from "@/shared/testing";
 import { mcpServer } from "@/modules/mcp/http/routes";
+import { today } from "@/shared/day";
 import { parseEpisodes } from "./tools";
 
 const series = (tmdbId: number): Series => ({
@@ -139,6 +140,20 @@ test("watch and unwatch episodes; the spoiler shield hides unwatched titles", as
   identity.updatePreferences("u", { episodeTitles: "hideUnwatched" });
   const { seasons } = await call("series", { tmdbId: 5 });
   expect(seasons[0].episodes.map((episode: { name: string | null }) => episode.name)).toEqual(["Episode 1", "Episode 2", null, null]);
+});
+
+test("series and library give the day episodes were watched; today when none is given", async () => {
+  const { call } = await setup();
+  await call("watch", { tmdbId: 5, season: 1, episodes: "1", watchedAt: "2024-02-18" });
+  await call("watch", { tmdbId: 5, season: 1, episodes: "1-2" }); // a rewatch keeps the first day
+  const { seasons } = await call("series", { tmdbId: 5 });
+  expect(seasons[0].episodes.map((episode: { watchedAt: string | null }) => episode.watchedAt)).toEqual([
+    "2024-02-18",
+    today(),
+    null,
+    null,
+  ]);
+  expect(await call("library", {})).toMatchObject([{ tmdbId: 5, lastWatchedAt: today() }]);
 });
 
 test("rate a series and a season; null clears", async () => {

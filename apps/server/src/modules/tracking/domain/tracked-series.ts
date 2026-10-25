@@ -115,6 +115,11 @@ export class TrackedSeries {
     return this._watches.has(keyOf(ep));
   }
 
+  /** When the Episode was first watched; null when not watched. */
+  watchedAt(ep: EpisodeRef): Date | null {
+    return this._watches.get(keyOf(ep))?.watchedAt ?? null;
+  }
+
   /** Watching again pulls a Paused, Saving up or Watchlist Series back to Watching; Dropped stays Dropped. */
   watch(ep: EpisodeRef, at: Date) {
     this.add(ep, at);

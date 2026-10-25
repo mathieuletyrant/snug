@@ -76,7 +76,12 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
   tracked: boolean;
   overview: string;
   ended: boolean;
-  seasons: { number: number; rating: number | null; episodes: (Episode & { watched: boolean; aired: boolean })[] }[];
+  /** `watchedAt`: ISO datetime of the first Watch. */
+  seasons: {
+    number: number;
+    rating: number | null;
+    episodes: (Episode & { watched: boolean; watchedAt: string | null; aired: boolean })[];
+  }[];
 }
 
 /** Read-only feed URLs (paths, to prefix with the origin) for other apps. */
