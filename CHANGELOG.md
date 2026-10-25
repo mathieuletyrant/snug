@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/mathieuletyrant/snug/compare/v0.13.0...v0.14.0) (2026-10-25)
+
+
+### ✨ Features
+
+* **mcp:** filter and sort the library tool ([#77](https://github.com/mathieuletyrant/snug/issues/77)) ([e4dbfaa](https://github.com/mathieuletyrant/snug/commit/e4dbfaa1432c71df519c0ba2a3fded859a08da2c))
+
 ## [0.13.0](https://github.com/mathieuletyrant/snug/compare/v0.12.0...v0.13.0) (2026-10-25)
 
 
