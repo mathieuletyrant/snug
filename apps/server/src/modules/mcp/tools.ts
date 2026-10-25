@@ -1,10 +1,11 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { STATUSES } from "@snug/shared";
+import { type Preferences, SAVING_TARGETS, STATUSES, isTitleHidden } from "@snug/shared";
 import { z } from "zod";
 import { forEachLimit } from "@/shared/async";
+import { InvalidInputError, NotFoundError } from "@/shared/errors";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { ImportService } from "@/modules/import/application/import-service";
-import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
+import type { ImportEntry, TrackingService } from "@/modules/tracking/application/tracking-service";
 import { WHOLE_SERIES } from "@/modules/tracking/domain/tracked-series";
 
 /** "1-10,12" → [1, …, 10, 12]. */
@@ -55,10 +56,31 @@ const importInput = {
     .describe("Up to 200 series per call: send a large history in several calls."),
 };
 
-const text = (value: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(value) }] });
+const tmdbId = z.int().positive().describe("The series' TMDB id, from find_series or library.");
+const episodes = z.string().describe('"1-10", "1-4,6" or "3".');
 
-/** Two tools and a prompt for an AI assistant moving a user's history from another tracker into Snug. */
-export function registerTools(server: McpServer, catalog: CatalogService, importer: ImportService, userId: string) {
+const text = (value: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(value) }] });
+const failure = (error: unknown) => ({ isError: true, content: [{ type: "text" as const, text: (error as Error).message }] });
+
+/** Bad input and unknown series come back to the assistant as a tool error, not an exception. */
+const attempt = async (fn: () => Promise<unknown>) => {
+  try {
+    return text(await fn());
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof InvalidInputError) return failure(error);
+    throw error;
+  }
+};
+
+/** The Assistant's tools: the User's own commands and views on their Series, nothing on their account. */
+export function registerTools(
+  server: McpServer,
+  catalog: CatalogService,
+  importer: ImportService,
+  tracking: TrackingService,
+  preferences: Preferences,
+  userId: string,
+) {
   server.registerPrompt(
     "import_history",
     {
@@ -135,5 +157,154 @@ export function registerTools(server: McpServer, catalog: CatalogService, import
       await importer.importBatch(userId, entries);
       return text({ series: entries.length, episodes });
     },
+  );
+
+  server.registerTool(
+    "library",
+    {
+      description: "The user's series: status, progress (the furthest episode watched), next episode and rating.",
+      inputSchema: {},
+      annotations: { readOnlyHint: true },
+    },
+    async () =>
+      text(
+        (await tracking.library(userId)).map((card) => ({
+          tmdbId: card.seriesId,
+          name: card.name,
+          year: card.year,
+          status: card.status,
+          progress: card.progress,
+          next: card.next && { season: card.next.season, number: card.next.number, airDate: card.next.airDate },
+          rating: card.rating,
+          watched: card.watchedCount,
+          aired: card.airedCount,
+        })),
+      ),
+  );
+
+  server.registerTool(
+    "series",
+    {
+      description:
+        "One series in detail, tracked or not: its seasons and episodes, which are watched, the next one. Titles of unwatched episodes may be hidden by the user's spoiler shield.",
+      inputSchema: { tmdbId },
+      annotations: { readOnlyHint: true },
+    },
+    ({ tmdbId }) =>
+      attempt(async () => {
+        const detail = await tracking.detail(userId, tmdbId);
+        const isNext = (episode: { season: number; number: number }) =>
+          detail.next?.season === episode.season && detail.next.number === episode.number;
+        return {
+          tmdbId,
+          name: detail.name,
+          year: detail.year,
+          overview: detail.overview,
+          ended: detail.ended,
+          tracked: detail.tracked,
+          status: detail.tracked ? detail.status : null,
+          progress: detail.progress,
+          next: detail.next && { season: detail.next.season, number: detail.next.number, airDate: detail.next.airDate },
+          rating: detail.rating,
+          seasons: detail.seasons.map((season) => ({
+            number: season.number,
+            rating: season.rating,
+            episodes: season.episodes.map((episode) => ({
+              number: episode.number,
+              name: isTitleHidden(preferences, { watched: episode.watched, next: isNext(episode) }) ? null : episode.name,
+              airDate: episode.airDate,
+              watched: episode.watched,
+            })),
+          })),
+        };
+      }),
+  );
+
+  server.registerTool(
+    "set_status",
+    {
+      description:
+        "Sets a series' status; a series not tracked yet is added with it, so this is also how to add one. saving = waiting for a whole season (target 0) or a number of episodes before watching.",
+      inputSchema: {
+        tmdbId,
+        status: z.enum(STATUSES),
+        savingTarget: z.literal(SAVING_TARGETS).optional().describe("With saving: 0 for a whole season, or how many episodes."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    ({ tmdbId, status, savingTarget }) =>
+      attempt(async () => {
+        await tracking.track(userId, tmdbId, status, savingTarget);
+        return { ok: true };
+      }),
+  );
+
+  server.registerTool(
+    "watch",
+    {
+      description: "Marks episodes of a season watched. A series not tracked yet starts as watching.",
+      inputSchema: {
+        tmdbId,
+        season: z.int().min(1),
+        episodes,
+        watchedAt: z.iso.date().optional().describe('"2024-02-18"; today when absent.'),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    ({ tmdbId, season, episodes, watchedAt }) =>
+      attempt(async () => {
+        const numbers = parseEpisodes(episodes);
+        const at = watchedAt ? new Date(watchedAt) : new Date();
+        for (const number of numbers) await tracking.watchEpisode(userId, tmdbId, { season, number }, at);
+        return { episodes: numbers.length };
+      }),
+  );
+
+  server.registerTool(
+    "unwatch",
+    {
+      description: "Marks episodes of a season not watched, e.g. to undo a mistake.",
+      inputSchema: { tmdbId, season: z.int().min(1), episodes },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    ({ tmdbId, season, episodes }) =>
+      attempt(async () => {
+        const numbers = parseEpisodes(episodes);
+        for (const number of numbers) await tracking.unwatchEpisode(userId, tmdbId, { season, number });
+        return { episodes: numbers.length };
+      }),
+  );
+
+  server.registerTool(
+    "rate",
+    {
+      description: "Rates a tracked series, or one of its seasons, out of 10; null clears the rating.",
+      inputSchema: {
+        tmdbId,
+        season: z.int().min(1).optional().describe("Absent: the whole series."),
+        rating: z.int().min(1).max(10).nullable(),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    ({ tmdbId, season, rating }) =>
+      attempt(async () => {
+        await tracking.rate(userId, tmdbId, { rating, season });
+        return { ok: true };
+      }),
+  );
+
+  server.registerTool(
+    "untrack",
+    {
+      description:
+        "Removes a series from the user's library with its watched episodes and ratings, irreversibly: for a series added by mistake. To stop watching one, set its status to dropped instead.",
+      inputSchema: { tmdbId },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
+    },
+    ({ tmdbId }) =>
+      attempt(async () => {
+        await tracking.untrack(userId, tmdbId);
+        return { ok: true };
+      }),
   );
 }

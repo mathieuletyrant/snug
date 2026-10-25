@@ -255,7 +255,7 @@ export const en = {
     },
     mcp: {
       title: "AI assistant",
-      description: "Import your history from another tracker (TV Time, Trakt…) with Claude or any MCP assistant.",
+      description: "Let Claude or any MCP assistant manage your series: mark episodes, change statuses, rate, and import your history from another tracker (TV Time, Trakt…).",
       url: "MCP URL",
       steps: [
         (b: Bold) => <>In your assistant, add an MCP server ({b("Streamable HTTP")}) with the URL below.</>,
@@ -267,6 +267,13 @@ export const en = {
         import_history: "A guided import from TV Time, Trakt… In Claude: the + menu, or / in the message.",
         find_series: "Finds a series on TMDB from its title.",
         import: "Adds series, watched episodes and ratings; what is already in Snug is kept.",
+        library: "Your series, with status, progress and rating.",
+        series: "A series in detail: seasons, episodes, which are watched. Respects the spoiler shield.",
+        set_status: "Changes a series' status, or adds it.",
+        watch: "Marks episodes watched.",
+        unwatch: "Marks episodes not watched.",
+        rate: "Rates a series or a season.",
+        untrack: "Removes a series and everything watched in it, for good.",
       },
     },
   },

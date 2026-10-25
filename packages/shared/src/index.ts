@@ -87,7 +87,7 @@ export interface Feeds {
 }
 
 /** URL path (to prefix with the origin) other apps POST `{ tmdbId }` to, adding a Series to the Watchlist. */
-/** Where an AI assistant connects to import a history (`?token=` included). */
+/** Where an Assistant (AI over MCP) connects to act on the User's Series (`?token=` included). */
 export interface McpIntegration {
   mcpPath: string;
 }
@@ -97,6 +97,13 @@ export const MCP_FEATURES = [
   ["prompt", "import_history"],
   ["tool", "find_series"],
   ["tool", "import"],
+  ["tool", "library"],
+  ["tool", "series"],
+  ["tool", "set_status"],
+  ["tool", "watch"],
+  ["tool", "unwatch"],
+  ["tool", "rate"],
+  ["tool", "untrack"],
 ] as const;
 
 export interface WatchlistIntegration {

@@ -249,7 +249,7 @@ export const fr: Messages = {
     },
     mcp: {
       title: "Assistant IA",
-      description: "Importez votre historique d'une autre app (TV Time, Trakt…) avec Claude ou un assistant MCP.",
+      description: "Laissez Claude ou tout assistant MCP gérer vos séries : marquer des épisodes, changer les statuts, noter, et importer votre historique d'une autre app (TV Time, Trakt…).",
       url: "l'URL MCP",
       steps: [
         (b) => <>Dans votre assistant, ajoutez un serveur MCP ({b("Streamable HTTP")}) avec l'URL ci-dessous.</>,
@@ -261,6 +261,13 @@ export const fr: Messages = {
         import_history: "Un import guidé depuis TV Time, Trakt… Dans Claude : le menu +, ou / dans le message.",
         find_series: "Trouve une série sur TMDB à partir de son titre.",
         import: "Ajoute séries, épisodes vus et notes ; ce qui est déjà dans Snug est gardé.",
+        library: "Vos séries, avec statut, progression et note.",
+        series: "Une série en détail : saisons, épisodes, lesquels sont vus. Respecte l'anti-spoiler.",
+        set_status: "Change le statut d'une série, ou l'ajoute.",
+        watch: "Marque des épisodes vus.",
+        unwatch: "Marque des épisodes non vus.",
+        rate: "Note une série ou une saison.",
+        untrack: "Retire une série et tout ce qui y est vu, définitivement.",
       },
     },
   },

@@ -23,7 +23,7 @@ const series = (tmdbId: number): Series => ({
   posterPath: null,
   backdropPath: null,
   ended: false,
-  episodes: [],
+  episodes: [1, 2, 3, 4].map((number) => ({ season: 1, number, name: `Episode ${number}`, airDate: number < 4 ? "2020-01-01" : null })),
   fetchedAt: new Date(),
 });
 
@@ -43,7 +43,7 @@ async function setup() {
   const repo = new DrizzleTrackedSeriesRepository(db);
   const tracking = new TrackingService(repo, catalog);
   const identity = new IdentityService(db, {} as Auth);
-  const app = new Hono().route("/api/mcp", mcpServer(identity, catalog, new ImportService(tracking, catalog)));
+  const app = new Hono().route("/api/mcp", mcpServer(identity, catalog, new ImportService(tracking, catalog), tracking));
   const transport = new StreamableHTTPClientTransport(
     new URL(`http://snug.test/api/mcp?token=${identity.mcpTokens.of("u")}`),
     { fetch: async (url, init) => app.request(String(url), init) },
@@ -55,7 +55,7 @@ async function setup() {
     const [content] = result.content as { text: string }[];
     return result.isError ? content!.text : JSON.parse(content!.text);
   };
-  return { app, client, call, tracking, repo };
+  return { app, client, call, tracking, repo, identity };
 }
 
 test("Integrations lists every tool and prompt", async () => {
@@ -117,4 +117,37 @@ test("import: ratings of the series and its seasons fill in, a rating given in S
   const tracked = await repo.find("u", 7);
   expect([tracked?.ratingOf(), tracked?.ratingOf(1), tracked?.ratingOf(2)]).toEqual([10, 6, 9]);
   expect(await call("import", { series: [{ tmdbId: 7, rating: 11 }] })).toContain("rating");
+});
+
+test("set_status adds a series; library, series and untrack see it", async () => {
+  const { call } = await setup();
+  await call("set_status", { tmdbId: 5, status: "saving", savingTarget: 3 });
+  expect(await call("library", {})).toMatchObject([{ tmdbId: 5, name: "Series 5", status: "saving", progress: null, aired: 3 }]);
+  expect(await call("series", { tmdbId: 5 })).toMatchObject({ tracked: true, status: "saving", next: { season: 1, number: 1 } });
+  expect(await call("series", { tmdbId: 6 })).toMatchObject({ tracked: false, status: null });
+  await call("untrack", { tmdbId: 5 });
+  expect(await call("library", {})).toEqual([]);
+});
+
+test("watch and unwatch episodes; the spoiler shield hides unwatched titles", async () => {
+  const { call, identity } = await setup();
+  expect(await call("unwatch", { tmdbId: 5, season: 1, episodes: "1" })).toBe("This series is not in your library");
+  expect(await call("watch", { tmdbId: 5, season: 1, episodes: "1-2", watchedAt: "2024-02-18" })).toEqual({ episodes: 2 });
+  await call("unwatch", { tmdbId: 5, season: 1, episodes: "2" });
+  expect(await call("series", { tmdbId: 5 })).toMatchObject({ status: "watching", progress: { season: 1, number: 1 } });
+
+  identity.updatePreferences("u", { episodeTitles: "hideUnwatched" });
+  const { seasons } = await call("series", { tmdbId: 5 });
+  expect(seasons[0].episodes.map((episode: { name: string | null }) => episode.name)).toEqual(["Episode 1", "Episode 2", null, null]);
+});
+
+test("rate a series and a season; null clears", async () => {
+  const { call, repo } = await setup();
+  expect(await call("rate", { tmdbId: 5, rating: 8 })).toBe("This series is not in your library");
+  await call("set_status", { tmdbId: 5, status: "watchlist" });
+  await call("rate", { tmdbId: 5, rating: 8 });
+  await call("rate", { tmdbId: 5, season: 1, rating: 6 });
+  await call("rate", { tmdbId: 5, rating: null });
+  const tracked = await repo.find("u", 5);
+  expect([tracked?.ratingOf(), tracked?.ratingOf(1)]).toEqual([null, 6]);
 });
