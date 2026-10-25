@@ -255,6 +255,13 @@ export const fr: Messages = {
         (b) => <>Dans votre assistant, ajoutez un serveur MCP ({b("Streamable HTTP")}) avec l'URL ci-dessous.</>,
         (b) => <>Donnez-lui votre export et demandez : {b("importe mes séries dans Snug")}.</>,
       ],
+      canDo: "Ce qu'il sait faire",
+      kind: { prompt: "Prompt", tool: "Outil" },
+      features: {
+        import_history: "Un import guidé depuis TV Time, Trakt… Dans Claude : le menu +, ou / dans le message.",
+        find_series: "Trouve une série sur TMDB à partir de son titre.",
+        import: "Ajoute séries, épisodes vus et notes ; ce qui est déjà dans Snug est gardé.",
+      },
     },
   },
   ago: {

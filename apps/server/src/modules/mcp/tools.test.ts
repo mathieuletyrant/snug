@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Hono } from "hono";
+import { MCP_FEATURES } from "@snug/shared";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { Series } from "@/modules/catalog/domain/series";
 import { IdentityService } from "@/modules/identity/application/identity-service";
@@ -54,8 +55,21 @@ async function setup() {
     const [content] = result.content as { text: string }[];
     return result.isError ? content!.text : JSON.parse(content!.text);
   };
-  return { app, call, tracking, repo };
+  return { app, client, call, tracking, repo };
 }
+
+test("Integrations lists every tool and prompt", async () => {
+  const { client } = await setup();
+  const prompts = (await client.listPrompts()).prompts.map((p) => ["prompt", p.name]);
+  const tools = (await client.listTools()).tools.map((t) => ["tool", t.name]);
+  expect([...prompts, ...tools]).toEqual(MCP_FEATURES.map(([kind, name]) => [kind, name]));
+});
+
+test("import_history: a prompt naming the other tracker", async () => {
+  const { client } = await setup();
+  const { messages } = await client.getPrompt({ name: "import_history", arguments: { source: "TV Time" } });
+  expect((messages[0]!.content as { text: string }).text).toStartWith("Import my TV Time history into Snug.");
+});
 
 test("episode lists", () => {
   expect(parseEpisodes("1-3,5, 8-9")).toEqual([1, 2, 3, 5, 8, 9]);

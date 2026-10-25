@@ -57,8 +57,31 @@ const importInput = {
 
 const text = (value: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(value) }] });
 
-/** Two tools for an AI assistant moving a user's history from another tracker into Snug. */
+/** Two tools and a prompt for an AI assistant moving a user's history from another tracker into Snug. */
 export function registerTools(server: McpServer, catalog: CatalogService, importer: ImportService, userId: string) {
+  server.registerPrompt(
+    "import_history",
+    {
+      title: "Import my history into Snug",
+      description: "Moves the series, watched episodes and ratings of another tracker into Snug.",
+      argsSchema: { source: z.string().describe("The other tracker: TV Time, Trakt, Letterboxd…") },
+    },
+    ({ source }) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Import my ${source} history into Snug. Read the export I give you (ask for it if I haven't), then:
+1. Find every series with find_series, in batches of 50 titles; when the best match is unclear, ask me.
+2. Send them with import, up to 200 series per call: their status, watched episodes with the day they were watched, and ratings converted to a scale of 10.
+3. Skip movies and specials (season 0). Tell me which titles you couldn't match.`,
+          },
+        },
+      ],
+    }),
+  );
+
   server.registerTool(
     "find_series",
     {
