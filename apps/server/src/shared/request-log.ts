@@ -17,12 +17,14 @@ export function maskTokens(path: string): string {
 }
 
 /** Calls other apps make (webhooks, Sonarr list): worth a line even when they succeed. */
-const isIntegration = (path: string) => TOKEN_PREFIXES.some((p) => path.startsWith(p));
+const isIntegration = (path: string) => path === "/api/mcp" || TOKEN_PREFIXES.some((p) => path.startsWith(p));
 
 export function levelFor(path: string, status: number): "error" | "warn" | "info" | "debug" {
   if (status >= 500) return "error";
   // A signed-out page asking who is there is routine; a refused sign-in is not.
   if (status === 401 && !path.startsWith("/api/auth/")) return "debug";
+  // MCP clients first try a GET for server events, which Snug doesn't send.
+  if (status === 405 && path === "/api/mcp") return "debug";
   if (status >= 400) return "warn";
   return isIntegration(path) ? "info" : "debug";
 }

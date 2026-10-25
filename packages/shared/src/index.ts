@@ -66,6 +66,11 @@ export interface Feeds {
 }
 
 /** URL path (to prefix with the origin) other apps POST `{ tmdbId }` to, adding a Series to the Watchlist. */
+/** Where an AI assistant connects to import a history (`?token=` included). */
+export interface McpIntegration {
+  mcpPath: string;
+}
+
 export interface WatchlistIntegration {
   addPath: string;
 }

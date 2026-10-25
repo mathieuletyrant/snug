@@ -4,7 +4,7 @@ import { isAPIError } from "better-auth/api";
 import type { Db } from "../../../shared/db";
 import { InvalidInputError } from "../../../shared/errors";
 import { type Auth, invitation } from "../infrastructure/auth";
-import { feedToken, user, userPreferences, watchlistToken, webhookToken } from "../infrastructure/schema";
+import { feedToken, mcpToken, user, userPreferences, watchlistToken, webhookToken } from "../infrastructure/schema";
 import { t } from "../../../shared/i18n";
 
 const newToken = () => Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
@@ -16,6 +16,7 @@ export class IdentityService {
   readonly feedTokens: UserTokens;
   /** Token in the URL other apps (Spotarr) call to add a Series to the Watchlist. */
   readonly watchlistTokens: UserTokens;
+  readonly mcpTokens: UserTokens;
 
   constructor(
     private readonly db: Db,
@@ -24,6 +25,7 @@ export class IdentityService {
     this.webhookTokens = new UserTokens(db, webhookToken);
     this.feedTokens = new UserTokens(db, feedToken);
     this.watchlistTokens = new UserTokens(db, watchlistToken);
+    this.mcpTokens = new UserTokens(db, mcpToken);
   }
 
   hasUsers() {
@@ -79,7 +81,7 @@ export class IdentityService {
 class UserTokens {
   constructor(
     private readonly db: Db,
-    private readonly table: typeof webhookToken | typeof feedToken | typeof watchlistToken,
+    private readonly table: typeof webhookToken | typeof feedToken | typeof watchlistToken | typeof mcpToken,
   ) {}
 
   of(userId: string): string {

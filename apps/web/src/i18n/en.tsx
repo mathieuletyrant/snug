@@ -217,6 +217,15 @@ export const en = {
         (b: Bold) => <>Add a rule with the action {b("Add to Snug's Watchlist")}, or use the button on a TV show.</>,
       ],
     },
+    mcp: {
+      title: "AI assistant",
+      description: "Import your history from another tracker (TV Time, Trakt…) with Claude or any MCP assistant.",
+      url: "MCP URL",
+      steps: [
+        (b: Bold) => <>In your assistant, add an MCP server ({b("Streamable HTTP")}) with the URL below.</>,
+        (b: Bold) => <>Give it your export and ask: {b("import my series into Snug")}.</>,
+      ],
+    },
   },
   ago: {
     justNow: "just now",

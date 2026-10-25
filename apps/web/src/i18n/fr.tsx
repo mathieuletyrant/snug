@@ -213,6 +213,15 @@ export const fr: Messages = {
         (b) => <>Ajoutez une règle avec l'action {b("Add to Snug's Watchlist")}, ou utilisez le bouton d'une série.</>,
       ],
     },
+    mcp: {
+      title: "Assistant IA",
+      description: "Importez votre historique d'une autre app (TV Time, Trakt…) avec Claude ou un assistant MCP.",
+      url: "l'URL MCP",
+      steps: [
+        (b) => <>Dans votre assistant, ajoutez un serveur MCP ({b("Streamable HTTP")}) avec l'URL ci-dessous.</>,
+        (b) => <>Donnez-lui votre export et demandez : {b("importe mes séries dans Snug")}.</>,
+      ],
+    },
   },
   ago: {
     justNow: "à l'instant",

@@ -50,6 +50,23 @@ export class ImportService {
     return this.run(userId, entries, titles.filter((t) => !ids.get(t)));
   }
 
+  /**
+   * A batch sent by an AI assistant (MCP). Batches follow one another, so this one is never refused while
+   * another import runs, and keeps no progress; new Series are fetched in the background.
+   */
+  async importBatch(userId: string, entries: ImportEntry[]) {
+    const ids = await this.tracking.import(userId, entries);
+    void forEachLimit(
+      ids,
+      6,
+      async (id) => {
+        await this.catalog.ensure(id);
+        await this.tracking.reconcileSeries(id);
+      },
+      (id, error) => log.warn(`Could not fetch series ${id}: ${reason(error)}`),
+    );
+  }
+
   /** Imports right away; Series metadata is then fetched in the background (see `progressOf`). */
   private async run(userId: string, entries: ImportEntry[], unresolved: string[]): Promise<ImportResult> {
     const ids = await this.tracking.import(userId, entries);
