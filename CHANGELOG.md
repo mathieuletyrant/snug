@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.12.0](https://github.com/mathieuletyrant/snug/compare/v0.11.0...v0.12.0) (2026-10-25)
+
+
+### ✨ Features
+
+* **mcp:** import_history prompt, tools and prompt listed in Integrations ([#65](https://github.com/mathieuletyrant/snug/issues/65)) ([c055157](https://github.com/mathieuletyrant/snug/commit/c055157918deee1beabbd48b54697e1aa9b4fce2))
+* **mcp:** the Assistant manages the library: library, series, set_status, watch, unwatch, rate, untrack ([#71](https://github.com/mathieuletyrant/snug/issues/71)) ([b369d7e](https://github.com/mathieuletyrant/snug/commit/b369d7ebc6cea73379a756e6cdfb45f7c50dd420))
+* **web:** TanStack devtools, Superset workspace setup ([#70](https://github.com/mathieuletyrant/snug/issues/70)) ([c2497a5](https://github.com/mathieuletyrant/snug/commit/c2497a531b28b7988ed45976526cd55dd8851e23))
+
+
+### 🐛 Fixes
+
+* **web:** season progress on the current season, not the last one ([#67](https://github.com/mathieuletyrant/snug/issues/67)) ([619f4ad](https://github.com/mathieuletyrant/snug/commit/619f4ad5955c26290f786e9615289838937576e5))
+
 ## [0.11.0](https://github.com/mathieuletyrant/snug/compare/v0.10.0...v0.11.0) (2026-10-25)
 
 
