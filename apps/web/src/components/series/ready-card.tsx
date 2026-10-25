@@ -7,11 +7,11 @@ import { EpisodeTitle } from "@/components/spoilers";
 import { Backdrop, Badge } from "@/components/ui";
 
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. */
-export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {
+export function ReadyCard({ card }: { card: SeriesCard }) {
   const watchNext = useWatchNext();
   const t = useT();
   const next = card.next;
-  const left = card.airedCount - card.watchedCount;
+  const left = card.airing.kind === "ready" ? card.airing.left : 0;
   // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
   return (
     <article className="relative overflow-hidden rounded-2xl border border-line/60 bg-surface shadow-md shadow-black/20">
@@ -26,7 +26,7 @@ export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean })
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
           <div className="absolute top-2 left-2 flex gap-1">
             {card.saving && <Badge tone="accent">{t.home.savedUp}</Badge>}
-            {!card.saving && fresh && <Badge tone="accent">{t.home.new}</Badge>}
+            {!card.saving && card.fresh && <Badge tone="accent">{t.home.new}</Badge>}
             <Badge>{t.home.left(left)}</Badge>
           </div>
           <div className="absolute inset-x-0 bottom-0 p-2.5 pr-12 sm:p-3 sm:pr-14">

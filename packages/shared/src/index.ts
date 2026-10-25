@@ -17,6 +17,9 @@ export interface Episode extends EpisodeRef {
 /** The Episode the home screen's one click marked, and the Status before it, to undo. */
 export type WatchedNext = Episode & { previousStatus: Status };
 
+/** Where a Series stands: Episodes out to watch after the Progress, the Next Episode's air date, or no date yet. */
+export type Airing = { kind: "ready"; left: number } | { kind: "dated"; date: string } | { kind: "tba" };
+
 export interface SeriesCard {
   seriesId: number;
   /** False while the Catalog has not fetched this Series yet. */
@@ -32,6 +35,9 @@ export interface SeriesCard {
   saving: Saving | null;
   progress: EpisodeRef | null;
   next: Episode | null;
+  airing: Airing;
+  /** New mode (see `Preferences.newForDays`): the Next Episode came out lately, while you were waiting for it. */
+  fresh: boolean;
   watchedCount: number;
   airedCount: number;
   /** ISO datetime. */

@@ -1,10 +1,17 @@
-import type { Home, SavingTarget, SeriesCard, SeriesDetail, WatchedNext } from "@snug/shared";
+import {
+  DEFAULT_PREFERENCES,
+  type Home,
+  type Preferences,
+  type SavingTarget,
+  type SeriesCard,
+  type SeriesDetail,
+  type WatchedNext,
+} from "@snug/shared";
 import type { Episode, Series } from "@/modules/catalog/domain/series";
-import { today } from "@/shared/async";
+import { today } from "@/shared/day";
 import { NotFoundError } from "@/shared/errors";
 import {
   STATUSES,
-  availability,
   compareEpisodes,
   type EpisodeRef,
   type Status,
@@ -30,6 +37,7 @@ export class TrackingService {
   constructor(
     private readonly repo: TrackedSeriesRepository,
     private readonly catalog: CatalogPort,
+    private readonly preferences: (userId: string) => Preferences = () => DEFAULT_PREFERENCES,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -161,22 +169,25 @@ export class TrackingService {
 
   async home(userId: string): Promise<Home> {
     const list = (await this.repo.listByUser(userId)).filter((t) => t.status === "watching" || t.status === "saving");
-    const cards = await this.cards(list);
-    // Saving up: Ready only once enough is out, and then first; until then, in Upcoming.
-    const isReady = (c: SeriesCard) =>
-      c.loaded && (c.saving ? c.saving.reached : availability(c.next, today(this.now())) === "ready");
+    const cards = await this.cards(userId, list);
+    // Saving up: Ready only once enough is out; until then, in Upcoming.
+    const isReady = (c: SeriesCard) => c.loaded && (c.saving ? c.saving.reached : c.airing.kind === "ready");
     const ready = cards.filter(isReady);
-    const upcoming = cards.filter((c) => !ready.includes(c));
+    const hideUndated = this.preferences(userId).hideUndatedUpcoming;
+    const upcoming = cards.filter((c) => !ready.includes(c) && (!hideUndated || !c.loaded || c.next?.airDate));
+    // Fresh Episodes first (New mode), then Saved up, then the most recently watched.
     ready.sort(
       (a, b) =>
-        Number(!!b.saving) - Number(!!a.saving) || (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""),
+        Number(b.fresh) - Number(a.fresh) ||
+        Number(!!b.saving) - Number(!!a.saving) ||
+        (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""),
     );
     upcoming.sort((a, b) => (a.next?.airDate ?? "9999").localeCompare(b.next?.airDate ?? "9999"));
     return { ready, upcoming };
   }
 
   async library(userId: string): Promise<SeriesCard[]> {
-    const cards = await this.cards(await this.repo.listByUser(userId));
+    const cards = await this.cards(userId, await this.repo.listByUser(userId));
     return cards.sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -190,7 +201,7 @@ export class TrackingService {
       season.episodes.push({ ...e, watched: tracked.hasWatched(e), aired: e.airDate !== null && e.airDate <= day });
       seasons.set(e.season, season);
     }
-    const { loaded: _, ...card } = this.card(tracked, series);
+    const { loaded: _, ...card } = this.card(tracked, series, this.preferences(userId).newForDays);
     return {
       ...card,
       tracked: !!found,
@@ -256,13 +267,15 @@ export class TrackingService {
     await this.repo.save(tracked);
   }
 
-  private async cards(list: TrackedSeries[]): Promise<SeriesCard[]> {
+  private async cards(userId: string, list: TrackedSeries[]): Promise<SeriesCard[]> {
     const catalog = await this.catalog.getMany(list.map((t) => t.seriesId));
-    return list.map((t) => this.card(t, catalog.get(t.seriesId)));
+    const { newForDays } = this.preferences(userId);
+    return list.map((t) => this.card(t, catalog.get(t.seriesId), newForDays));
   }
 
-  private card(t: TrackedSeries, series: Series | undefined): SeriesCard {
+  private card(t: TrackedSeries, series: Series | undefined, newForDays: number): SeriesCard {
     const aired = series ? this.aired(series) : [];
+    const day = today(this.now());
     return {
       seriesId: t.seriesId,
       loaded: !!series,
@@ -271,10 +284,12 @@ export class TrackingService {
       posterPath: series?.posterPath ?? null,
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
-      choosable: series ? t.choosable(series, today(this.now())) : [...STATUSES],
-      saving: series && t.status === "saving" ? t.saving(series.episodes, today(this.now())) : null,
+      choosable: series ? t.choosable(series, day) : [...STATUSES],
+      saving: series && t.status === "saving" ? t.saving(series.episodes, day) : null,
       progress: t.progress,
       next: series ? t.nextEpisode(series.episodes) : null,
+      airing: series ? t.airing(series.episodes, day) : { kind: "tba" },
+      fresh: !!series && t.isNew(series.episodes, day, newForDays),
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,
       airedCount: aired.length,
       lastWatchedAt: t.lastWatchedAt?.toISOString() ?? null,

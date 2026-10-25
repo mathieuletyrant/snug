@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { availability, TrackedSeries } from "./tracked-series";
+import { TrackedSeries } from "./tracked-series";
 
 const now = new Date("2026-10-21T20:00:00Z");
 const today = "2026-10-21";
@@ -89,11 +89,30 @@ describe("TrackedSeries", () => {
   });
 });
 
-test("availability: Ready once the Next Episode has aired, Upcoming otherwise", () => {
-  expect(availability(ep(1, 1, "2026-10-21"), today)).toBe("ready");
-  expect(availability(ep(1, 1, "2026-10-22"), today)).toBe("upcoming");
-  expect(availability(ep(1, 1, null), today)).toBe("upcoming");
-  expect(availability(null, today)).toBe("upcoming");
+test("airing: Ready with the Episodes out after the Progress, dated, or TBA", () => {
+  const t = TrackedSeries.start("u", 1, "watching", now);
+  t.watch(ep(1, 1), now);
+  t.watch(ep(2, 1), now); // S01E02 skipped: a gap before the Progress doesn't count
+  const list = [ep(1, 1), ep(1, 2), ep(2, 1), ep(2, 2, "2026-10-14"), ep(2, 3, "2026-10-21"), ep(2, 4, "2026-10-28")];
+  expect(t.airing(list, today)).toEqual({ kind: "ready", left: 2 });
+  t.watch(ep(2, 3), now);
+  expect(t.airing(list, today)).toEqual({ kind: "dated", date: "2026-10-28" });
+  expect(t.airing([...list.slice(0, 5), ep(2, 4, null)], today)).toEqual({ kind: "tba" });
+  expect(t.airing(list.slice(0, 5), today)).toEqual({ kind: "tba" }); // nothing after the Progress
+});
+
+test("an Episode is new when it aired lately, after the last Watch", () => {
+  const isNew = (airDate: string | null, lastWatch: string | null, days = 7) => {
+    const t = TrackedSeries.start("u", 1, "watching", now);
+    if (lastWatch) t.watch(ep(1, 1), new Date(`${lastWatch}T21:00:00Z`));
+    return t.isNew([ep(1, 1), ep(1, 2, airDate)], today, days);
+  };
+  expect(isNew("2026-10-20", "2026-10-14")).toBe(true);
+  expect(isNew("2026-10-20", "2026-10-21")).toBe(false); // binging
+  expect(isNew("2026-10-12", "2026-10-05")).toBe(false); // too old
+  expect(isNew("2026-10-12", "2026-10-05", 14)).toBe(true);
+  expect(isNew("2026-10-25", "2026-10-14")).toBe(false); // not out yet
+  expect(isNew("2026-10-20", "2026-10-14", 0)).toBe(false); // New mode off
 });
 
 test("Saving up a full season: reached once every Episode of the next season has aired", () => {

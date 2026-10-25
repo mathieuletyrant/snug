@@ -54,6 +54,7 @@ Open http://localhost:3000, create the admin account, paste a [TMDB key](https:/
 | `LOG_LEVEL` | `info` | `debug` adds every request, ignored Jellyfin calls and TMDB calls; `warn` keeps only problems |
 | `LOG_FORMAT` | readable lines | `json` for one pino JSON object per line |
 | `PORT` | `3000` | |
+| `TZ` | `UTC` | Time zone deciding which day it is: when an Episode counts as out, when new-Episode notifications go (from 4 pm). E.g. `Europe/Paris` |
 | `SNUG_PUSH_CONTACT` | first `https://` origin | Contact sent to push services (`https://…` or `mailto:…`) |
 
 The image is multi-arch (amd64 / arm64), tagged `latest`, `x.y` and `x.y.z`.

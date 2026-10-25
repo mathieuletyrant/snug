@@ -1,4 +1,5 @@
-import { type EpisodeRef, type Saving, type SavingTarget, STATUSES, type Status } from "@snug/shared";
+import { type Airing, type EpisodeRef, type Saving, type SavingTarget, STATUSES, type Status } from "@snug/shared";
+import { addDays, today as dayOf } from "@/shared/day";
 
 export { STATUSES, type EpisodeRef, type Status } from "@snug/shared";
 
@@ -147,6 +148,26 @@ export class TrackedSeries {
     );
   }
 
+  /** Ready with how many Episodes are out from the Next Episode on, dated, or TBA (no date, or nothing after the Progress). */
+  airing(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string): Airing {
+    const next = this.nextEpisode(episodes);
+    if (!next?.airDate) return { kind: "tba" };
+    if (!hasAired(next, today)) return { kind: "dated", date: next.airDate };
+    const left = episodes.filter((e) => compareEpisodes(e, next) >= 0 && hasAired(e, today) && !this.hasWatched(e)).length;
+    return { kind: "ready", left };
+  }
+
+  /**
+   * New mode: the Next Episode aired in the last `days` days, after the last Watch, so you were caught up and
+   * waiting for it. A Series being binged (last Watch after the air date) is not new.
+   */
+  isNew(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string, days: number) {
+    const next = this.nextEpisode(episodes);
+    const last = this.lastWatchedAt;
+    if (!days || !next?.airDate || !last || !hasAired(next, today)) return false;
+    return next.airDate >= addDays(today, -days) && dayOf(last) <= next.airDate;
+  }
+
   /**
    * Completed means: the Series has ended and nothing aired is left after the Progress (gaps before it don't
    * count). Watching and Saving up become Completed then; Completed returns to Watching otherwise.
@@ -167,11 +188,6 @@ export class TrackedSeries {
     if (!timeline.episodes.length) return null;
     return timeline.ended && !this.nextEpisode(timeline.episodes.filter((e) => hasAired(e, today)));
   }
-}
-
-/** Ready: the Next Episode has aired. Upcoming: caught up, waiting for it. */
-export function availability(next: { airDate: string | null } | null, today: string): "ready" | "upcoming" {
-  return next && hasAired(next, today) ? "ready" : "upcoming";
 }
 
 export interface TrackedSeriesRepository {

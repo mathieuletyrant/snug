@@ -1,5 +1,5 @@
 import type { SeriesCard } from "@snug/shared";
-import { airing, longDate, shortDay } from "@/components/airing";
+import { longDate, shortDay } from "@/components/airing";
 import { PosterTile } from "@/components/poster-tile";
 import { StatusMenu } from "@/components/series-actions";
 import { useT } from "@/i18n";
@@ -31,7 +31,7 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
  */
 function AiringBadge({ card }: { card: SeriesCard }) {
   const t = useT();
-  const state = airing(card);
+  const state = card.airing;
   const label =
     state.kind === "ready" ? t.home.left(state.left) : state.kind === "dated" ? shortDay(t, state.date) : t.common.tba;
   const title =

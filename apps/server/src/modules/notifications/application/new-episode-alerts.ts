@@ -1,7 +1,7 @@
 import { episodeCode, type Episode, type Preferences } from "@snug/shared";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/shared/db";
-import { today } from "@/shared/async";
+import { today } from "@/shared/day";
 import { t } from "@/shared/i18n";
 import { moduleLogger } from "@/shared/logger";
 import { episodeAlerts } from "@/modules/notifications/infrastructure/schema";
@@ -11,10 +11,10 @@ const log = moduleLogger("push");
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * Hour (UTC) from which a day's new Episodes are announced: TMDB air dates have no time, and in Europe
- * an Episode dated today is out by the evening. Yesterday's are still sent, in case Snug was down.
+ * Hour (instance time, see `today`) from which a day's new Episodes are announced: TMDB air dates have no time,
+ * and an Episode dated today is out by the evening. Yesterday's are still sent, in case Snug was down.
  */
-export const SEND_FROM_HOUR_UTC = 16;
+export const SEND_FROM_HOUR = 16;
 
 /** What the alerts need from tracking: who watches what airs on these days. */
 export interface NewEpisodesSource {
@@ -36,7 +36,7 @@ export class NewEpisodeAlerts {
   /** Meant to run every hour; returns how many notifications it sent. */
   async run(): Promise<number> {
     const now = this.now();
-    if (now.getUTCHours() < SEND_FROM_HOUR_UTC) return 0;
+    if (now.getHours() < SEND_FROM_HOUR) return 0;
     const days = [today(new Date(now.getTime() - DAY)), today(now)];
     let sent = 0;
     for (const { userId, series, episodes } of await this.source.newEpisodesOn(days)) {
