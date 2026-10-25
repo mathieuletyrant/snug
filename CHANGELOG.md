@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.0](https://github.com/mathieuletyrant/snug/compare/v0.10.0...v0.11.0) (2026-10-25)
+
+
+### ✨ Features
+
+* iCal calendar feed, Library sorting, time left to watch ([#60](https://github.com/mathieuletyrant/snug/issues/60)) ([fa9cb96](https://github.com/mathieuletyrant/snug/commit/fa9cb96c4d4259c990ef984f9ba19123bf180802))
+* per-season progress segments, on every season or the last one ([#62](https://github.com/mathieuletyrant/snug/issues/62)) ([0b6ffcb](https://github.com/mathieuletyrant/snug/commit/0b6ffcb345f96ed73dca1a3d2ce41c6faee38791))
+* rate Series and seasons out of 10, from the app, CSV and MCP ([#63](https://github.com/mathieuletyrant/snug/issues/63)) ([351dcd6](https://github.com/mathieuletyrant/snug/commit/351dcd6b37f7fddc02e847730a747ae4a2c9b3ca))
+
 ## [0.10.0](https://github.com/mathieuletyrant/snug/compare/v0.9.0...v0.10.0) (2026-10-25)
 
 
