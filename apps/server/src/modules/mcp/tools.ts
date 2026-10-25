@@ -5,6 +5,7 @@ import { forEachLimit } from "@/shared/async";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { ImportService } from "@/modules/import/application/import-service";
 import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
+import { WHOLE_SERIES } from "@/modules/tracking/domain/tracked-series";
 
 /** "1-10,12" → [1, …, 10, 12]. */
 export function parseEpisodes(text: string): number[] {
@@ -42,6 +43,11 @@ const importInput = {
           )
           .default([])
           .describe("Watched episodes. Repeat a season to give one date per day."),
+        rating: z.int().min(1).max(10).optional().describe("The user's rating of the series, out of 10."),
+        seasonRatings: z
+          .array(z.object({ season: z.int().min(1), rating: z.int().min(1).max(10) }))
+          .default([])
+          .describe("The user's ratings of single seasons, out of 10."),
       }),
     )
     .min(1)
@@ -80,7 +86,7 @@ export function registerTools(server: McpServer, catalog: CatalogService, import
     "import",
     {
       description:
-        "Imports series into Snug, the user's series tracker: their status and watched episodes. What is already in Snug is kept, nothing is deleted, so a call can be sent again.",
+        "Imports series into Snug, the user's series tracker: their status, watched episodes and ratings (out of 10; convert other scales, e.g. 4/5 stars → 8). What is already in Snug is kept, nothing is deleted, so a call can be sent again.",
       inputSchema: importInput,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     },
@@ -97,7 +103,8 @@ export function registerTools(server: McpServer, catalog: CatalogService, import
             })),
           );
           episodes += watches.length;
-          entries.push({ seriesId: s.tmdbId, status: s.status, watches });
+          const ratings = [...(s.rating ? [{ season: WHOLE_SERIES, rating: s.rating }] : []), ...s.seasonRatings];
+          entries.push({ seriesId: s.tmdbId, status: s.status, watches, ratings });
         }
       } catch (error) {
         return { isError: true, content: [{ type: "text" as const, text: (error as Error).message }] };

@@ -30,7 +30,7 @@ describe("parseCsvImport", () => {
       expect(e).toBeInstanceOf(CsvImportError);
       expect((e as CsvImportError).problems).toEqual([
         "Line 2: needs a title or a tmdb_id",
-        "Line 3: season and episode go together",
+        "Line 3: season and episode go together (season alone only with a season_rating)",
         "Line 4: watched_at is not a date (use 2024-02-18)",
         'Line 4: unknown status "binging"',
       ]);
@@ -54,4 +54,17 @@ test("csvRowsToEntries groups by series and infers the status", () => {
     [3, "dropped", 1],
   ]);
   expect(entries[0]?.watches[1]?.watchedAt).toEqual(now);
+});
+
+test("ratings: the Series' and a season's, with or without an episode, the last one winning", () => {
+  const rows = parseCsvImport(
+    "tmdb_id,season,episode,rating,season_rating\n1,1,1,7,\n1,,,9,\n1,2,,,8\n1,2,3,,6\n",
+  );
+  const [entry] = csvRowsToEntries(rows, () => null, now);
+  expect(entry?.ratings).toEqual([
+    { season: 0, rating: 9 },
+    { season: 2, rating: 6 },
+  ]);
+  expect(entry?.watches.length).toBe(2);
+  expect(() => parseCsvImport("tmdb_id,rating\n1,11\n")).toThrow("rating must be a whole number from 1 to 10");
 });

@@ -1,7 +1,13 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/shared/db";
-import { type Status, TrackedSeries, type TrackedSeriesRepository, type Watch } from "@/modules/tracking/domain/tracked-series";
-import { trackedSeries, watches } from "./schema";
+import {
+  type Rating,
+  type Status,
+  TrackedSeries,
+  type TrackedSeriesRepository,
+  type Watch,
+} from "@/modules/tracking/domain/tracked-series";
+import { ratings, trackedSeries, watches } from "./schema";
 
 type Row = typeof trackedSeries.$inferSelect;
 
@@ -49,22 +55,30 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
       const rows = t.watches.map((w) => ({ ...w, userId: t.userId, seriesId: t.seriesId }));
       // ponytail: rewrites all Watches of the Series on save; diff them if Series with thousands of Episodes get slow.
       for (let i = 0; i < rows.length; i += 500) tx.insert(watches).values(rows.slice(i, i + 500)).run();
+      tx.delete(ratings)
+        .where(and(eq(ratings.userId, t.userId), eq(ratings.seriesId, t.seriesId), eq(ratings.episode, 0)))
+        .run();
+      if (t.ratings.length) {
+        tx.insert(ratings).values(t.ratings.map((r) => ({ ...r, userId: t.userId, seriesId: t.seriesId }))).run();
+      }
     });
   }
 
   async delete(userId: string, seriesId: number) {
     this.db.transaction((tx) => {
       tx.delete(watches).where(and(eq(watches.userId, userId), eq(watches.seriesId, seriesId))).run();
+      tx.delete(ratings).where(and(eq(ratings.userId, userId), eq(ratings.seriesId, seriesId))).run();
       tx.delete(trackedSeries)
         .where(and(eq(trackedSeries.userId, userId), eq(trackedSeries.seriesId, seriesId)))
         .run();
     });
   }
 
-  /** Loads Watches for many rows in one query per user. */
+  /** Loads Watches and Ratings for many rows in one query each per user. */
   private hydrate(rows: Row[]): TrackedSeries[] {
     if (!rows.length) return [];
     const byKey = new Map<string, Watch[]>();
+    const ratingsByKey = new Map<string, Rating[]>();
     for (const userId of new Set(rows.map((r) => r.userId))) {
       const ids = rows.filter((r) => r.userId === userId).map((r) => r.seriesId);
       const ws = this.db
@@ -78,7 +92,20 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
         if (list) list.push(w);
         else byKey.set(k, [w]);
       }
+      const rs = this.db
+        .select()
+        .from(ratings)
+        // Episode Ratings aren't rated in Snug yet.
+        .where(and(eq(ratings.userId, userId), inArray(ratings.seriesId, ids), eq(ratings.episode, 0)))
+        .all();
+      for (const { userId: u, seriesId, episode: _, ...r } of rs) {
+        const k = `${u}:${seriesId}`;
+        ratingsByKey.set(k, [...(ratingsByKey.get(k) ?? []), r]);
+      }
     }
-    return rows.map((r) => TrackedSeries.restore({ ...r, watches: byKey.get(`${r.userId}:${r.seriesId}`) ?? [] }));
+    return rows.map((r) => {
+      const k = `${r.userId}:${r.seriesId}`;
+      return TrackedSeries.restore({ ...r, watches: byKey.get(k) ?? [], ratings: ratingsByKey.get(k) ?? [] });
+    });
   }
 }

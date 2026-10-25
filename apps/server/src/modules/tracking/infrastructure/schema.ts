@@ -29,3 +29,16 @@ export const watches = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.seriesId, t.season, t.number] })],
 );
+
+/** Ratings out of 10: of a Series (season 0, episode 0), a season (episode 0), or one Episode. 0 rather than null: two nulls never clash in a key. */
+export const ratings = sqliteTable(
+  "ratings",
+  {
+    userId: text("user_id").notNull(),
+    seriesId: integer("series_id").notNull(),
+    season: integer("season").notNull(),
+    episode: integer("episode").notNull().default(0),
+    rating: integer("rating").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.seriesId, t.season, t.episode] })],
+);

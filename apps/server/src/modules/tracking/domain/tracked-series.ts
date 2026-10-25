@@ -7,6 +7,17 @@ export interface Watch extends EpisodeRef {
   watchedAt: Date;
 }
 
+/** A User's rating out of 10, of a season or (season 0, which is never tracked otherwise) of the whole Series. */
+export interface Rating {
+  season: number;
+  rating: number;
+}
+
+/** The `season` of the whole Series' Rating. */
+export const WHOLE_SERIES = 0;
+
+const isRating = (n: number) => Number.isInteger(n) && n >= 1 && n <= 10;
+
 /** What tracking needs to know about a Series' Episodes. */
 export interface Timeline {
   ended: boolean;
@@ -30,6 +41,7 @@ export class TrackedSeries {
     private readonly _watches: Map<string, Watch>,
     readonly addedAt: Date,
     private _savingTarget: SavingTarget = 0,
+    private readonly _ratings = new Map<number, number>(),
   ) {}
 
   static start(userId: string, seriesId: number, status: Status, now: Date) {
@@ -43,9 +55,11 @@ export class TrackedSeries {
     watches: Watch[];
     addedAt: Date;
     savingTarget: SavingTarget;
+    ratings?: Rating[];
   }) {
     const watches = new Map(p.watches.map((w) => [keyOf(w), w]));
-    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget);
+    const ratings = new Map((p.ratings ?? []).map((r) => [r.season, r.rating]));
+    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings);
   }
 
   get status() {
@@ -58,6 +72,27 @@ export class TrackedSeries {
 
   get watches(): Watch[] {
     return [...this._watches.values()];
+  }
+
+  get ratings(): Rating[] {
+    return [...this._ratings].map(([season, rating]) => ({ season, rating }));
+  }
+
+  /** Out of 10; null when not rated. */
+  ratingOf(season: number = WHOLE_SERIES): number | null {
+    return this._ratings.get(season) ?? null;
+  }
+
+  /** Rates the whole Series (no `season`) or one season out of 10; a null `rating` clears it. */
+  rate({ rating, season = WHOLE_SERIES }: { rating: number | null; season?: number }) {
+    if (rating === null) this._ratings.delete(season);
+    else if (isRating(rating)) this._ratings.set(season, rating);
+    else throw new RangeError(`A rating is a whole number from 1 to 10, not ${rating}`);
+  }
+
+  /** Imported Ratings fill in what isn't rated yet: a Rating given in Snug wins. */
+  mergeRatings(ratings: readonly Rating[]) {
+    for (const r of ratings) if (!this._ratings.has(r.season)) this.rate(r);
   }
 
   hasWatched(ep: EpisodeRef) {

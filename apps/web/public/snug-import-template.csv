@@ -1,5 +1,6 @@
-title,tmdb_id,season,episode,watched_at,status
-Severance,95396,1,1,2024-02-18,
-Severance,95396,1,2,2024-02-25,
-The Bear,,2,3,,paused
-Dark,,,,,watchlist
+title,tmdb_id,season,episode,watched_at,status,rating,season_rating
+Severance,95396,1,1,2024-02-18,,9,
+Severance,95396,1,2,2024-02-25,,,
+Severance,95396,1,,,,,8
+The Bear,,2,3,,paused,,
+Dark,,,,,watchlist,,

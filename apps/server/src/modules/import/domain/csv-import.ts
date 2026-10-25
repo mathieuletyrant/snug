@@ -1,12 +1,14 @@
 import type { Status } from "@snug/shared";
 import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
+import { WHOLE_SERIES } from "@/modules/tracking/domain/tracked-series";
 import { STATUS_ALIASES } from "./import-file";
 import { t } from "@/shared/i18n";
 
 /**
  * CSV import, one row per watched Episode (or per Series to just add it):
- *   title,tmdb_id,season,episode,watched_at,status
- * Either `title` or `tmdb_id` is required; everything else is optional.
+ *   title,tmdb_id,season,episode,watched_at,status,rating,season_rating
+ * Either `title` or `tmdb_id` is required; everything else is optional. `rating` rates the Series and
+ * `season_rating` the row's season, out of 10; a row may give a season and its rating without an episode.
  */
 
 export interface CsvRow {
@@ -17,6 +19,8 @@ export interface CsvRow {
   number?: number;
   watchedAt?: Date;
   status?: Status;
+  rating?: number;
+  seasonRating?: number;
 }
 
 export class CsvImportError extends Error {
@@ -56,7 +60,7 @@ export function readCsv(text: string): string[][] {
   return rows.filter((r) => r.some((cell) => cell.trim()));
 }
 
-const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status"] as const;
+const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status", "rating", "season_rating"] as const;
 
 export function parseCsvImport(text: string): CsvRow[] {
   const [header, ...lines] = readCsv(text);
@@ -85,8 +89,18 @@ export function parseCsvImport(text: string): CsvRow[] {
     const row: CsvRow = { line, title: get("title") || undefined, tmdbId: int("tmdb_id", 1) };
     row.season = int("season", 0);
     row.number = int("episode", 1);
+    const rating = (column: "rating" | "season_rating") => {
+      const raw = get(column);
+      if (!raw) return undefined;
+      const n = Number(raw);
+      if (!Number.isInteger(n) || n < 1 || n > 10) problems.push(t().csv.notARating(line, column));
+      return n;
+    };
+    row.rating = rating("rating");
+    row.seasonRating = rating("season_rating");
     if (!row.title && !row.tmdbId) problems.push(t().csv.needsTitle(line));
-    if ((row.season === undefined) !== (row.number === undefined)) {
+    const seasonAlone = row.season !== undefined && row.number === undefined && row.seasonRating !== undefined;
+    if ((row.season === undefined) !== (row.number === undefined) && !seasonAlone) {
       problems.push(t().csv.seasonAndEpisode(line));
     }
 
@@ -112,6 +126,7 @@ export function parseCsvImport(text: string): CsvRow[] {
 /**
  * Groups rows into one entry per Series. `seriesIdOf` turns a title into a TMDB id (null when not found).
  * Status: the last explicit one wins; otherwise Watching when something was watched, Watchlist when not.
+ * Ratings: the last one given for the Series or a season wins.
  */
 export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => number | null, now: Date): ImportEntry[] {
   const entries = new Map<number, ImportEntry & { explicit: boolean }>();
@@ -124,6 +139,10 @@ export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => 
       if (!entry.explicit) entry.status = "watching";
     }
     if (row.status) Object.assign(entry, { status: row.status, explicit: true });
+    const ratings = new Map((entry.ratings ?? []).map((r) => [r.season, r.rating]));
+    if (row.rating) ratings.set(WHOLE_SERIES, row.rating);
+    if (row.seasonRating && row.season) ratings.set(row.season, row.seasonRating);
+    if (ratings.size) entry.ratings = [...ratings].map(([season, rating]) => ({ season, rating }));
     entries.set(id, entry);
   }
   return [...entries.values()].map(({ explicit: _, ...entry }) => entry);

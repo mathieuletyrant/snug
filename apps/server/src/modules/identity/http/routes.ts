@@ -33,6 +33,7 @@ const preferencesPatch = z
     newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
     notifyNewEpisodes: z.boolean(),
     seasonProgress: z.enum(SEASON_PROGRESS),
+    showRatings: z.boolean(),
   })
   .partial()
   .strict();

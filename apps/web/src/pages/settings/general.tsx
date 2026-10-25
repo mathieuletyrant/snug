@@ -81,6 +81,12 @@ function Display() {
           options={NEW_FOR_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t.settings.off : t.settings.days(d) }))}
         />
       </SettingRow>
+      <Toggle
+        label={t.settings.showRatings}
+        description={t.settings.showRatingsHelp}
+        checked={preferences.showRatings}
+        onChange={(showRatings) => update.mutate({ showRatings })}
+      />
       <SettingRow stacked label={t.settings.seasonProgress} description={t.settings.seasonProgressHelp}>
         <Chips
           label={t.settings.seasonProgress}

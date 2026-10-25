@@ -4,6 +4,8 @@ import { image } from "@/api";
 import { useT } from "@/i18n";
 import { BackButton, Poster, ProgressBar } from "@/components/ui";
 import { progressText } from "./library-tile";
+import { RatingButton } from "./rating";
+import { usePreferences } from "@/components/preferences";
 
 /**
  * The top of a series page: its backdrop faded into the page, poster, name and progress, then `children`
@@ -11,6 +13,7 @@ import { progressText } from "./library-tile";
  */
 export function SeriesHero({ series, children }: { series: SeriesDetail; children: ReactNode }) {
   const t = useT();
+  const { showRatings } = usePreferences();
   const backdrop = image(series.backdropPath, "w1280");
   return (
     <>
@@ -24,13 +27,26 @@ export function SeriesHero({ series, children }: { series: SeriesDetail; childre
       )}
       <BackButton />
       <div className="mt-20 grid grid-cols-[7rem_minmax(0,1fr)] gap-x-5 gap-y-6 md:mt-36 md:grid-cols-[10rem_minmax(0,1fr)] md:gap-x-8">
-        <Poster
-          path={series.posterPath}
-          name={series.name}
-          className="w-full self-start md:row-span-2"
-          sizes="(min-width: 768px) 160px, 112px"
-          eager
-        />
+        <div className="relative self-start md:row-span-2">
+          <Poster
+            path={series.posterPath}
+            name={series.name}
+            className="w-full"
+            sizes="(min-width: 768px) 160px, 112px"
+            eager
+          />
+          {series.tracked && showRatings && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
+              <RatingButton
+                path={`/series/${series.seriesId}/rating`}
+                rating={series.rating}
+                label={t.series.yourRating}
+                small
+                onImage
+              />
+            </div>
+          )}
+        </div>
         <header className="flex flex-col justify-end gap-2 md:justify-start md:pt-6">
           <h1 className="text-3xl leading-tight font-semibold md:text-5xl">{series.name}</h1>
           <p className="text-sm text-muted">

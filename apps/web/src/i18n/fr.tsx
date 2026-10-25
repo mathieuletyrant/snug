@@ -105,7 +105,7 @@ export const fr: Messages = {
     nextOn: (date) => `Prochain épisode le ${date}`,
     caughtUpUndated: "À jour, prochain épisode pas encore daté",
     sort: "Trier",
-    sorts: { name: "A–Z", lastWatched: "Dernier vu", nextEpisode: "Prochain épisode" },
+    sorts: { name: "A–Z", lastWatched: "Dernier vu", nextEpisode: "Prochain épisode", rating: "Note" },
     changeStatus: "Changer le statut",
     movedTo: (status) => `Déplacée dans ${status}`,
   },
@@ -116,6 +116,12 @@ export const fr: Messages = {
     empty: "Aucune série trouvée",
   },
   series: {
+    yourRating: "Votre note",
+    seasonRating: (n) => `Votre note de la saison ${n}`,
+    rate: "Noter",
+    clearRating: "Effacer la note",
+    episodesWatched: (watched, total) => `${watched}/${total} ép.`,
+    rateAs: (n) => `Noter ${n} sur 10`,
     ended: "Terminée",
     airing: "En diffusion",
     at: (code) => `à ${code}`,
@@ -160,6 +166,8 @@ export const fr: Messages = {
     titleChoices: { show: "Tout afficher", hideUnwatched: "Masquer les non vus", hideAll: "Tout masquer" },
     newFirst: "Nouveaux épisodes en premier",
     newFirstHelp: "Le nouvel épisode d'une série à jour passe en tête de l'accueil, avec un badge Nouveau.",
+    showRatings: "Notes",
+    showRatingsHelp: "Notez les séries et les saisons sur 10.",
     seasonProgress: "Progression par saison",
     seasonProgressHelp: "Sur la page d'une série, un segment par épisode : vu, sorti, à venir.",
     seasonProgressChoices: { all: "Toutes les saisons", last: "Dernière saison seulement" },
@@ -267,7 +275,7 @@ export const fr: Messages = {
     template: "Télécharger le modèle CSV",
     columnsHelp: (title, tmdbId) => (
       <>
-        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série.
+        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série. Les notes sont sur 10 ; un season_rating peut aller avec une season sans episode.
       </>
     ),
     done: (series, watches) => `${series} séries et ${watches} épisodes vus importés.`,
