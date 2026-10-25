@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { PushSettings } from "@snug/shared";
-import { type AuthEnv, jsonBody, parse } from "../../../shared/http";
-import type { NotificationService } from "../application/notification-service";
-import { t } from "../../../shared/i18n";
+import { type AuthEnv, jsonBody, parse } from "@/shared/http";
+import type { NotificationService } from "@/modules/notifications/application/notification-service";
+import { t } from "@/shared/i18n";
 
 const subscription = z.object({
   endpoint: z.url({ protocol: /^https$/ }),

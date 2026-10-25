@@ -1,11 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Me } from "@snug/shared";
-import { api, queryClient } from "../../api";
-import { useForm } from "../../components/form";
-import { LanguageSelect, TmdbKeyForm } from "../../components/tmdb-settings";
-import { useToast } from "../../components/toast";
-import { Button, Card, CardHeader, ErrorText, Input } from "../../components/ui";
-import { useT } from "../../i18n";
+import { api, queryClient } from "@/api";
+import { useForm } from "@/components/form";
+import { LanguageSelect, TmdbKeyForm } from "@/components/tmdb-settings";
+import { useToast } from "@/components/toast";
+import { Button, Card, CardHeader, ErrorText, Input } from "@/components/ui";
+import { useT } from "@/i18n";
 
 export function AdminSection() {
   const t = useT();

@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { parseCsvImport } from "../modules/import/domain/csv-import";
+import { parseCsvImport } from "@/modules/import/domain/csv-import";
 import { setLanguageSource, t } from "./i18n";
 
 afterEach(() => setLanguageSource(() => "en-US"));

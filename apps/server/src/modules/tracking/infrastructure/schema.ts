@@ -1,7 +1,7 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "../../identity/infrastructure/schema";
+import { user } from "@/modules/identity/infrastructure/schema";
 import type { SavingTarget } from "@snug/shared";
-import type { Status } from "../domain/tracked-series";
+import type { Status } from "@/modules/tracking/domain/tracked-series";
 
 export const trackedSeries = sqliteTable(
   "tracked_series",

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { PushSettings } from "@snug/shared";
 import { useCallback, useEffect, useState } from "react";
-import { api, queryClient } from "../api";
+import { api, queryClient } from "@/api";
 
 export type PushState = "loading" | "unsupported" | "denied" | "off" | "on";
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ApiError, authClient, queryClient } from "../api";
-import { useForm } from "../components/form";
-import { Button, Card, CenteredPage, ErrorText, Input } from "../components/ui";
-import { useT } from "../i18n";
+import { ApiError, authClient, queryClient } from "@/api";
+import { useForm } from "@/components/form";
+import { Button, Card, CenteredPage, ErrorText, Input } from "@/components/ui";
+import { useT } from "@/i18n";
 
 /** better-auth error codes that belong to a single field. */
 const FIELD_OF_CODE: Record<string, string> = {

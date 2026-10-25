@@ -1,6 +1,6 @@
 import { Tv } from "lucide-react";
 import { useState } from "react";
-import { backdropSrcSet, image, posterSrcSet } from "../../api";
+import { backdropSrcSet, image, posterSrcSet } from "@/api";
 import { cx } from "./cx";
 
 /** Poster grid shared by Home (Upcoming), Library and Search: 4 per row on phones, 8 on desktop. */

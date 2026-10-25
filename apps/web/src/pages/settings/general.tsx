@@ -1,12 +1,12 @@
 import { EPISODE_TITLES, type Me, NEW_FOR_DAYS } from "@snug/shared";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
-import { api, authClient } from "../../api";
-import { usePreferences, useUpdatePreferences } from "../../components/preferences";
-import { usePush } from "../../components/push";
-import { useToast } from "../../components/toast";
-import { Badge, Button, Card, CardHeader, Chips, SettingRow, Toggle } from "../../components/ui";
-import { useT } from "../../i18n";
+import { api, authClient } from "@/api";
+import { usePreferences, useUpdatePreferences } from "@/components/preferences";
+import { usePush } from "@/components/push";
+import { useToast } from "@/components/toast";
+import { Badge, Button, Card, CardHeader, Chips, SettingRow, Toggle } from "@/components/ui";
+import { useT } from "@/i18n";
 
 export function GeneralSection({ me }: { me: Me }) {
   return (

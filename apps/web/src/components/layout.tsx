@@ -1,12 +1,12 @@
 import { House, Library, Search, Settings } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { queryClient } from "../api";
-import { homeQuery, libraryQuery } from "../queries";
+import { queryClient } from "@/api";
+import { homeQuery, libraryQuery } from "@/queries";
 import { ImportBanner } from "./import-progress";
 import { PullToRefresh } from "./pull-to-refresh";
 import { useScrollToTop } from "./scroll";
-import { useT } from "../i18n";
+import { useT } from "@/i18n";
 import { cx } from "./ui";
 
 const TABS = [

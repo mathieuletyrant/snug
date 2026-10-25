@@ -1,11 +1,11 @@
 import { asc, count, eq } from "drizzle-orm";
 import { DEFAULT_PREFERENCES, type Me, type Preferences } from "@snug/shared";
 import { isAPIError } from "better-auth/api";
-import type { Db } from "../../../shared/db";
-import { InvalidInputError } from "../../../shared/errors";
-import { type Auth, invitation } from "../infrastructure/auth";
-import { feedToken, mcpToken, user, userPreferences, watchlistToken, webhookToken } from "../infrastructure/schema";
-import { t } from "../../../shared/i18n";
+import type { Db } from "@/shared/db";
+import { InvalidInputError } from "@/shared/errors";
+import { type Auth, invitation } from "@/modules/identity/infrastructure/auth";
+import { feedToken, mcpToken, user, userPreferences, watchlistToken, webhookToken } from "@/modules/identity/infrastructure/schema";
+import { t } from "@/shared/i18n";
 
 const newToken = () => Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString("base64url");
 

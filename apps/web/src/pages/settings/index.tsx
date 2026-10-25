@@ -1,7 +1,7 @@
 import type { Me } from "@snug/shared";
 import { useSearchParams } from "wouter";
-import { Chips, PageTitle } from "../../components/ui";
-import { useT } from "../../i18n";
+import { Chips, PageTitle } from "@/components/ui";
+import { useT } from "@/i18n";
 import { AdminSection } from "./admin";
 import { GeneralSection } from "./general";
 import { ImportSection } from "./import";

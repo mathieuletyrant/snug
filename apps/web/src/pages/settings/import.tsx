@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import type { ImportResult } from "@snug/shared";
 import { Upload } from "lucide-react";
-import { api, queryClient } from "../../api";
-import { ImportProgressBar, useImportProgress } from "../../components/import-progress";
-import { Card, CardHeader, cx, ErrorText } from "../../components/ui";
-import { type Messages, useT } from "../../i18n";
+import { api, queryClient } from "@/api";
+import { ImportProgressBar, useImportProgress } from "@/components/import-progress";
+import { Card, CardHeader, cx, ErrorText } from "@/components/ui";
+import { type Messages, useT } from "@/i18n";
 
 /** Reads a CSV or a JSON export and sends it to the server as such. */
 async function upload(t: Messages, file: File) {

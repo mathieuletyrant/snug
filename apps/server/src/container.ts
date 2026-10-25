@@ -1,22 +1,22 @@
 /** Composition root: the only place that knows every concrete implementation. */
-import { CatalogService } from "./modules/catalog/application/catalog-service";
-import { DrizzleCatalogRepository } from "./modules/catalog/infrastructure/drizzle-catalog-repository";
+import { CatalogService } from "@/modules/catalog/application/catalog-service";
+import { DrizzleCatalogRepository } from "@/modules/catalog/infrastructure/drizzle-catalog-repository";
 import { STATUSES } from "@snug/shared";
-import { CatalogSettings } from "./modules/catalog/infrastructure/settings-store";
-import { TmdbClient } from "./modules/catalog/infrastructure/tmdb-client";
-import { IdentityService } from "./modules/identity/application/identity-service";
-import { createAuth } from "./modules/identity/infrastructure/auth";
-import { FeedsService } from "./modules/feeds/application/feeds-service";
-import { ImportService } from "./modules/import/application/import-service";
-import { NewEpisodeAlerts } from "./modules/notifications/application/new-episode-alerts";
-import { NotificationService } from "./modules/notifications/application/notification-service";
-import { WebPushSender } from "./modules/notifications/infrastructure/web-push-sender";
-import { JellyfinService } from "./modules/jellyfin/application/jellyfin-service";
-import { db } from "./shared/db";
-import { setLanguageSource } from "./shared/i18n";
-import { moduleLogger } from "./shared/logger";
-import { TrackingService } from "./modules/tracking/application/tracking-service";
-import { DrizzleTrackedSeriesRepository } from "./modules/tracking/infrastructure/drizzle-tracked-series-repository";
+import { CatalogSettings } from "@/modules/catalog/infrastructure/settings-store";
+import { TmdbClient } from "@/modules/catalog/infrastructure/tmdb-client";
+import { IdentityService } from "@/modules/identity/application/identity-service";
+import { createAuth } from "@/modules/identity/infrastructure/auth";
+import { FeedsService } from "@/modules/feeds/application/feeds-service";
+import { ImportService } from "@/modules/import/application/import-service";
+import { NewEpisodeAlerts } from "@/modules/notifications/application/new-episode-alerts";
+import { NotificationService } from "@/modules/notifications/application/notification-service";
+import { WebPushSender } from "@/modules/notifications/infrastructure/web-push-sender";
+import { JellyfinService } from "@/modules/jellyfin/application/jellyfin-service";
+import { db } from "@/shared/db";
+import { setLanguageSource } from "@/shared/i18n";
+import { moduleLogger } from "@/shared/logger";
+import { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
 
 const log = moduleLogger("catalog");
 

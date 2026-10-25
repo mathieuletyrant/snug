@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { api, queryClient } from "../../api";
-import { Card } from "../../components/ui";
-import { useT } from "../../i18n";
+import { api, queryClient } from "@/api";
+import { Card } from "@/components/ui";
+import { useT } from "@/i18n";
 
 /** An app Snug talks to: its icon and name, what it does, then how to connect it. */
 export function IntegrationCard({

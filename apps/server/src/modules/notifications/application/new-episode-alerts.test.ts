@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from "bun:test";
 import { DEFAULT_PREFERENCES, type Episode } from "@snug/shared";
-import { setLanguageSource } from "../../../shared/i18n";
-import { testDb } from "../../../shared/testing";
+import { setLanguageSource } from "@/shared/i18n";
+import { testDb } from "@/shared/testing";
 import { describe, NewEpisodeAlerts } from "./new-episode-alerts";
 import type { Notification } from "./notification-service";
 

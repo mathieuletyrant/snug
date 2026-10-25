@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import type { JellyfinIntegration } from "@snug/shared";
-import { InvalidInputError } from "../../../shared/errors";
-import { type AuthEnv, jsonBody } from "../../../shared/http";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { JellyfinService } from "../application/jellyfin-service";
-import { t } from "../../../shared/i18n";
+import { InvalidInputError } from "@/shared/errors";
+import { type AuthEnv, jsonBody } from "@/shared/http";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { JellyfinService } from "@/modules/jellyfin/application/jellyfin-service";
+import { t } from "@/shared/i18n";
 
 /** Called by Jellyfin; the token in the URL identifies the User. */
 export const jellyfinWebhook = (jellyfin: JellyfinService) =>

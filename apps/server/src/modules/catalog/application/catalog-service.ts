@@ -1,6 +1,6 @@
-import { forEachLimit } from "../../../shared/async";
-import { moduleLogger, reason } from "../../../shared/logger";
-import type { CatalogRepository, Series, SeriesHint, SeriesSource, SeriesSummary } from "../domain/series";
+import { forEachLimit } from "@/shared/async";
+import { moduleLogger, reason } from "@/shared/logger";
+import type { CatalogRepository, Series, SeriesHint, SeriesSource, SeriesSummary } from "@/modules/catalog/domain/series";
 
 const DAY = 24 * 60 * 60 * 1000;
 const log = moduleLogger("catalog");

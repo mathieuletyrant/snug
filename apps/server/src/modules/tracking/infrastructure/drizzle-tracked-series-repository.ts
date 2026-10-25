@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "../../../shared/db";
-import { type Status, TrackedSeries, type TrackedSeriesRepository, type Watch } from "../domain/tracked-series";
+import type { Db } from "@/shared/db";
+import { type Status, TrackedSeries, type TrackedSeriesRepository, type Watch } from "@/modules/tracking/domain/tracked-series";
 import { trackedSeries, watches } from "./schema";
 
 type Row = typeof trackedSeries.$inferSelect;

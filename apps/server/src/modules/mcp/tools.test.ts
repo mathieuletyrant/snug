@@ -2,15 +2,15 @@ import { expect, test } from "bun:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Hono } from "hono";
-import type { CatalogService } from "../catalog/application/catalog-service";
-import type { Series } from "../catalog/domain/series";
-import { IdentityService } from "../identity/application/identity-service";
-import type { Auth } from "../identity/infrastructure/auth";
-import { ImportService } from "../import/application/import-service";
-import { TrackingService } from "../tracking/application/tracking-service";
-import { DrizzleTrackedSeriesRepository } from "../tracking/infrastructure/drizzle-tracked-series-repository";
-import { testDb } from "../../shared/testing";
-import { mcpServer } from "./http/routes";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { Series } from "@/modules/catalog/domain/series";
+import { IdentityService } from "@/modules/identity/application/identity-service";
+import type { Auth } from "@/modules/identity/infrastructure/auth";
+import { ImportService } from "@/modules/import/application/import-service";
+import { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
+import { testDb } from "@/shared/testing";
+import { mcpServer } from "@/modules/mcp/http/routes";
 import { parseEpisodes } from "./tools";
 
 const series = (tmdbId: number): Series => ({

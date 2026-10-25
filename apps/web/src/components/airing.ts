@@ -1,5 +1,5 @@
 import type { SeriesCard } from "@snug/shared";
-import type { Messages } from "../i18n";
+import type { Messages } from "@/i18n";
 
 /** Where a Watching Series stands: Episodes out to catch up on, the Next Episode's air date, or no date yet. */
 export type Airing = { kind: "ready"; left: number } | { kind: "dated"; date: string } | { kind: "tba" };

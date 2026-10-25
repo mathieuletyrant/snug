@@ -1,6 +1,6 @@
 import { type ChangeEvent, type FormEvent, useState } from "react";
-import { ApiError } from "../api";
-import { type Messages, useT } from "../i18n";
+import { ApiError } from "@/api";
+import { type Messages, useT } from "@/i18n";
 
 type Field = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 

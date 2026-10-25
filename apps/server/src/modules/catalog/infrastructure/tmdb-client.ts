@@ -1,5 +1,5 @@
-import { moduleLogger } from "../../../shared/logger";
-import type { Episode, Series, SeriesSource, SeriesSummary } from "../domain/series";
+import { moduleLogger } from "@/shared/logger";
+import type { Episode, Series, SeriesSource, SeriesSummary } from "@/modules/catalog/domain/series";
 
 const log = moduleLogger("tmdb");
 

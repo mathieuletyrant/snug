@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { en } from "../i18n/en";
-import { fr } from "../i18n/fr";
+import { en } from "@/i18n/en";
+import { fr } from "@/i18n/fr";
 import { airing, isNew, relativeDay, shortDay } from "./airing";
 
 const now = new Date(2026, 9, 22, 21, 30); // Thu 22 Oct 2026, evening

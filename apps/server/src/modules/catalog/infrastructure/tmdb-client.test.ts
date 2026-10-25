@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { Series } from "../domain/series";
+import type { Series } from "@/modules/catalog/domain/series";
 import { withEnglishFallback } from "./tmdb-client";
 
 const series = (overview: string, names: string[]): Series => ({

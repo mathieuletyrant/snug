@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { testDb } from "../../../shared/testing";
-import type { PushTarget, WebPushSender } from "../infrastructure/web-push-sender";
+import { testDb } from "@/shared/testing";
+import type { PushTarget, WebPushSender } from "@/modules/notifications/infrastructure/web-push-sender";
 import { NotificationService } from "./notification-service";
 
 function setup(statusByEndpoint: Record<string, number>) {

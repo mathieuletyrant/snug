@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { DEFAULT_LANGUAGE } from "@snug/shared";
-import type { Db } from "../../../shared/db";
+import type { Db } from "@/shared/db";
 import { appSettings } from "./schema";
 
 /** Instance-wide Catalog settings, cached in memory (read on every TMDB call). */

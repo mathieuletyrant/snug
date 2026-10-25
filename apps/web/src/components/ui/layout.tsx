@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { useT } from "../../i18n";
+import { useT } from "@/i18n";
 import { cx } from "./cx";
 
 /** Radix popups keep this far from the screen's edges; at the bottom, clear of the phone's tab bar. */

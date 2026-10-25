@@ -1,5 +1,5 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "../../identity/infrastructure/schema";
+import { user } from "@/modules/identity/infrastructure/schema";
 
 /** One row per device that accepted notifications (a browser's push subscription). */
 export const pushSubscriptions = sqliteTable("push_subscriptions", {

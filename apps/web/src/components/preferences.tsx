@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { DEFAULT_PREFERENCES, type Preferences } from "@snug/shared";
-import { api, queryClient } from "../api";
+import { api, queryClient } from "@/api";
 
 const KEY = ["preferences"];
 

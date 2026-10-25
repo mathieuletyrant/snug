@@ -1,16 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { SeriesDetail } from "@snug/shared";
 import { useLocation } from "wouter";
-import { api, queryClient } from "../api";
-import { Confirm } from "../components/confirm";
-import { SavingPanel } from "../components/series/saving-panel";
-import { Season } from "../components/series/season";
-import { SeriesHero } from "../components/series/series-hero";
-import { StatusPicker } from "../components/series/status-picker";
-import { SeriesSkeleton } from "../components/skeletons";
-import { useToast } from "../components/toast";
-import { Button, ErrorText } from "../components/ui";
-import { useT } from "../i18n";
+import { api, queryClient } from "@/api";
+import { Confirm } from "@/components/confirm";
+import { SavingPanel } from "@/components/series/saving-panel";
+import { Season } from "@/components/series/season";
+import { SeriesHero } from "@/components/series/series-hero";
+import { StatusPicker } from "@/components/series/status-picker";
+import { SeriesSkeleton } from "@/components/skeletons";
+import { useToast } from "@/components/toast";
+import { Button, ErrorText } from "@/components/ui";
+import { useT } from "@/i18n";
 
 export function SeriesPage({ id }: { id: string }) {
   const { data, isPending, error } = useQuery({ queryKey: ["series", id], queryFn: () => api<SeriesDetail>(`/series/${id}`) });

@@ -1,10 +1,10 @@
 import { episodeCode, type SeriesCard } from "@snug/shared";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
-import { useT } from "../../i18n";
-import { useWatchNext } from "../series-actions";
-import { EpisodeTitle } from "../spoilers";
-import { Backdrop, Badge } from "../ui";
+import { useT } from "@/i18n";
+import { useWatchNext } from "@/components/series-actions";
+import { EpisodeTitle } from "@/components/spoilers";
+import { Backdrop, Badge } from "@/components/ui";
 
 /** Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. */
 export function ReadyCard({ card, fresh }: { card: SeriesCard; fresh: boolean }) {

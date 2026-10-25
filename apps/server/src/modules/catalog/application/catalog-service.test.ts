@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { CatalogRepository, Series, SeriesSource } from "../domain/series";
+import type { CatalogRepository, Series, SeriesSource } from "@/modules/catalog/domain/series";
 import { CatalogService } from "./catalog-service";
 
 const now = new Date("2026-10-24T12:00:00Z");

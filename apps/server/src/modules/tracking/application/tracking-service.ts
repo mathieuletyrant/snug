@@ -1,7 +1,7 @@
 import type { Home, SavingTarget, SeriesCard, SeriesDetail } from "@snug/shared";
-import type { Episode, Series } from "../../catalog/domain/series";
-import { today } from "../../../shared/async";
-import { NotFoundError } from "../../../shared/errors";
+import type { Episode, Series } from "@/modules/catalog/domain/series";
+import { today } from "@/shared/async";
+import { NotFoundError } from "@/shared/errors";
 import {
   availability,
   compareEpisodes,
@@ -10,8 +10,8 @@ import {
   TrackedSeries,
   type TrackedSeriesRepository,
   type Watch,
-} from "../domain/tracked-series";
-import { t } from "../../../shared/i18n";
+} from "@/modules/tracking/domain/tracked-series";
+import { t } from "@/shared/i18n";
 
 /** What tracking needs from the Catalog. */
 export interface CatalogPort {

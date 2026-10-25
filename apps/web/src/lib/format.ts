@@ -1,5 +1,5 @@
 /** Small text helpers shared by the pages, in the app's language. */
-import type { Messages } from "../i18n";
+import type { Messages } from "@/i18n";
 
 export function greeting(t: Messages, now = new Date()) {
   const h = now.getHours();

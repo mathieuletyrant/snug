@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { DEFAULT_PREFERENCES } from "@snug/shared";
-import { testDb } from "../../../shared/testing";
-import type { Auth } from "../infrastructure/auth";
+import { testDb } from "@/shared/testing";
+import type { Auth } from "@/modules/identity/infrastructure/auth";
 import { IdentityService } from "./identity-service";
 
 const setup = () => new IdentityService(testDb(["first", "second"]).db, {} as Auth);

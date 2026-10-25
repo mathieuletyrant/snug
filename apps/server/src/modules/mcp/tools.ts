@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { STATUSES } from "@snug/shared";
 import { z } from "zod";
-import { forEachLimit } from "../../shared/async";
-import type { CatalogService } from "../catalog/application/catalog-service";
-import type { ImportService } from "../import/application/import-service";
-import type { ImportEntry } from "../tracking/application/tracking-service";
+import { forEachLimit } from "@/shared/async";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { ImportService } from "@/modules/import/application/import-service";
+import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
 
 /** "1-10,12" → [1, …, 10, 12]. */
 export function parseEpisodes(text: string): number[] {

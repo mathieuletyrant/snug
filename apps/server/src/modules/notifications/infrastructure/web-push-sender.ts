@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import webpush from "web-push";
-import { DATA_DIR, ORIGINS } from "../../../shared/config";
+import { DATA_DIR, ORIGINS } from "@/shared/config";
 
 export interface PushTarget {
   endpoint: string;

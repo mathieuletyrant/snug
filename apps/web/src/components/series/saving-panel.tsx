@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { type Saving, SAVING_TARGETS, type SavingTarget } from "@snug/shared";
-import { api, queryClient } from "../../api";
-import { useT } from "../../i18n";
-import { shortDate } from "../airing";
-import { Chips, ProgressBar } from "../ui";
+import { api, queryClient } from "@/api";
+import { useT } from "@/i18n";
+import { shortDate } from "@/components/airing";
+import { Chips, ProgressBar } from "@/components/ui";
 
 /** Saving up: what to wait for, and where the saving stands. */
 export function SavingPanel({ seriesId, saving }: { seriesId: number; saving: Saving }) {

@@ -1,12 +1,12 @@
 import type { ImportProgress, ImportResult } from "@snug/shared";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import { forEachLimit } from "../../../shared/async";
-import { InvalidInputError } from "../../../shared/errors";
-import { moduleLogger, reason } from "../../../shared/logger";
-import type { ImportEntry, TrackingService } from "../../tracking/application/tracking-service";
-import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "../domain/csv-import";
-import { parseImportFile } from "../domain/import-file";
-import { t } from "../../../shared/i18n";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import { forEachLimit } from "@/shared/async";
+import { InvalidInputError } from "@/shared/errors";
+import { moduleLogger, reason } from "@/shared/logger";
+import type { ImportEntry, TrackingService } from "@/modules/tracking/application/tracking-service";
+import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "@/modules/import/domain/csv-import";
+import { parseImportFile } from "@/modules/import/domain/import-file";
+import { t } from "@/shared/i18n";
 
 const IDLE: ImportProgress = { running: false, total: 0, done: 0, failed: 0 };
 

@@ -1,15 +1,15 @@
 import { desc, eq, and, ne, notInArray } from "drizzle-orm";
 import { type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
-import type { CatalogService } from "../../catalog/application/catalog-service";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { Db } from "../../../shared/db";
-import { ForbiddenError } from "../../../shared/errors";
-import { moduleLogger, reason } from "../../../shared/logger";
-import type { Notifier } from "../../notifications/application/notification-service";
-import type { TrackingService } from "../../tracking/application/tracking-service";
-import { type JellyfinEvent, parseJellyfinEvent } from "../domain/jellyfin-event";
-import { jellyfinEvents, jellyfinSeries } from "../infrastructure/schema";
-import { t } from "../../../shared/i18n";
+import type { CatalogService } from "@/modules/catalog/application/catalog-service";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { Db } from "@/shared/db";
+import { ForbiddenError } from "@/shared/errors";
+import { moduleLogger, reason } from "@/shared/logger";
+import type { Notifier } from "@/modules/notifications/application/notification-service";
+import type { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { type JellyfinEvent, parseJellyfinEvent } from "@/modules/jellyfin/domain/jellyfin-event";
+import { jellyfinEvents, jellyfinSeries } from "@/modules/jellyfin/infrastructure/schema";
+import { t } from "@/shared/i18n";
 
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;

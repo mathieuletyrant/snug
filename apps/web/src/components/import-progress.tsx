@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { ImportProgress } from "@snug/shared";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { api, queryClient } from "../api";
-import { useT } from "../i18n";
+import { api, queryClient } from "@/api";
+import { useT } from "@/i18n";
 import { ProgressBar } from "./ui";
 
 /** Polls while Series details are being fetched after an Import, refreshing lists as they fill in. */

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Status } from "@snug/shared";
-import type { ImportEntry } from "../../tracking/application/tracking-service";
+import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
 
 /** Export file format: a library of titles plus every episode watch. Unknown fields are ignored. */
 const ImportFile = z.object({

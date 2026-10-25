@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { type Feeds, STATUSES } from "@snug/shared";
-import { type AuthEnv, parse } from "../../../shared/http";
-import type { IdentityService } from "../../identity/application/identity-service";
-import type { FeedsService } from "../application/feeds-service";
-import { moduleLogger } from "../../../shared/logger";
+import { type AuthEnv, parse } from "@/shared/http";
+import type { IdentityService } from "@/modules/identity/application/identity-service";
+import type { FeedsService } from "@/modules/feeds/application/feeds-service";
+import { moduleLogger } from "@/shared/logger";
 
 const log = moduleLogger("feeds");
 

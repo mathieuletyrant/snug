@@ -2,9 +2,9 @@ import type { JellyfinEventLog } from "@snug/shared";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
-import { Chips, cx, Skeleton } from "../../components/ui";
-import { useT } from "../../i18n";
-import { ago } from "../../lib/format";
+import { Chips, cx, Skeleton } from "@/components/ui";
+import { useT } from "@/i18n";
+import { ago } from "@/lib/format";
 
 const OUTCOMES = ["all", "watched", "ignored", "error"] as const;
 const DOT = { watched: "bg-sage", ignored: "bg-muted/50", error: "bg-rose" };
