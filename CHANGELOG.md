@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.13.0](https://github.com/mathieuletyrant/snug/compare/v0.12.0...v0.13.0) (2026-10-25)
+
+
+### ✨ Features
+
+* **mcp:** calendar tool, the episodes airing in the next days ([#75](https://github.com/mathieuletyrant/snug/issues/75)) ([3e4628c](https://github.com/mathieuletyrant/snug/commit/3e4628c47aa98e6ba27253afb07be89e0a39faf9))
+* **mcp:** series and library return the day episodes were watched ([#73](https://github.com/mathieuletyrant/snug/issues/73)) ([df29ba9](https://github.com/mathieuletyrant/snug/commit/df29ba9506867ed7113fc0a31ff6aacd14665ae0))
+* **tracking:** absolute numbering, episodes read as "Ep. 1156" per series ([#76](https://github.com/mathieuletyrant/snug/issues/76)) ([8fcad53](https://github.com/mathieuletyrant/snug/commit/8fcad538d78f08b80f0c6c6ec1e1b04212c814d6))
+
 ## [0.12.0](https://github.com/mathieuletyrant/snug/compare/v0.11.0...v0.12.0) (2026-10-25)
 
 
