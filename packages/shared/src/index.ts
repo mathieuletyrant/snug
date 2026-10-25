@@ -145,6 +145,8 @@ export interface Preferences {
   episodeTitles: EpisodeTitles;
   /** New mode: for how many days a fresh Episode of a Series you were caught up on goes first on Home; 0 = off. */
   newForDays: NewForDays;
+  /** On a series page: a progress bar on every season, or only on the last one. */
+  seasonProgress: SeasonProgress;
   /** Push a notification when an Episode of a Series you're watching comes out. */
   notifyNewEpisodes: boolean;
 }
@@ -153,10 +155,13 @@ export interface Preferences {
 export const EPISODE_TITLES = ["show", "hideUnwatched", "hideAll"] as const;
 export type EpisodeTitles = (typeof EPISODE_TITLES)[number];
 
+export const SEASON_PROGRESS = ["all", "last"] as const;
+export type SeasonProgress = (typeof SEASON_PROGRESS)[number];
+
 export const NEW_FOR_DAYS = [0, 3, 7, 14] as const;
 export type NewForDays = (typeof NEW_FOR_DAYS)[number];
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show", newForDays: 7, notifyNewEpisodes: true };
+export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show", newForDays: 7, notifyNewEpisodes: true, seasonProgress: "all" };
 
 /** Whether the spoiler shield hides an Episode's title. */
 export function isTitleHidden(p: Preferences, e: { watched: boolean; next: boolean }) {

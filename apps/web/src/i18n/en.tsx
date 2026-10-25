@@ -1,4 +1,4 @@
-import type { EpisodeTitles, Status } from "@snug/shared";
+import type { EpisodeTitles, SeasonProgress, Status } from "@snug/shared";
 import type { ReactNode } from "react";
 
 /** Puts an app's button or menu name in bold inside a sentence. */
@@ -168,6 +168,9 @@ export const en = {
     >,
     newFirst: "New episodes first",
     newFirstHelp: "A new episode of a series you were caught up on goes first on Home, with a New badge.",
+    seasonProgress: "Season progress",
+    seasonProgressHelp: "On a series page, one segment per episode: watched, out, coming.",
+    seasonProgressChoices: { all: "Every season", last: "Last season only" } satisfies Record<SeasonProgress, string>,
     off: "Off",
     days: (n: number) => `${n} days`,
     notifications: "Notifications",

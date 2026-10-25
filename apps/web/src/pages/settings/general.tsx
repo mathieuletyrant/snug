@@ -1,4 +1,4 @@
-import { EPISODE_TITLES, type Me, NEW_FOR_DAYS } from "@snug/shared";
+import { EPISODE_TITLES, SEASON_PROGRESS, type Me, NEW_FOR_DAYS } from "@snug/shared";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { api, authClient } from "@/api";
@@ -79,6 +79,15 @@ function Display() {
           value={String(preferences.newForDays)}
           onChange={(days) => update.mutate({ newForDays: Number(days) as (typeof NEW_FOR_DAYS)[number] })}
           options={NEW_FOR_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t.settings.off : t.settings.days(d) }))}
+        />
+      </SettingRow>
+      <SettingRow stacked label={t.settings.seasonProgress} description={t.settings.seasonProgressHelp}>
+        <Chips
+          label={t.settings.seasonProgress}
+          small
+          value={preferences.seasonProgress}
+          onChange={(seasonProgress) => update.mutate({ seasonProgress })}
+          options={SEASON_PROGRESS.map((value) => ({ value, label: t.settings.seasonProgressChoices[value] }))}
         />
       </SettingRow>
     </Card>
