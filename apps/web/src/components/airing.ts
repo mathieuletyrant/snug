@@ -1,15 +1,20 @@
 import type { Messages } from "@/i18n";
 
-const daysUntil = (date: string, now: Date) =>
-  Math.round((new Date(`${date}T00:00:00`).getTime() - new Date(now.toDateString()).getTime()) / 86_400_000);
+/**
+ * Today as YYYY-MM-DD in the instance's time zone (`SetupState.timeZone`): the server decides what has aired
+ * in it, so "Today" and "Tomorrow" must count days the same way, wherever the browser is.
+ */
+export const dayIn = (timeZone: string | undefined, now = new Date()) => now.toLocaleDateString("en-CA", { timeZone });
+
+const daysUntil = (date: string, today: string) => Math.round((Date.parse(date) - Date.parse(today)) / 86_400_000);
 
 /** How to say a day: the app's words for it, and its language for dates. */
 export type DayWords = Pick<Messages, "tag" | "days" | "common">;
 
 /** "Tomorrow", "In 3 days", "30 Oct"; "Date TBA" without a date. `lower` for after a word: "in 3 days". */
-export function relativeDay(words: DayWords, date: string | null | undefined, now = new Date(), lower = false) {
+export function relativeDay(words: DayWords, date: string | null | undefined, today: string, lower = false) {
   if (!date) return words.common.dateTba;
-  const days = daysUntil(date, now);
+  const days = daysUntil(date, today);
   let text: string;
   if (days <= 0) text = words.days.today;
   else if (days === 1) text = words.days.tomorrow;
@@ -19,8 +24,8 @@ export function relativeDay(words: DayWords, date: string | null | undefined, no
 }
 
 /** The same, short enough for a badge on a poster in a 4-column phone grid: "Tomorrow", "Thu", "30 Oct". */
-export function shortDay(words: DayWords, date: string, now = new Date()) {
-  const days = daysUntil(date, now);
+export function shortDay(words: DayWords, date: string, today: string) {
+  const days = daysUntil(date, today);
   if (days <= 0) return words.days.today;
   if (days === 1) return words.days.tomorrow;
   const day = new Date(`${date}T00:00:00`);

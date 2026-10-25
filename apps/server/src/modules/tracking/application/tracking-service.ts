@@ -18,6 +18,7 @@ import {
   type Status,
   TrackedSeries,
   type TrackedSeriesRepository,
+  hasAired,
   type Watch,
 } from "@/modules/tracking/domain/tracked-series";
 import { t } from "@/shared/i18n";
@@ -182,9 +183,7 @@ export class TrackingService {
   async home(userId: string): Promise<Home> {
     const list = (await this.repo.listByUser(userId)).filter((t) => t.status === "watching" || t.status === "saving");
     const cards = await this.cards(userId, list);
-    // Saving up: Ready only once enough is out; until then, in Upcoming.
-    const isReady = (c: SeriesCard) => c.loaded && (c.saving ? c.saving.reached : c.airing.kind === "ready");
-    const ready = cards.filter(isReady);
+    const ready = cards.filter((c) => c.ready);
     const hideUndated = this.preferences(userId).hideUndatedUpcoming;
     const upcoming = cards.filter((c) => !ready.includes(c) && (!hideUndated || !c.loaded || c.next?.airDate));
     // Fresh Episodes first (New mode), then Saved up, then the most recently watched.
@@ -210,7 +209,7 @@ export class TrackingService {
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
     for (const e of series.episodes) {
       const season = seasons.get(e.season) ?? { number: e.season, rating: tracked.ratingOf(e.season), episodes: [] };
-      season.episodes.push({ ...e, watched: tracked.hasWatched(e), aired: e.airDate !== null && e.airDate <= day });
+      season.episodes.push({ ...e, watched: tracked.hasWatched(e), aired: hasAired(e, day) });
       seasons.set(e.season, season);
     }
     const { loaded: _, ...card } = this.card(tracked, series, this.preferences(userId).newForDays);
@@ -269,9 +268,8 @@ export class TrackingService {
     return tracked;
   }
 
-  private aired(series: Series) {
-    const day = today(this.now());
-    return series.episodes.filter((e) => e.airDate !== null && e.airDate <= day);
+  private aired(series: Series, day = today(this.now())) {
+    return series.episodes.filter((e) => hasAired(e, day));
   }
 
   private async saveReconciled(tracked: TrackedSeries, series: Series) {
@@ -286,8 +284,11 @@ export class TrackingService {
   }
 
   private card(t: TrackedSeries, series: Series | undefined, newForDays: number): SeriesCard {
-    const aired = series ? this.aired(series) : [];
     const day = today(this.now());
+    const aired = series ? this.aired(series, day) : [];
+    const standing = series
+      ? t.standing(series, day, newForDays)
+      : { next: null, ready: false, airing: { kind: "tba" } as const, saving: null, fresh: false, choosable: [...STATUSES] };
     const runtimes = (series?.episodes ?? []).flatMap((e) => (e.runtime ? [e.runtime] : []));
     const average = runtimes.length ? runtimes.reduce((a, b) => a + b, 0) / runtimes.length : 0;
     return {
@@ -298,12 +299,8 @@ export class TrackingService {
       posterPath: series?.posterPath ?? null,
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
-      choosable: series ? t.choosable(series, day) : [...STATUSES],
-      saving: series && t.status === "saving" ? t.saving(series.episodes, day) : null,
+      ...standing,
       progress: t.progress,
-      next: series ? t.nextEpisode(series.episodes) : null,
-      airing: series ? t.airing(series.episodes, day) : { kind: "tba" },
-      fresh: !!series && t.isNew(series.episodes, day, newForDays),
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,
       airedCount: aired.length,
       rating: t.ratingOf(),

@@ -1,5 +1,6 @@
 import type { SeriesCard } from "@snug/shared";
 import { longDate, shortDay } from "@/components/airing";
+import { useToday } from "@/components/preferences";
 import { PosterTile, TileLine } from "@/components/poster-tile";
 import { StatusMenu } from "@/components/series-actions";
 import { type Messages, useT } from "@/i18n";
@@ -33,9 +34,10 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
  */
 function AiringBadge({ card }: { card: SeriesCard }) {
   const t = useT();
+  const today = useToday();
   const state = card.airing;
   const label =
-    state.kind === "ready" ? t.home.left(state.left) : state.kind === "dated" ? shortDay(t, state.date) : t.common.tba;
+    state.kind === "ready" ? t.home.left(state.left) : state.kind === "dated" ? shortDay(t, state.date, today) : t.common.tba;
   const title =
     state.kind === "ready"
       ? t.library.toWatch(state.left)

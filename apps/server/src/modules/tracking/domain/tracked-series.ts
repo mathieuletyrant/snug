@@ -26,7 +26,23 @@ export interface Timeline {
 
 export const compareEpisodes = (a: EpisodeRef, b: EpisodeRef) => a.season - b.season || a.number - b.number;
 const keyOf = (e: EpisodeRef) => `${e.season}x${e.number}`;
-const hasAired = (e: { airDate: string | null }, today: string) => e.airDate !== null && e.airDate <= today;
+/** Aired: the air date is today or earlier, `today` being the instance's day (see `shared/day.ts`). */
+export const hasAired = (e: { airDate: string | null }, today: string) => e.airDate !== null && e.airDate <= today;
+
+type Dated = EpisodeRef & { airDate: string | null };
+
+/** What `TrackedSeries.standing` says; the words are the GLOSSARY's. */
+export interface Standing<E extends Dated> {
+  next: E | null;
+  /** Watching with the Next Episode aired, or Saving up with enough saved; always false for other Statuses. */
+  ready: boolean;
+  airing: Airing;
+  /** Saving up only. */
+  saving: Saving | null;
+  /** New: Ready, and the Next Episode aired lately while the User was caught up and waiting for it. */
+  fresh: boolean;
+  choosable: Status[];
+}
 
 /** The Completed rule: Watching and Saving up end in Completed once done; Completed returns to Watching otherwise. */
 const settle = (status: Status, done: boolean): Status =>
@@ -130,36 +146,6 @@ export class TrackedSeries {
     this.reconcile(timeline, today);
   }
 
-  /**
-   * Saving up: the Episodes after the Progress not watched yet, and how many of them aired. A full season
-   * counts the Next Episode's season as TMDB lists it; a number counts across seasons.
-   */
-  saving(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string): Saving {
-    const next = this.nextEpisode(episodes);
-    const ahead = [...episodes]
-      .sort(compareEpisodes)
-      .filter((e) => next && compareEpisodes(e, next) >= 0 && !this.hasWatched(e));
-    const out = ahead.filter((e) => hasAired(e, today)).length;
-    if (this._savingTarget === 0) {
-      const season = ahead.filter((e) => e.season === next?.season);
-      const last = season.at(-1);
-      return {
-        target: 0,
-        out: season.filter((e) => hasAired(e, today)).length,
-        needed: season.length,
-        reached: season.length > 0 && season.every((e) => hasAired(e, today)),
-        completeOn: last?.airDate ?? null,
-      };
-    }
-    return {
-      target: this._savingTarget,
-      out,
-      needed: this._savingTarget,
-      reached: out >= this._savingTarget,
-      completeOn: ahead[this._savingTarget - 1]?.airDate ?? null,
-    };
-  }
-
   /** Furthest Episode watched, regardless of rewatches. */
   get progress(): EpisodeRef | null {
     let furthest: EpisodeRef | null = null;
@@ -175,29 +161,58 @@ export class TrackedSeries {
 
   /** First un-watched Episode after the Progress. */
   nextEpisode<E extends EpisodeRef>(episodes: readonly E[]): E | null {
-    const progress = this.progress;
-    return (
-      [...episodes]
-        .sort(compareEpisodes)
-        .find((e) => (!progress || compareEpisodes(e, progress) > 0) && !this.hasWatched(e)) ?? null
-    );
-  }
-
-  /** Ready with how many Episodes are out from the Next Episode on, dated, or TBA (no date, or nothing after the Progress). */
-  airing(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string): Airing {
-    const next = this.nextEpisode(episodes);
-    if (!next?.airDate) return { kind: "tba" };
-    if (!hasAired(next, today)) return { kind: "dated", date: next.airDate };
-    const left = episodes.filter((e) => compareEpisodes(e, next) >= 0 && hasAired(e, today) && !this.hasWatched(e)).length;
-    return { kind: "ready", left };
+    return this.nextIn([...episodes].sort(compareEpisodes));
   }
 
   /**
-   * New mode: the Next Episode aired in the last `days` days, after the last Watch, so you were caught up and
-   * waiting for it. A Series being binged (last Watch after the air date) is not new.
+   * Where the Series stands on a day: its Next Episode, whether it is Ready, how it airs, how far its saving
+   * up is, whether it is New, and the Statuses the User can pick. Episodes are sorted once for all of them.
    */
-  isNew(episodes: readonly (EpisodeRef & { airDate: string | null })[], today: string, days: number) {
-    const next = this.nextEpisode(episodes);
+  standing<E extends Dated>(timeline: { ended: boolean; episodes: readonly E[] }, today: string, newForDays = 0): Standing<E> {
+    const sorted = [...timeline.episodes].sort(compareEpisodes);
+    const next = this.nextIn(sorted);
+    // The Episodes from the Next Episode on, not watched yet.
+    const ahead = next ? sorted.filter((e) => compareEpisodes(e, next) >= 0 && !this.hasWatched(e)) : [];
+    const airing: Airing = !next?.airDate
+      ? { kind: "tba" }
+      : hasAired(next, today)
+        ? { kind: "ready", left: ahead.filter((e) => hasAired(e, today)).length }
+        : { kind: "dated", date: next.airDate };
+    const saving = this._status === "saving" ? this.saving(next, ahead, today) : null;
+    const ready =
+      (this._status === "watching" || this._status === "saving") && (saving ? saving.reached : airing.kind === "ready");
+    return { next, ready, airing, saving, fresh: ready && this.isNew(next, today, newForDays), choosable: this.choosable(timeline, today) };
+  }
+
+  private nextIn<E extends EpisodeRef>(sorted: readonly E[]): E | null {
+    const progress = this.progress;
+    return sorted.find((e) => (!progress || compareEpisodes(e, progress) > 0) && !this.hasWatched(e)) ?? null;
+  }
+
+  /** A full season counts the Next Episode's season as TMDB lists it; a number counts across seasons. */
+  private saving(next: Dated | null, ahead: readonly Dated[], today: string): Saving {
+    if (this._savingTarget === 0) {
+      const season = ahead.filter((e) => e.season === next?.season);
+      return {
+        target: 0,
+        out: season.filter((e) => hasAired(e, today)).length,
+        needed: season.length,
+        reached: season.length > 0 && season.every((e) => hasAired(e, today)),
+        completeOn: season.at(-1)?.airDate ?? null,
+      };
+    }
+    const out = ahead.filter((e) => hasAired(e, today)).length;
+    return {
+      target: this._savingTarget,
+      out,
+      needed: this._savingTarget,
+      reached: out >= this._savingTarget,
+      completeOn: ahead[this._savingTarget - 1]?.airDate ?? null,
+    };
+  }
+
+  /** The Next Episode aired in the last `days` days, after the last Watch: a Series being binged is not new. */
+  private isNew(next: Dated | null, today: string, days: number) {
     const last = this.lastWatchedAt;
     if (!days || !next?.airDate || !last || !hasAired(next, today)) return false;
     return next.airDate >= addDays(today, -days) && dayOf(last) <= next.airDate;
@@ -213,7 +228,7 @@ export class TrackedSeries {
   }
 
   /** The Statuses `choose` keeps as picked: no Completed while Episodes are left, only Completed once done. */
-  choosable(timeline: Timeline, today: string): Status[] {
+  private choosable(timeline: Timeline, today: string): Status[] {
     const done = this.done(timeline, today);
     return STATUSES.filter((s) => done === null || settle(s, done) === s);
   }
