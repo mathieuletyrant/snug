@@ -1,8 +1,8 @@
-import { episodeCode, type Episode, type Preferences } from "@snug/shared";
+import type { Episode, Numbered, Preferences } from "@snug/shared";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/shared/db";
 import { today } from "@/shared/day";
-import { t } from "@/shared/i18n";
+import { episodeLabel, t } from "@/shared/i18n";
 import { moduleLogger } from "@/shared/logger";
 import { episodeAlerts } from "@/modules/notifications/infrastructure/schema";
 import type { Notifier } from "./notification-service";
@@ -20,7 +20,7 @@ export const SEND_FROM_HOUR = 16;
 export interface NewEpisodesSource {
   newEpisodesOn(
     days: readonly string[],
-  ): Promise<{ userId: string; series: { tmdbId: number; name: string }; episodes: Episode[] }[]>;
+  ): Promise<{ userId: string; series: { tmdbId: number; name: string }; episodes: Numbered<Episode>[]; absoluteNumbering: boolean }[]>;
 }
 
 /** Pushes "📺 Tracker · S04E02 is out" once per Episode to Users watching the Series. */
@@ -39,13 +39,13 @@ export class NewEpisodeAlerts {
     if (now.getHours() < SEND_FROM_HOUR) return 0;
     const days = [today(new Date(now.getTime() - DAY)), today(now)];
     let sent = 0;
-    for (const { userId, series, episodes } of await this.source.newEpisodesOn(days)) {
+    for (const { userId, series, episodes, absoluteNumbering } of await this.source.newEpisodesOn(days)) {
       if (!this.preferences(userId).notifyNewEpisodes) continue;
       const fresh = episodes.filter((episode) => !this.alreadySent(userId, series.tmdbId, episode));
       if (!fresh.length) continue;
       await this.notifier.notify(userId, {
         title: `📺 ${series.name}`,
-        body: describe(fresh),
+        body: describe(fresh, absoluteNumbering),
         url: `/series/${series.tmdbId}`,
         tag: `new-${series.tmdbId}`,
       });
@@ -80,9 +80,9 @@ export class NewEpisodeAlerts {
 }
 
 /** "S04E02 is out", or "8 new episodes: S02E01 to S02E08" for a whole season dropped at once. */
-export function describe(episodes: Episode[]): string {
-  const first = episodeCode(episodes[0]!);
-  const last = episodeCode(episodes.at(-1)!);
+export function describe(episodes: Numbered<Episode>[], absoluteNumbering = false): string {
+  const first = episodeLabel(episodes[0]!, absoluteNumbering);
+  const last = episodeLabel(episodes.at(-1)!, absoluteNumbering);
   if (episodes.length === 1) return t().push.isOut(first);
   return t().push.newEpisodes(episodes.length, first, last);
 }

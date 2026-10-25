@@ -1,7 +1,8 @@
-import { episodeCode, type SeriesDetail } from "@snug/shared";
+import type { SeriesDetail } from "@snug/shared";
 import type { ReactNode } from "react";
 import { image } from "@/api";
 import { useT } from "@/i18n";
+import { episodeLabel } from "@/lib/format";
 import { BackButton, Poster, ProgressBar } from "@/components/ui";
 import { progressText } from "./library-tile";
 import { RatingButton } from "./rating";
@@ -51,7 +52,7 @@ export function SeriesHero({ series, children }: { series: SeriesDetail; childre
           <h1 className="text-3xl leading-tight font-semibold md:text-5xl">{series.name}</h1>
           <p className="text-sm text-muted">
             {series.year ?? "—"} · {series.ended ? t.series.ended : t.series.airing}
-            {series.progress && ` · ${t.series.at(episodeCode(series.progress))}`}
+            {series.progress && ` · ${t.series.at(episodeLabel(t, series.progress, series.absoluteNumbering))}`}
           </p>
           {series.airedCount > 0 && (
             <>

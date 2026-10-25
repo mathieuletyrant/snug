@@ -2,7 +2,7 @@
  * The server's own words that reach people: errors shown in the app, push notifications, the webhook
  * history, import problems. In the instance's language (French or English, like the app).
  */
-import { type Locale, localeOf } from "@snug/shared";
+import { type EpisodeRef, episodeCode, type Locale, localeOf } from "@snug/shared";
 
 const en = {
   errors: {
@@ -39,6 +39,8 @@ const en = {
     noRows: "The file has no rows below the header",
     andMore: (count: number) => `and ${count} more`,
   },
+  /** An Episode by its Absolute number. */
+  episode: (absolute: number) => `Ep. ${absolute}`,
   push: {
     testTitle: "Snug 🛋️",
     testBody: "Notifications work on this device.",
@@ -94,6 +96,7 @@ const fr: Messages = {
     noRows: "Le fichier n'a aucune ligne sous l'en-tête",
     andMore: (count) => `et ${count} de plus`,
   },
+  episode: (absolute) => `Ép. ${absolute}`,
   push: {
     testTitle: "Snug 🛋️",
     testBody: "Les notifications marchent sur cet appareil.",
@@ -123,3 +126,7 @@ export function setLanguageSource(source: () => string) {
 
 /** The messages in the instance's language, read at the time of use (the setting can change). */
 export const t = (): Messages => MESSAGES[localeOf(language())];
+
+/** "S01E05", or "Ep. 1156" for a Series the User reads with Absolute numbering. */
+export const episodeLabel = (episode: EpisodeRef & { absolute?: number }, absoluteNumbering: boolean) =>
+  absoluteNumbering && episode.absolute ? t().episode(episode.absolute) : episodeCode(episode);

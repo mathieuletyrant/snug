@@ -58,6 +58,7 @@ export class TrackedSeries {
     readonly addedAt: Date,
     private _savingTarget: SavingTarget = 0,
     private readonly _ratings = new Map<number, number>(),
+    private _absoluteNumbering = false,
   ) {}
 
   static start(userId: string, seriesId: number, status: Status, now: Date) {
@@ -72,10 +73,11 @@ export class TrackedSeries {
     addedAt: Date;
     savingTarget: SavingTarget;
     ratings?: Rating[];
+    absoluteNumbering?: boolean;
   }) {
     const watches = new Map(p.watches.map((watch) => [keyOf(watch), watch]));
     const ratings = new Map((p.ratings ?? []).map((rating) => [rating.season, rating.rating]));
-    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings);
+    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings, p.absoluteNumbering);
   }
 
   get status() {
@@ -84,6 +86,15 @@ export class TrackedSeries {
 
   get savingTarget() {
     return this._savingTarget;
+  }
+
+  /** Absolute numbering: the User reads this Series' Episodes by their Absolute number ("Ep. 1156"). */
+  get absoluteNumbering() {
+    return this._absoluteNumbering;
+  }
+
+  numberAbsolutely(on: boolean) {
+    this._absoluteNumbering = on;
   }
 
   get watches(): Watch[] {

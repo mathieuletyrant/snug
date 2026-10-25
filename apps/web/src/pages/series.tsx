@@ -9,7 +9,7 @@ import { SeriesHero } from "@/components/series/series-hero";
 import { StatusPicker } from "@/components/series/status-picker";
 import { SeriesSkeleton } from "@/components/skeletons";
 import { useToast } from "@/components/toast";
-import { Button, ErrorText } from "@/components/ui";
+import { Button, ErrorText, Toggle } from "@/components/ui";
 import { useT } from "@/i18n";
 
 export function SeriesPage({ id }: { id: string }) {
@@ -24,6 +24,10 @@ export function SeriesPage({ id }: { id: string }) {
       toast({ message: t.series.removed });
       navigate("/library");
     },
+  });
+  const numbering = useMutation({
+    mutationFn: (on: boolean) => api(`/series/${id}/absolute-numbering`, { method: "PUT", body: { on } }),
+    onSuccess: () => queryClient.invalidateQueries(),
   });
 
   if (isPending) return <SeriesSkeleton />;
@@ -44,7 +48,15 @@ export function SeriesPage({ id }: { id: string }) {
       </div>
 
       {data.tracked && (
-        <div className="mt-10">
+        <div className="mt-10 space-y-6">
+          <div className="rounded-3xl border border-line/60 bg-surface/80 px-4 py-2">
+            <Toggle
+              label={t.series.absoluteNumbering}
+              description={t.series.absoluteNumberingHint}
+              checked={numbering.isPending ? numbering.variables : data.absoluteNumbering}
+              onChange={(on) => numbering.mutate(on)}
+            />
+          </div>
           <Confirm
             title={t.series.removeTitle(data.name)}
             description={t.series.removeBody}

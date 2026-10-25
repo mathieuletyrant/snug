@@ -8,6 +8,9 @@ export interface EpisodeRef {
   number: number;
 }
 
+/** An Episode with its Absolute number: its rank across the whole Series (see GLOSSARY). */
+export type Numbered<E extends EpisodeRef = EpisodeRef> = E & { absolute: number };
+
 export interface Episode extends EpisodeRef {
   name: string;
   /** ISO date (YYYY-MM-DD), null when not announced. */
@@ -17,7 +20,7 @@ export interface Episode extends EpisodeRef {
 }
 
 /** The Episode the home screen's one click marked, and the Status before it, to undo. */
-export type WatchedNext = Episode & { previousStatus: Status };
+export type WatchedNext = Numbered<Episode> & { previousStatus: Status };
 
 /** Where a Series stands: Episodes out to watch after the Progress, the Next Episode's air date, or no date yet. */
 export type Airing = { kind: "ready"; left: number } | { kind: "dated"; date: string } | { kind: "tba" };
@@ -35,8 +38,10 @@ export interface SeriesCard {
   choosable: Status[];
   /** With the Saving up status: how far the saving is. */
   saving: Saving | null;
-  progress: EpisodeRef | null;
-  next: Episode | null;
+  /** The User reads this Series' Episodes by their Absolute number ("Ep. 1156") rather than SxxEyy. */
+  absoluteNumbering: boolean;
+  progress: Numbered | null;
+  next: Numbered<Episode> | null;
   airing: Airing;
   /** Something to watch now: Watching with the Next Episode aired, or Saving up with enough saved. */
   ready: boolean;
@@ -80,7 +85,7 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
   seasons: {
     number: number;
     rating: number | null;
-    episodes: (Episode & { watched: boolean; watchedAt: string | null; aired: boolean })[];
+    episodes: (Numbered<Episode> & { watched: boolean; watchedAt: string | null; aired: boolean })[];
   }[];
 }
 

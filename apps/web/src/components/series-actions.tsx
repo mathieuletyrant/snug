@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { episodeCode, type SeriesCard, STATUSES, type Status, type WatchedNext } from "@snug/shared";
+import { type SeriesCard, STATUSES, type Status, type WatchedNext } from "@snug/shared";
 import { Check, EllipsisVertical } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { api, queryClient } from "@/api";
 import { useT } from "@/i18n";
+import { episodeLabel } from "@/lib/format";
 import { useToast } from "./toast";
 import { COLLISION_PADDING, cx, MENU, MENU_ITEM } from "./ui";
 
@@ -14,11 +15,11 @@ export function useWatchNext() {
   const toast = useToast();
   const t = useT();
   return useMutation({
-    mutationFn: (seriesId: number) => api<WatchedNext>(`/series/${seriesId}/next`, { method: "POST" }),
-    onSuccess: async (ep, seriesId) => {
+    mutationFn: ({ seriesId }: SeriesCard) => api<WatchedNext>(`/series/${seriesId}/next`, { method: "POST" }),
+    onSuccess: async (ep, { seriesId, absoluteNumbering }) => {
       await refresh();
       toast({
-        message: t.home.watched(episodeCode(ep)),
+        message: t.home.watched(episodeLabel(t, ep, absoluteNumbering)),
         action: {
           label: t.common.undo,
           run: () =>

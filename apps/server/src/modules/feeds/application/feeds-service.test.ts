@@ -24,7 +24,7 @@ test("the calendar lists the Episodes of the last month and to come, as all-day 
   const tracking = {
     airing: async (_: string, since: string) => {
       from = since;
-      return [{ series, episode: { season: 1, number: 2, name: "Secret", airDate: "2026-10-20" } }];
+      return [{ series, episode: { season: 1, number: 2, absolute: 2, name: "Secret", airDate: "2026-10-20" }, absoluteNumbering: true }];
     },
   } as unknown as TrackingService;
   const catalog = {} as CatalogService;
@@ -36,5 +36,6 @@ test("the calendar lists the Episodes of the last month and to come, as all-day 
   expect(ics).not.toContain("Secret");
   expect(ics).toContain("SUMMARY:Pluribus\\, a very long name\\; that");
   expect(ics.split("\r\n").every((line) => Buffer.byteLength(line) <= 75)).toBe(true);
-  expect(ics.replaceAll("\r\n ", "")).toContain("folding past 75 bytes S01E02\r\n");
+  // Read with Absolute numbering.
+  expect(ics.replaceAll("\r\n ", "")).toContain("folding past 75 bytes Ep. 2\r\n");
 });

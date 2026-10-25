@@ -81,6 +81,6 @@ test("a Watch of an Episode newer than the Catalog refreshes the Series, marks i
   });
 
   expect(result.outcome).toBe("watched");
-  expect((await tracking.detail("u", 1)).progress).toEqual({ season: 1, number: 3 });
+  expect((await tracking.detail("u", 1)).progress).toEqual({ season: 1, number: 3, absolute: 3 });
   expect(await sent.promise).toMatchObject({ title: "✓ Severance S01E03", body: "Next: S01E04 on 2999-01-01" });
 });

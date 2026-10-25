@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { DEFAULT_PREFERENCES, type Episode } from "@snug/shared";
+import { DEFAULT_PREFERENCES, type Episode, type Numbered } from "@snug/shared";
 import { setLanguageSource } from "@/shared/i18n";
 import { testDb } from "@/shared/testing";
 import { describe, NewEpisodeAlerts } from "./new-episode-alerts";
@@ -7,9 +7,9 @@ import type { Notification } from "./notification-service";
 
 afterEach(() => setLanguageSource(() => "en-US"));
 
-const ep = (number: number, airDate: string): Episode => ({ season: 4, number, name: `E${number}`, airDate });
+const ep = (number: number, airDate: string): Numbered<Episode> => ({ season: 4, number, absolute: 30 + number, name: `E${number}`, airDate });
 
-function setup(at: string, episodes: Episode[], notifyNewEpisodes = true) {
+function setup(at: string, episodes: Numbered<Episode>[], notifyNewEpisodes = true) {
   const { db } = testDb();
   const sent: Notification[] = [];
   const asked: string[][] = [];
@@ -19,7 +19,7 @@ function setup(at: string, episodes: Episode[], notifyNewEpisodes = true) {
       newEpisodesOn: async (days) => {
         asked.push([...days]);
         const airing = episodes.filter((episode) => days.includes(episode.airDate!));
-        return airing.length ? [{ userId: "u", series: { tmdbId: 7, name: "Tracker" }, episodes: airing }] : [];
+        return airing.length ? [{ userId: "u", series: { tmdbId: 7, name: "Tracker" }, episodes: airing, absoluteNumbering: false }] : [];
       },
     },
     { notify: async (_userId, n) => void sent.push(n) },
@@ -53,8 +53,13 @@ test("a season dropped at once is one notification", () => {
   );
 });
 
+test("a Series read with Absolute numbering is announced by its Absolute numbers", () => {
+  expect(describe([ep(1, "2026-10-24"), ep(2, "2026-10-24")], true)).toBe("2 new episodes: Ep. 31 to Ep. 32");
+});
+
 test("in French when the instance is", () => {
   setLanguageSource(() => "fr-FR");
   expect(describe([ep(2, "2026-10-24")])).toBe("S04E02 est sorti");
   expect(describe([ep(1, "2026-10-24"), ep(2, "2026-10-24")])).toBe("2 nouveaux épisodes : S04E01 à S04E02");
+  expect(describe([ep(2, "2026-10-24")], true)).toBe("Ép. 32 est sorti");
 });

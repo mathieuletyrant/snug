@@ -18,6 +18,14 @@ _Avoid_: Library entry, follow, subscription
 **Episode**:
 One numbered episode of a Series, addressed as `SxxEyy` (season, episode).
 
+**Absolute number**:
+An Episode's rank across the whole Series: the Episodes of every earlier season, specials left out, plus its number in its own season (One Piece's "episode 1100").
+_Avoid_: Global number, overall number
+
+**Absolute numbering**:
+A User's choice, Series by Series, to address its Episodes by their Absolute number ("Ep. 1100") rather than `SxxEyy`, wherever a person reads them. Meant for Anime.
+_Avoid_: Anime mode
+
 **Day**:
 A calendar day in the instance's time zone, wherever the User is. Aired, Next Episode, Ready, Upcoming and New are judged on a Day and can change overnight with nothing done; a Status is kept until something changes it.
 _Avoid_: Standing, local date

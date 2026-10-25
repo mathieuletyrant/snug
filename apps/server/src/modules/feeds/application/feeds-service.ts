@@ -1,7 +1,8 @@
-import { episodeCode, type Status } from "@snug/shared";
+import type { Status } from "@snug/shared";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { TrackingService } from "@/modules/tracking/application/tracking-service";
 import { addDays, today } from "@/shared/day";
+import { episodeLabel } from "@/shared/i18n";
 import { moduleLogger } from "@/shared/logger";
 
 const log = moduleLogger("feeds");
@@ -48,14 +49,14 @@ export class FeedsService {
   async calendar(userId: string, now = new Date()): Promise<string> {
     const stamp = now.toISOString().replace(/[-:]|\.\d+/g, "");
     const events: string[] = [];
-    for (const { series, episode } of await this.tracking.airing(userId, addDays(today(now), -CALENDAR_PAST_DAYS))) {
+    for (const { series, episode, absoluteNumbering } of await this.tracking.airing(userId, addDays(today(now), -CALENDAR_PAST_DAYS))) {
       events.push(
         "BEGIN:VEVENT",
         `UID:${series.tmdbId}-${episode.season}-${episode.number}@snug`,
         `DTSTAMP:${stamp}`,
         `DTSTART;VALUE=DATE:${episode.airDate.replaceAll("-", "")}`,
         `DTEND;VALUE=DATE:${addDays(episode.airDate, 1).replaceAll("-", "")}`,
-        `SUMMARY:${escapeText(`${series.name} ${episodeCode(episode)}`)}`,
+        `SUMMARY:${escapeText(`${series.name} ${episodeLabel(episode, absoluteNumbering)}`)}`,
         "END:VEVENT",
       );
     }
