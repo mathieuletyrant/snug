@@ -1,5 +1,7 @@
 import "./styles.css";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import type { Me, SetupState } from "@snug/shared";
 import { CloudOff } from "lucide-react";
 import { StrictMode, useEffect } from "react";
@@ -85,6 +87,9 @@ createRoot(document.getElementById("root")!).render(
       <ToastProvider>
         <App />
       </ToastProvider>
+      {import.meta.env.DEV && (
+        <TanStackDevtools plugins={[{ name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> }]} />
+      )}
     </QueryClientProvider>
   </StrictMode>,
 );

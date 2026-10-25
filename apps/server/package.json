@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "DATA_DIR=../../data SNUG_ORIGINS=http://localhost:5173 bun --watch src/main.ts",
+    "dev": "DATA_DIR=../../data SNUG_ORIGINS=${SNUG_ORIGINS:-http://localhost:5173} bun --watch src/main.ts",
     "start": "bun src/main.ts",
     "db:generate": "drizzle-kit generate",
     "typecheck": "tsc --noEmit"

@@ -6,5 +6,9 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-  server: { proxy: { "/api": "http://localhost:3000" } },
+  server: {
+    port: Number(process.env.WEB_PORT ?? 5173),
+    strictPort: true,
+    proxy: { "/api": `http://localhost:${process.env.API_PORT ?? 3000}` },
+  },
 });
