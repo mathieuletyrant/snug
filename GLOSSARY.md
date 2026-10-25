@@ -18,6 +18,10 @@ _Avoid_: Library entry, follow, subscription
 **Episode**:
 One numbered episode of a Series, addressed as `SxxEyy` (season, episode).
 
+**Aired**:
+An Episode whose air date is today or earlier, in the instance's time zone.
+_Avoid_: Out, released, available
+
 **Watch**:
 The fact that a User saw an Episode, at a given time.
 _Avoid_: Scrobble, view, play
@@ -31,10 +35,10 @@ The first un-Watched Episode after the Progress.
 _Avoid_: Up next
 
 **Status**:
-Where a Series stands for a User: Watchlist, Watching, Paused, Completed or Dropped.
+Where a Series stands for a User: Watchlist, Watching, Saving up, Paused, Completed or Dropped.
 
 - **Watchlist**: not started yet.
-- **Watching**: in progress; the only Status shown on the home screen.
+- **Watching**: in progress; shown on the home screen, with Saving up.
 - **Saving up**: waiting for a full season, or a number of Episodes, before watching; Ready once enough is out, returns to Watching when a new Watch arrives.
 - **Paused**: hidden; returns to Watching when a new Watch arrives.
 - **Completed**: the Series has ended (ended or canceled) and no Episode is left after the Progress.
@@ -43,14 +47,30 @@ Where a Series stands for a User: Watchlist, Watching, Paused, Completed or Drop
 _Avoid_: In progress, on hold, finished, abandoned
 
 **Ready**:
-A Watching TrackedSeries whose Next Episode has already aired.
+A home-screen Series with something to watch now: Watching with its Next Episode Aired, or Saving up with enough Episodes saved.
 
 **Upcoming**:
-A Watching TrackedSeries that is caught up; its Next Episode has not aired yet.
+The rest of the home screen: the Next Episode has not Aired (dated or not yet), or a Saving up Series is still saving.
 _Avoid_: Caught up, waiting
 
+**New**:
+A Ready Series whose Next Episode Aired lately, while the User was caught up and waiting for it.
+_Avoid_: Fresh
+
+**Rating**:
+How a User rates a Series or one of its seasons, out of 10.
+_Avoid_: Score, stars, grade
+
+**Spoiler shield**:
+Hiding the titles of Episodes a User has not Watched yet.
+_Avoid_: Blur, hidden titles
+
 **Import**:
-Loading a User's Series, Statuses and Watches from an export file.
+Loading a User's Series, Statuses, Watches and Ratings from another tracker (CSV, export file or AI assistant); it never overrides what Snug already has.
+
+**Feed**:
+A read-only view of a User's Series for another app (Sonarr list, calendar).
+_Avoid_: Export, sync
 
 **User**:
 A person with their own account (email + password) and their own Watches.
