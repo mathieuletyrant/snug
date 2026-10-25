@@ -180,7 +180,10 @@ export const en = {
     testSent: "Test sent",
   },
   integrations: {
-    intro: "Each app gets its own secret URL. Replace it with ↻ if it leaks.",
+    toSnug: "Sent to Snug",
+    toSnugHelp: "Apps that mark episodes watched or add series.",
+    fromSnug: "Sent from Snug",
+    fromSnugHelp: "Apps that read your series.",
     howToConnect: "How to connect",
     copyUrl: "Copy URL",
     copy: (what: string) => `Copy ${what}`,
@@ -253,6 +256,8 @@ export const en = {
     hours: (n: number) => `${n} h ago`,
   },
   import: {
+    withAssistant: "From TV Time, Trakt…?",
+    withAssistantHelp: "An AI assistant can read your export and import it. Set it up in Integrations →",
     title: "Import",
     intro: (csv: ReactNode, template: ReactNode) => (
       <>

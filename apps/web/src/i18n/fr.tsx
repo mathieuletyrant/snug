@@ -174,7 +174,10 @@ export const fr: Messages = {
     testSent: "Test envoyé",
   },
   integrations: {
-    intro: "Chaque app a sa propre URL secrète. Remplacez-la avec ↻ si elle fuite.",
+    toSnug: "Vers Snug",
+    toSnugHelp: "Les apps qui marquent des épisodes vus ou ajoutent des séries.",
+    fromSnug: "Depuis Snug",
+    fromSnugHelp: "Les apps qui lisent vos séries.",
     howToConnect: "Comment connecter",
     copyUrl: "Copier l'URL",
     copy: (what) => `Copier ${what}`,
@@ -248,6 +251,8 @@ export const fr: Messages = {
     hours: (n) => `il y a ${n} h`,
   },
   import: {
+    withAssistant: "Depuis TV Time, Trakt… ?",
+    withAssistantHelp: "Un assistant IA peut lire votre export et l'importer. À configurer dans Intégrations →",
     title: "Import",
     intro: (csv, template) => (
       <>
