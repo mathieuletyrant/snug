@@ -49,6 +49,39 @@ describe("TrackedSeries", () => {
     expect(t.status).toBe("watching");
   });
 
+  test("a picked Status follows the Completed rule right away", () => {
+    const t = TrackedSeries.start("u", 1, "watching", now);
+    t.watch(ep(1, 1), now);
+    t.choose("completed", { ended: true, episodes }, today); // Episodes left
+    expect(t.status).toBe("watching");
+    t.watch(ep(2, 2), now);
+    t.choose("watching", { ended: true, episodes }, today); // nothing left
+    expect(t.status).toBe("completed");
+  });
+
+  test("choosable: no Completed while Episodes are left, only Completed once done", () => {
+    const t = TrackedSeries.start("u", 1, "watching", now);
+    t.watch(ep(1, 1), now);
+    expect(t.choosable({ ended: true, episodes }, today)).toEqual(["watchlist", "watching", "saving", "paused", "dropped"]);
+    t.watch(ep(2, 2), now);
+    expect(t.choosable({ ended: true, episodes }, today)).toEqual(["watchlist", "paused", "completed", "dropped"]);
+    expect(t.choosable({ ended: true, episodes: [] }, today)).toHaveLength(6); // Catalog not fetched yet
+  });
+
+  test("Saving up on an ended Series with nothing left becomes Completed", () => {
+    const t = TrackedSeries.start("u", 1, "saving", now);
+    t.merge([{ ...ep(2, 2), watchedAt: now }]);
+    t.reconcile({ ended: true, episodes }, today);
+    expect(t.status).toBe("completed");
+  });
+
+  test("imported Watches don't move the Status", () => {
+    const t = TrackedSeries.start("u", 1, "paused", now);
+    t.merge([{ ...ep(1, 1), watchedAt: now }]);
+    expect(t.status).toBe("paused");
+    expect(t.progress).toEqual({ season: 1, number: 1 });
+  });
+
   test("Paused and Dropped are never reconciled", () => {
     const t = TrackedSeries.start("u", 1, "paused", now);
     t.reconcile({ ended: true, episodes }, today);
@@ -68,7 +101,7 @@ test("Saving up a full season: reached once every Episode of the next season has
   const list = [ep(1, 1), ep(2, 1, "2026-10-07"), ep(2, 2, "2026-10-14"), ep(2, 3, "2026-10-28")];
   const t = TrackedSeries.start("u", 1, "watching", now);
   t.watch(ep(1, 1), now);
-  t.changeStatus("saving", 0);
+  t.choose("saving", { ended: false, episodes: list }, today, 0);
   expect(t.saving(list, today)).toEqual({ target: 0, out: 2, needed: 3, reached: false, completeOn: "2026-10-28" });
   expect(t.saving(list, "2026-10-28").reached).toBe(true);
 });
@@ -76,6 +109,6 @@ test("Saving up a full season: reached once every Episode of the next season has
 test("Saving up a number of Episodes counts across seasons", () => {
   const list = [ep(1, 1), ep(1, 2), ep(2, 1, "2026-10-07"), ep(2, 2, "2026-11-04")];
   const t = TrackedSeries.start("u", 1, "saving", now);
-  t.changeStatus("saving", 3);
+  t.choose("saving", { ended: false, episodes: list }, today, 3);
   expect(t.saving(list, today)).toEqual({ target: 3, out: 3, needed: 3, reached: true, completeOn: "2026-10-07" });
 });

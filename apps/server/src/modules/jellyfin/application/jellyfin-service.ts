@@ -1,5 +1,5 @@
 import { desc, eq, and, ne, notInArray } from "drizzle-orm";
-import { type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
+import { type Episode, type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { IdentityService } from "@/modules/identity/application/identity-service";
 import type { Db } from "@/shared/db";
@@ -31,8 +31,8 @@ export class JellyfinService {
   private queue: Promise<unknown> = Promise.resolve();
 
   /**
-   * Events are handled one at a time: marking a whole season played in Jellyfin fires a burst of
-   * events for the same Series, and concurrent read-modify-write of one TrackedSeries would lose Watches.
+   * Events are handled one at a time: marking a whole season played in Jellyfin fires a burst of events
+   * for the same Series, and only the first one should fetch a new Series from TMDB.
    * ponytail: one global queue; per-user queues if several busy users ever share an instance.
    */
   handle(token: string, body: Record<string, unknown>) {
@@ -97,15 +97,14 @@ export class JellyfinService {
     if (!series.episodes.some((e) => e.season === event.season && e.number === event.number)) {
       await this.catalog.refresh(seriesId);
     }
-    await this.tracking.watchEpisode(userId, seriesId, event);
-    void this.announce(userId, seriesId, series.name, event);
+    const next = await this.tracking.watchEpisode(userId, seriesId, event);
+    void this.announce(userId, seriesId, series.name, event, next);
     return { outcome: "watched", message: t().webhook.marked(series.name, episodeCode(event)), seriesId };
   }
 
   /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
-  private async announce(userId: string, seriesId: number, name: string, ep: EpisodeRef) {
+  private async announce(userId: string, seriesId: number, name: string, ep: EpisodeRef, next: Episode | null) {
     try {
-      const { next } = await this.tracking.detail(userId, seriesId);
       const today = new Date().toISOString().slice(0, 10);
       const title = next && !isTitleHidden(this.identity.preferences(userId), { watched: false, next: true });
       await this.notifier.notify(userId, {

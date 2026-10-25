@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
 import type { Series } from "@/modules/catalog/domain/series";
 import type { TrackedSeries, TrackedSeriesRepository } from "@/modules/tracking/domain/tracked-series";
+import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
+import { testDb } from "@/shared/testing";
 import { type CatalogPort, TrackingService } from "./tracking-service";
 
 const now = new Date("2026-10-21T20:00:00Z");
@@ -121,9 +123,24 @@ test("Saving up waits in Upcoming, then goes first in Ready once enough is out",
   expect(home.ready.map((c) => c.seriesId)).toEqual([2, 3]);
   expect(home.upcoming.map((c) => [c.seriesId, c.saving?.out, c.saving?.needed])).toEqual([[1, 2, 3]]);
 
-  // Watching an Episode ends the saving.
-  await tracking.watchNext("u", 2);
+  // Watching an Episode ends the saving; undoing it saves up again.
+  const ep = await tracking.watchNext("u", 2);
   expect((await tracking.detail("u", 2)).status).toBe("watching");
+  await tracking.unwatchEpisode("u", 2, ep, ep.previousStatus);
+  expect((await tracking.detail("u", 2)).status).toBe("saving");
+});
+
+test("overlapping Watches of one Series are all kept", async () => {
+  const { db } = testDb();
+  const catalog: CatalogPort = {
+    ensure: async () => series(1, false, ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"]),
+    getMany: async () => new Map(),
+  };
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog, () => now);
+
+  await Promise.all([1, 2, 3, 4].map((number) => tracking.watchEpisode("u", 1, { season: 1, number })));
+
+  expect((await tracking.detail("u", 1)).seasons[0]?.episodes.filter((e) => e.watched)).toHaveLength(4);
 });
 
 test("new Episodes on a day: Watching Series only, Episodes not watched yet", async () => {

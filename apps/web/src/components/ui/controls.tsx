@@ -29,13 +29,13 @@ export function Button({
 }
 
 const CHIP =
-  "shrink-0 rounded-full bg-raised font-bold text-muted transition hover:text-text data-[state=on]:bg-accent data-[state=on]:text-accent-ink";
+  "shrink-0 rounded-full bg-raised font-bold text-muted transition hover:text-text data-[state=on]:bg-accent data-[state=on]:text-accent-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-muted";
 const chipSize = (small: boolean) => (small ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm");
 const chipRow = (wrap: boolean) => (wrap ? "flex flex-wrap gap-2" : "no-scrollbar flex gap-1.5 overflow-x-auto");
 
 interface ChipsProps<T extends string> {
   label: string;
-  options: readonly { value: T; label: ReactNode }[];
+  options: readonly { value: T; label: ReactNode; disabled?: boolean }[];
   small?: boolean;
   /** Wrap onto more lines instead of scrolling sideways. */
   wrap?: boolean;
@@ -64,7 +64,7 @@ export function Chips<T extends string>({
       className={cx(chipRow(wrap), className)}
     >
       {options.map((o) => (
-        <ToggleGroup.Item key={o.value} value={o.value} className={cx(CHIP, chipSize(small))}>
+        <ToggleGroup.Item key={o.value} value={o.value} disabled={o.disabled} className={cx(CHIP, chipSize(small))}>
           {o.label}
         </ToggleGroup.Item>
       ))}

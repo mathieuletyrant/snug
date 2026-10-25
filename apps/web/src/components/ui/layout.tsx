@@ -10,7 +10,7 @@ export const COLLISION_PADDING = { top: 12, right: 12, bottom: 96, left: 12 };
 export const MENU =
   "z-50 min-w-44 overflow-hidden rounded-2xl border border-line bg-raised p-1 shadow-2xl shadow-black/50 origin-(--radix-dropdown-menu-content-transform-origin) data-[state=open]:animate-pop-in";
 export const MENU_ITEM =
-  "flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none select-none data-highlighted:bg-line data-[state=checked]:text-accent";
+  "flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none select-none data-highlighted:bg-line data-[state=checked]:text-accent data-disabled:cursor-not-allowed data-disabled:opacity-40";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return <div className={cx("rounded-3xl border border-line/60 bg-surface p-5", className)}>{children}</div>;

@@ -14,6 +14,9 @@ export interface Episode extends EpisodeRef {
   airDate: string | null;
 }
 
+/** The Episode the home screen's one click marked, and the Status before it, to undo. */
+export type WatchedNext = Episode & { previousStatus: Status };
+
 export interface SeriesCard {
   seriesId: number;
   /** False while the Catalog has not fetched this Series yet. */
@@ -23,6 +26,8 @@ export interface SeriesCard {
   posterPath: string | null;
   backdropPath: string | null;
   status: Status;
+  /** The Statuses the User can pick now: Completed only once the Series has ended and nothing is left, and then only it. */
+  choosable: Status[];
   /** With the Saving up status: how far the saving is. */
   saving: Saving | null;
   progress: EpisodeRef | null;
