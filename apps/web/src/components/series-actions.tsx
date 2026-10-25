@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { type Episode, episodeCode, STATUSES, type Status } from "@snug/shared";
+import { episodeCode, type SeriesCard, STATUSES, type Status, type WatchedNext } from "@snug/shared";
 import { Check, EllipsisVertical } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { api, queryClient } from "@/api";
@@ -14,14 +14,17 @@ export function useWatchNext() {
   const toast = useToast();
   const t = useT();
   return useMutation({
-    mutationFn: (seriesId: number) => api<Episode>(`/series/${seriesId}/next`, { method: "POST" }),
+    mutationFn: (seriesId: number) => api<WatchedNext>(`/series/${seriesId}/next`, { method: "POST" }),
     onSuccess: async (ep, seriesId) => {
       await refresh();
       toast({
         message: t.home.watched(episodeCode(ep)),
         action: {
           label: t.common.undo,
-          run: () => api(`/series/${seriesId}/episodes/${ep.season}/${ep.number}`, { method: "DELETE" }).then(refresh),
+          run: () =>
+            api(`/series/${seriesId}/episodes/${ep.season}/${ep.number}?status=${ep.previousStatus}`, {
+              method: "DELETE",
+            }).then(refresh),
         },
       });
     },
@@ -44,7 +47,12 @@ export function useSetStatus() {
 }
 
 /** "⋯" menu to move a Series to another Status. */
-export function StatusMenu({ seriesId, status, small = false }: { seriesId: number; status: Status; small?: boolean }) {
+export function StatusMenu({
+  seriesId,
+  status,
+  choosable,
+  small = false,
+}: Pick<SeriesCard, "seriesId" | "status" | "choosable"> & { small?: boolean }) {
   const setStatus = useSetStatus();
   const t = useT();
   return (
@@ -65,7 +73,7 @@ export function StatusMenu({ seriesId, status, small = false }: { seriesId: numb
             onValueChange={(s) => setStatus.mutate({ seriesId, status: s as Status })}
           >
             {STATUSES.map((s) => (
-              <DropdownMenu.RadioItem key={s} value={s} className={MENU_ITEM}>
+              <DropdownMenu.RadioItem key={s} value={s} disabled={!choosable.includes(s)} className={MENU_ITEM}>
                 {t.status[s]}
                 <DropdownMenu.ItemIndicator>
                   <Check className="size-4" strokeWidth={3} />

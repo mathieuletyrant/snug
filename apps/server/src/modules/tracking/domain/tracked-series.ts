@@ -1,4 +1,4 @@
-import type { EpisodeRef, Saving, SavingTarget, Status } from "@snug/shared";
+import { type EpisodeRef, type Saving, type SavingTarget, STATUSES, type Status } from "@snug/shared";
 
 export { STATUSES, type EpisodeRef, type Status } from "@snug/shared";
 
@@ -15,6 +15,10 @@ export interface Timeline {
 export const compareEpisodes = (a: EpisodeRef, b: EpisodeRef) => a.season - b.season || a.number - b.number;
 const keyOf = (e: EpisodeRef) => `${e.season}x${e.number}`;
 const hasAired = (e: { airDate: string | null }, today: string) => e.airDate !== null && e.airDate <= today;
+
+/** The Completed rule: Watching and Saving up end in Completed once done; Completed returns to Watching otherwise. */
+const settle = (status: Status, done: boolean): Status =>
+  done && (status === "watching" || status === "saving") ? "completed" : !done && status === "completed" ? "watching" : status;
 
 /** Aggregate root: a User's relationship to one Series. */
 export class TrackedSeries {
@@ -61,19 +65,33 @@ export class TrackedSeries {
 
   /** Watching again pulls a Paused, Saving up or Watchlist Series back to Watching; Dropped stays Dropped. */
   watch(ep: EpisodeRef, at: Date) {
+    this.add(ep, at);
+    if (this._status === "paused" || this._status === "saving" || this._status === "watchlist") this._status = "watching";
+  }
+
+  /** Imported Watches merge in without moving the Status: an imported Paused Series stays Paused. */
+  merge(watches: readonly Watch[]) {
+    for (const w of watches) this.add(w, w.watchedAt);
+  }
+
+  private add(ep: EpisodeRef, at: Date) {
     const key = keyOf(ep);
     if (!this._watches.has(key)) this._watches.set(key, { season: ep.season, number: ep.number, watchedAt: at });
-    if (this._status === "paused" || this._status === "saving" || this._status === "watchlist") this._status = "watching";
   }
 
   unwatch(ep: EpisodeRef) {
     this._watches.delete(keyOf(ep));
   }
 
-  /** `savingTarget` only matters for Saving up: a full season (0) or a number of Episodes. */
-  changeStatus(status: Status, savingTarget?: SavingTarget) {
+  /**
+   * A Status the User picks. The Completed rule applies right away (see `reconcile`): Completed on a Series
+   * with Episodes left becomes Watching. `savingTarget` only matters for Saving up: a full season (0) or a
+   * number of Episodes.
+   */
+  choose(status: Status, timeline: Timeline, today: string, savingTarget?: SavingTarget) {
     this._status = status;
     if (savingTarget !== undefined) this._savingTarget = savingTarget;
+    this.reconcile(timeline, today);
   }
 
   /**
@@ -129,12 +147,25 @@ export class TrackedSeries {
     );
   }
 
-  /** Completed means: the Series has ended and nothing aired is left after the Progress (gaps before it don't count). */
+  /**
+   * Completed means: the Series has ended and nothing aired is left after the Progress (gaps before it don't
+   * count). Watching and Saving up become Completed then; Completed returns to Watching otherwise.
+   */
   reconcile(timeline: Timeline, today: string) {
-    if (!timeline.episodes.length) return;
-    const done = timeline.ended && !this.nextEpisode(timeline.episodes.filter((e) => hasAired(e, today)));
-    if (this._status === "watching" && done) this._status = "completed";
-    else if (this._status === "completed" && !done) this._status = "watching";
+    const done = this.done(timeline, today);
+    if (done !== null) this._status = settle(this._status, done);
+  }
+
+  /** The Statuses `choose` keeps as picked: no Completed while Episodes are left, only Completed once done. */
+  choosable(timeline: Timeline, today: string): Status[] {
+    const done = this.done(timeline, today);
+    return STATUSES.filter((s) => done === null || settle(s, done) === s);
+  }
+
+  /** Whether the Series has ended with nothing aired left after the Progress; null before the Catalog knows its Episodes. */
+  private done(timeline: Timeline, today: string) {
+    if (!timeline.episodes.length) return null;
+    return timeline.ended && !this.nextEpisode(timeline.episodes.filter((e) => hasAired(e, today)));
   }
 }
 

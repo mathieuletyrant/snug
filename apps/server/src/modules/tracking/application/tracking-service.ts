@@ -1,8 +1,9 @@
-import type { Home, SavingTarget, SeriesCard, SeriesDetail } from "@snug/shared";
+import type { Home, SavingTarget, SeriesCard, SeriesDetail, WatchedNext } from "@snug/shared";
 import type { Episode, Series } from "@/modules/catalog/domain/series";
 import { today } from "@/shared/async";
 import { NotFoundError } from "@/shared/errors";
 import {
+  STATUSES,
   availability,
   compareEpisodes,
   type EpisodeRef,
@@ -32,14 +33,19 @@ export class TrackingService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
+  private readonly locks = new Map<string, Promise<unknown>>();
+
   // ---- Commands
 
   /** Starts tracking a Series, or changes its Status when already tracked. */
   async track(userId: string, seriesId: number, status: Status = "watching", savingTarget?: SavingTarget) {
-    await this.catalog.ensure(seriesId);
-    const tracked = (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, status, this.now());
-    tracked.changeStatus(status, savingTarget);
-    await this.repo.save(tracked);
+    const series = await this.catalog.ensure(seriesId);
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked =
+        (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, status, this.now());
+      tracked.choose(status, series, today(this.now()), savingTarget);
+      await this.repo.save(tracked);
+    });
   }
 
   /**
@@ -48,68 +54,90 @@ export class TrackingService {
    */
   async addToWatchlist(userId: string, seriesId: number): Promise<{ status: Status; added: boolean }> {
     await this.catalog.ensure(seriesId);
-    const existing = await this.repo.find(userId, seriesId);
-    if (existing) return { status: existing.status, added: false };
-    await this.repo.save(TrackedSeries.start(userId, seriesId, "watchlist", this.now()));
-    return { status: "watchlist", added: true };
+    return this.exclusive(userId, seriesId, async () => {
+      const existing = await this.repo.find(userId, seriesId);
+      if (existing) return { status: existing.status, added: false };
+      await this.repo.save(TrackedSeries.start(userId, seriesId, "watchlist", this.now()));
+      return { status: "watchlist" as const, added: true };
+    });
   }
 
   untrack(userId: string, seriesId: number) {
-    return this.repo.delete(userId, seriesId);
+    return this.exclusive(userId, seriesId, () => this.repo.delete(userId, seriesId));
   }
 
-  /** Starts tracking the Series as Watching if needed (media server events, Episode toggles on an untracked Series). */
-  async watchEpisode(userId: string, seriesId: number, ep: EpisodeRef, at: Date = this.now()) {
+  /**
+   * Starts tracking the Series as Watching if needed (media server events, Episode toggles on an untracked
+   * Series). Returns the Next Episode, aired or not.
+   */
+  async watchEpisode(userId: string, seriesId: number, ep: EpisodeRef, at: Date = this.now()): Promise<Episode | null> {
     const series = await this.catalog.ensure(seriesId);
-    const tracked =
-      (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
-    tracked.watch(ep, at);
-    await this.saveReconciled(tracked, series);
+    return this.exclusive(userId, seriesId, async () => {
+      const tracked =
+        (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
+      tracked.watch(ep, at);
+      await this.saveReconciled(tracked, series);
+      return tracked.nextEpisode(series.episodes);
+    });
   }
 
   /** Catch up: watches an Episode and every aired Episode before it not watched yet. */
   async watchThrough(userId: string, seriesId: number, ep: EpisodeRef) {
     const series = await this.catalog.ensure(seriesId);
-    const tracked =
-      (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
-    for (const earlier of this.aired(series).filter((e) => compareEpisodes(e, ep) < 0)) tracked.watch(earlier, this.now());
-    tracked.watch(ep, this.now());
-    await this.saveReconciled(tracked, series);
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked =
+        (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
+      for (const earlier of this.aired(series).filter((e) => compareEpisodes(e, ep) < 0)) tracked.watch(earlier, this.now());
+      tracked.watch(ep, this.now());
+      await this.saveReconciled(tracked, series);
+    });
   }
 
-  async unwatchEpisode(userId: string, seriesId: number, ep: EpisodeRef) {
-    const [tracked, series] = await Promise.all([this.get(userId, seriesId), this.catalog.ensure(seriesId)]);
-    tracked.unwatch(ep);
-    await this.saveReconciled(tracked, series);
+  /** `restore` puts back the Status a Watch moved (undoing `watchNext` on a Saving up or Paused Series). */
+  async unwatchEpisode(userId: string, seriesId: number, ep: EpisodeRef, restore?: Status) {
+    const series = await this.catalog.ensure(seriesId);
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked = await this.get(userId, seriesId);
+      tracked.unwatch(ep);
+      if (restore) tracked.choose(restore, series, today(this.now()));
+      await this.saveReconciled(tracked, series);
+    });
   }
 
-  /** The home screen's one click. Returns the Episode marked, so it can be undone. */
-  async watchNext(userId: string, seriesId: number): Promise<Episode> {
-    const [tracked, series] = await Promise.all([this.get(userId, seriesId), this.catalog.ensure(seriesId)]);
-    const next = tracked.nextEpisode(this.aired(series));
-    if (!next) throw new NotFoundError(t().errors.nothingToWatch);
-    tracked.watch(next, this.now());
-    await this.saveReconciled(tracked, series);
-    return next;
+  /** The home screen's one click. Returns the Episode marked and the Status before, so it can be undone. */
+  async watchNext(userId: string, seriesId: number): Promise<WatchedNext> {
+    const series = await this.catalog.ensure(seriesId);
+    return this.exclusive(userId, seriesId, async () => {
+      const tracked = await this.get(userId, seriesId);
+      const next = tracked.nextEpisode(this.aired(series));
+      if (!next) throw new NotFoundError(t().errors.nothingToWatch);
+      const previousStatus = tracked.status;
+      tracked.watch(next, this.now());
+      await this.saveReconciled(tracked, series);
+      return { ...next, previousStatus };
+    });
   }
 
   async watchSeason(userId: string, seriesId: number, season: number) {
     const series = await this.catalog.ensure(seriesId);
-    const tracked =
-      (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
-    for (const ep of this.aired(series).filter((e) => e.season === season)) tracked.watch(ep, this.now());
-    await this.saveReconciled(tracked, series);
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked =
+        (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
+      for (const ep of this.aired(series).filter((e) => e.season === season)) tracked.watch(ep, this.now());
+      await this.saveReconciled(tracked, series);
+    });
   }
 
   /** Merges imported Series and Watches; existing Statuses win. Returns the Series ids to fetch into the Catalog. */
   async import(userId: string, entries: ImportEntry[]): Promise<number[]> {
     for (const entry of entries) {
-      const existing = await this.repo.find(userId, entry.seriesId);
-      const tracked = existing ?? TrackedSeries.start(userId, entry.seriesId, entry.status, this.now());
-      const status = tracked.status;
-      for (const w of entry.watches) tracked.watch(w, w.watchedAt);
-      tracked.changeStatus(status);
-      await this.repo.save(tracked);
+      await this.exclusive(userId, entry.seriesId, async () => {
+        const tracked =
+          (await this.repo.find(userId, entry.seriesId)) ??
+          TrackedSeries.start(userId, entry.seriesId, entry.status, this.now());
+        tracked.merge(entry.watches);
+        await this.repo.save(tracked);
+      });
     }
     return entries.map((e) => e.seriesId);
   }
@@ -118,10 +146,14 @@ export class TrackingService {
   async reconcileSeries(seriesId: number) {
     const series = (await this.catalog.getMany([seriesId])).get(seriesId);
     if (!series) return;
-    for (const tracked of await this.repo.listBySeries(seriesId)) {
-      const before = tracked.status;
-      tracked.reconcile(series, today(this.now()));
-      if (tracked.status !== before) await this.repo.save(tracked);
+    for (const { userId } of await this.repo.listBySeries(seriesId)) {
+      await this.exclusive(userId, seriesId, async () => {
+        const tracked = await this.repo.find(userId, seriesId);
+        if (!tracked) return;
+        const before = tracked.status;
+        tracked.reconcile(series, today(this.now()));
+        if (tracked.status !== before) await this.repo.save(tracked);
+      });
     }
   }
 
@@ -194,6 +226,20 @@ export class TrackingService {
 
   // ---- Helpers
 
+  /**
+   * One read-modify-write at a time per TrackedSeries: `save` rewrites every Watch, so two overlapping ones
+   * (a Jellyfin burst, an Import, a click) would lose Watches.
+   * ponytail: in-process lock, fine for one server; a version column if Snug ever runs several.
+   */
+  private exclusive<T>(userId: string, seriesId: number, fn: () => Promise<T>): Promise<T> {
+    const key = `${userId}:${seriesId}`;
+    const run = (this.locks.get(key) ?? Promise.resolve()).then(fn);
+    const tail = run.catch(() => {});
+    this.locks.set(key, tail);
+    void tail.then(() => this.locks.get(key) === tail && this.locks.delete(key));
+    return run;
+  }
+
   private async get(userId: string, seriesId: number) {
     const tracked = await this.repo.find(userId, seriesId);
     if (!tracked) throw new NotFoundError(t().errors.notTracked);
@@ -225,6 +271,7 @@ export class TrackingService {
       posterPath: series?.posterPath ?? null,
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
+      choosable: series ? t.choosable(series, today(this.now())) : [...STATUSES],
       saving: series && t.status === "saving" ? t.saving(series.episodes, today(this.now())) : null,
       progress: t.progress,
       next: series ? t.nextEpisode(series.episodes) : null,

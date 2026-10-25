@@ -19,7 +19,7 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
       </PosterTile>
       {/* Change status without opening the series */}
       <div className="absolute top-1 right-1 rounded-full bg-bg/80">
-        <StatusMenu seriesId={card.seriesId} status={card.status} small />
+        <StatusMenu seriesId={card.seriesId} status={card.status} choosable={card.choosable} small />
       </div>
     </div>
   );

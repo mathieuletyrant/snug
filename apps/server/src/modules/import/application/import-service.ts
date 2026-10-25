@@ -55,16 +55,7 @@ export class ImportService {
    * another import runs, and keeps no progress; new Series are fetched in the background.
    */
   async importBatch(userId: string, entries: ImportEntry[]) {
-    const ids = await this.tracking.import(userId, entries);
-    void forEachLimit(
-      ids,
-      6,
-      async (id) => {
-        await this.catalog.ensure(id);
-        await this.tracking.reconcileSeries(id);
-      },
-      (id, error) => log.warn(`Could not fetch series ${id}: ${reason(error)}`),
-    );
+    void this.fetch(await this.tracking.import(userId, entries));
   }
 
   /** Imports right away; Series metadata is then fetched in the background (see `progressOf`). */
@@ -79,24 +70,29 @@ export class ImportService {
     );
     const progress: ImportProgress = { running: true, total: ids.length, done: 0, failed: 0 };
     this.progress.set(userId, progress);
-    void forEachLimit(
-      ids,
-      6,
-      async (id) => {
-        await this.catalog.ensure(id);
-        await this.tracking.reconcileSeries(id);
-        progress.done++;
-      },
-      (id, error) => {
-        progress.failed++;
-        log.warn(`Could not fetch series ${id}: ${reason(error)}`);
-      },
-    ).finally(() => {
+    void this.fetch(ids, progress).finally(() => {
       progress.running = false;
       log.info(`Import finished: ${progress.done} series fetched, ${progress.failed} failed`);
     });
 
     return { series: entries.length, watches, unresolved };
+  }
+
+  /** Fetches imported Series into the Catalog, then applies the Completed rule now that their Episodes are known. */
+  private fetch(ids: readonly number[], progress?: ImportProgress) {
+    return forEachLimit(
+      ids,
+      6,
+      async (id) => {
+        await this.catalog.ensure(id);
+        await this.tracking.reconcileSeries(id);
+        if (progress) progress.done++;
+      },
+      (id, error) => {
+        if (progress) progress.failed++;
+        log.warn(`Could not fetch series ${id}: ${reason(error)}`);
+      },
+    );
   }
 
   private assertIdle(userId: string) {
