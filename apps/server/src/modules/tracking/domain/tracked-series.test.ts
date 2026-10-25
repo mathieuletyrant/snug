@@ -131,3 +131,17 @@ test("Saving up a number of Episodes counts across seasons", () => {
   t.choose("saving", { ended: false, episodes: list }, today, 3);
   expect(t.saving(list, today)).toEqual({ target: 3, out: 3, needed: 3, reached: true, completeOn: "2026-10-07" });
 });
+
+test("ratings: the whole Series or a season, out of 10, cleared with null", () => {
+  const t = TrackedSeries.start("u", 1, "watching", new Date());
+  t.rate({ rating: 8 });
+  t.rate({ rating: 6, season: 2 });
+  expect(t.ratings).toEqual([
+    { season: 0, rating: 8 },
+    { season: 2, rating: 6 },
+  ]);
+  t.rate({ rating: null, season: 2 });
+  expect(t.ratingOf(2)).toBeNull();
+  expect(() => t.rate({ rating: 0 })).toThrow(RangeError);
+  expect(() => t.rate({ rating: 7.5 })).toThrow(RangeError);
+});

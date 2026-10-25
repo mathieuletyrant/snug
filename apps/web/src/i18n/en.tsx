@@ -110,7 +110,7 @@ export const en = {
     nextOn: (date: string) => `Next episode on ${date}`,
     caughtUpUndated: "Caught up, next episode not dated yet",
     sort: "Sort",
-    sorts: { name: "A–Z", lastWatched: "Last watched", nextEpisode: "Next episode" },
+    sorts: { name: "A–Z", lastWatched: "Last watched", nextEpisode: "Next episode", rating: "Rating" },
     changeStatus: "Change status",
     movedTo: (status: string) => `Moved to ${status}`,
   },
@@ -121,6 +121,12 @@ export const en = {
     empty: "No series found",
   },
   series: {
+    yourRating: "Your rating",
+    seasonRating: (n: number) => `Your rating of season ${n}`,
+    rate: "Rate",
+    clearRating: "Clear rating",
+    episodesWatched: (watched: number, total: number) => `${watched}/${total} ep.`,
+    rateAs: (n: number) => `Rate ${n} out of 10`,
     ended: "Ended",
     airing: "Airing",
     at: (code: string) => `at ${code}`,
@@ -168,6 +174,8 @@ export const en = {
     >,
     newFirst: "New episodes first",
     newFirstHelp: "A new episode of a series you were caught up on goes first on Home, with a New badge.",
+    showRatings: "Ratings",
+    showRatingsHelp: "Rate series and seasons out of 10.",
     seasonProgress: "Season progress",
     seasonProgressHelp: "On a series page, one segment per episode: watched, out, coming.",
     seasonProgressChoices: { all: "Every season", last: "Last season only" } satisfies Record<SeasonProgress, string>,
@@ -272,7 +280,7 @@ export const en = {
     template: "Download the CSV template",
     columnsHelp: (title: ReactNode, tmdbId: ReactNode) => (
       <>
-        Only {title} or {tmdbId} is required. No season/episode: just adds the series.
+        Only {title} or {tmdbId} is required. No season/episode: just adds the series. Ratings are out of 10; a season_rating may go with a season and no episode.
       </>
     ),
     done: (series: number, watches: number) => `Imported ${series} series and ${watches} watches.`,

@@ -93,3 +93,14 @@ test("import: 200 series and 6 000 episodes in one call, sent again without dupl
     '"S01E01" is not a list of episodes like "1-10,12"',
   );
 });
+
+test("import: ratings of the series and its seasons fill in, a rating given in Snug wins", async () => {
+  const { call, tracking, repo } = await setup();
+  await call("import", { series: [{ tmdbId: 7, rating: 8, seasonRatings: [{ season: 1, rating: 6 }] }] });
+  await tracking.rate("u", 7, { rating: 10 });
+  await call("import", { series: [{ tmdbId: 7, rating: 3, seasonRatings: [{ season: 2, rating: 9 }] }] });
+
+  const tracked = await repo.find("u", 7);
+  expect([tracked?.ratingOf(), tracked?.ratingOf(1), tracked?.ratingOf(2)]).toEqual([10, 6, 9]);
+  expect(await call("import", { series: [{ tmdbId: 7, rating: 11 }] })).toContain("rating");
+});

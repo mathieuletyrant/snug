@@ -10,6 +10,7 @@ import { usePreferences } from "@/components/preferences";
 import { useT } from "@/i18n";
 import { longDate } from "@/components/airing";
 import { cx, ProgressBar } from "@/components/ui";
+import { RatingButton } from "./rating";
 
 type SeasonData = SeriesDetail["seasons"][number];
 type EpisodeData = SeasonData["episodes"][number];
@@ -22,7 +23,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   const watched = season.episodes.filter((e) => e.watched).length;
   const aired = season.episodes.filter((e) => e.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
-  const { seasonProgress } = usePreferences();
+  const { seasonProgress, showRatings } = usePreferences();
   const showProgress = aired > 0 && (seasonProgress === "all" || season === series.seasons.at(-1));
   const base = `/series/${series.seriesId}`;
 
@@ -49,13 +50,32 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
 
   return (
     <section className="overflow-hidden rounded-3xl border border-line/60 bg-surface">
-      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-5 py-4 text-left">
-        <h2 className="flex-1 text-lg">{t.series.season(season.number)}</h2>
-        <span className="text-sm font-bold text-muted">
-          {watched}/{season.episodes.length}
-        </span>
-        <ChevronDown className={cx("size-5 text-muted transition", open && "rotate-180")} />
-      </button>
+      <div className="flex items-center gap-1 pr-3">
+        <button
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-3 py-4 pl-5 text-left"
+        >
+          <h2 className="flex-1 text-lg">{t.series.season(season.number)}</h2>
+          <span className="text-sm text-muted">{t.series.episodesWatched(watched, season.episodes.length)}</span>
+        </button>
+        {series.tracked && showRatings && (
+          <RatingButton
+            path={`/series/${series.seriesId}/seasons/${season.number}/rating`}
+            rating={season.rating}
+            label={t.series.seasonRating(season.number)}
+            quiet
+          />
+        )}
+        <button
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={t.series.season(season.number)}
+          className="p-1"
+        >
+          <ChevronDown className={cx("size-5 text-muted transition", open && "rotate-180")} />
+        </button>
+      </div>
       {showProgress && <SeasonProgress episodes={season.episodes} watched={watched} aired={aired} />}
       {open && (
         <div className="border-t border-line/60">
@@ -117,9 +137,7 @@ function EpisodeRow({ episode: e, next, onToggle }: { episode: EpisodeData; next
         <p className={cx("truncate text-sm font-semibold", !e.aired && "text-muted")}>
           <EpisodeTitle name={e.name} watched={e.watched} next={next} />
         </p>
-        <p className="text-xs text-muted">
-          {e.airDate ? longDate(t.tag, e.airDate) : t.common.tba}
-        </p>
+        <p className="text-xs text-muted">{e.airDate ? longDate(t.tag, e.airDate) : t.common.tba}</p>
       </div>
       <button
         aria-label={e.watched ? t.series.markUnwatched : t.series.markWatched}

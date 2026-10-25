@@ -71,6 +71,13 @@
       "when": 1792920192703,
       "tag": "0009_episode_runtime",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792922692874,
+      "tag": "0010_ratings",
+      "breakpoints": true
     }
   ]
 }

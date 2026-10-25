@@ -7,12 +7,15 @@ import { PosterGridSkeleton } from "@/components/skeletons";
 import { Chips, Empty, PageTitle, POSTER_GRID, SearchInput } from "@/components/ui";
 import { useT } from "@/i18n";
 import { libraryQuery } from "@/queries";
+import { usePreferences } from "@/components/preferences";
 
 const SORTS = {
   name: (a: SeriesCard, b: SeriesCard) => a.name.localeCompare(b.name),
   lastWatched: (a: SeriesCard, b: SeriesCard) => (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""),
   // Undated last.
   nextEpisode: (a: SeriesCard, b: SeriesCard) => (a.next?.airDate ?? "9999").localeCompare(b.next?.airDate ?? "9999"),
+  // Unrated last.
+  rating: (a: SeriesCard, b: SeriesCard) => (b.rating ?? 0) - (a.rating ?? 0),
 };
 type Sort = keyof typeof SORTS;
 
@@ -21,6 +24,7 @@ export function LibraryPage() {
   const [status, setStatus] = useState<Status>("watching");
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<Sort>("name");
+  const { showRatings } = usePreferences();
   const t = useT();
 
   if (isPending) {
@@ -34,7 +38,7 @@ export function LibraryPage() {
   const all = data ?? [];
   const shown = all
     .filter((c) => c.status === status && c.name.toLowerCase().includes(filter.toLowerCase()))
-    .sort(SORTS[sort]);
+    .sort(SORTS[sort === "rating" && !showRatings ? "name" : sort]);
 
   return (
     <>
@@ -65,7 +69,9 @@ export function LibraryPage() {
         small
         value={sort}
         onChange={setSort}
-        options={(Object.keys(SORTS) as Sort[]).map((s) => ({ value: s, label: t.library.sorts[s] }))}
+        options={(Object.keys(SORTS) as Sort[])
+          .filter((s) => s !== "rating" || showRatings)
+          .map((s) => ({ value: s, label: t.library.sorts[s] }))}
         className="mb-6"
       />
       {shown.length ? (

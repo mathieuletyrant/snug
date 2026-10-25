@@ -14,6 +14,7 @@ import {
   STATUSES,
   compareEpisodes,
   type EpisodeRef,
+  type Rating,
   type Status,
   TrackedSeries,
   type TrackedSeriesRepository,
@@ -31,6 +32,7 @@ export interface ImportEntry {
   seriesId: number;
   status: Status;
   watches: Watch[];
+  ratings?: Rating[];
 }
 
 export class TrackingService {
@@ -126,6 +128,15 @@ export class TrackingService {
     });
   }
 
+  /** Rates a tracked Series (no `season`) or one of its seasons out of 10; a null `rating` clears it. */
+  async rate(userId: string, seriesId: number, rate: { rating: number | null; season?: number }) {
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked = await this.get(userId, seriesId);
+      tracked.rate(rate);
+      await this.repo.save(tracked);
+    });
+  }
+
   async watchSeason(userId: string, seriesId: number, season: number) {
     const series = await this.catalog.ensure(seriesId);
     await this.exclusive(userId, seriesId, async () => {
@@ -144,6 +155,7 @@ export class TrackingService {
           (await this.repo.find(userId, entry.seriesId)) ??
           TrackedSeries.start(userId, entry.seriesId, entry.status, this.now());
         tracked.merge(entry.watches);
+        tracked.mergeRatings(entry.ratings ?? []);
         await this.repo.save(tracked);
       });
     }
@@ -197,7 +209,7 @@ export class TrackingService {
     const day = today(this.now());
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
     for (const e of series.episodes) {
-      const season = seasons.get(e.season) ?? { number: e.season, episodes: [] };
+      const season = seasons.get(e.season) ?? { number: e.season, rating: tracked.ratingOf(e.season), episodes: [] };
       season.episodes.push({ ...e, watched: tracked.hasWatched(e), aired: e.airDate !== null && e.airDate <= day });
       seasons.set(e.season, season);
     }
@@ -294,6 +306,7 @@ export class TrackingService {
       fresh: !!series && t.isNew(series.episodes, day, newForDays),
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,
       airedCount: aired.length,
+      rating: t.ratingOf(),
       minutesLeft: Math.round(aired.filter((e) => !t.hasWatched(e)).reduce((sum, e) => sum + (e.runtime ?? average), 0)),
       lastWatchedAt: t.lastWatchedAt?.toISOString() ?? null,
     };
