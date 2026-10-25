@@ -24,7 +24,9 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   const aired = season.episodes.filter((e) => e.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
   const { seasonProgress, showRatings } = usePreferences();
-  const showProgress = aired > 0 && (seasonProgress === "all" || season === series.seasons.at(-1));
+  // The current season: the Next Episode's, or the last one once caught up.
+  const current = series.next?.season ?? series.seasons.at(-1)?.number;
+  const showProgress = aired > 0 && (seasonProgress === "all" || season.number === current);
   const base = `/series/${series.seriesId}`;
 
   const toggle = useMutation({

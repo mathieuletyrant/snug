@@ -166,7 +166,7 @@ export interface Preferences {
 export const EPISODE_TITLES = ["show", "hideUnwatched", "hideAll"] as const;
 export type EpisodeTitles = (typeof EPISODE_TITLES)[number];
 
-export const SEASON_PROGRESS = ["all", "last"] as const;
+export const SEASON_PROGRESS = ["all", "current"] as const;
 export type SeasonProgress = (typeof SEASON_PROGRESS)[number];
 
 export const NEW_FOR_DAYS = [0, 3, 7, 14] as const;

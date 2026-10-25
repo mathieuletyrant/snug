@@ -170,7 +170,7 @@ export const fr: Messages = {
     showRatingsHelp: "Notez les séries et les saisons sur 10.",
     seasonProgress: "Progression par saison",
     seasonProgressHelp: "Sur la page d'une série, un segment par épisode : vu, sorti, à venir.",
-    seasonProgressChoices: { all: "Toutes les saisons", last: "Dernière saison seulement" },
+    seasonProgressChoices: { all: "Toutes les saisons", current: "Saison en cours seulement" },
     off: "Non",
     days: (n) => `${n} jours`,
     notifications: "Notifications",
