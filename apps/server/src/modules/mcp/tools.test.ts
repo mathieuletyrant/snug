@@ -170,6 +170,23 @@ test("series and library give the day episodes were watched; today when none is 
   expect(await call("library", {})).toMatchObject([{ tmdbId: 5, lastWatchedAt: today() }]);
 });
 
+test("library filters: unwatchedOnly, statuses, sort by lastWatchedAt", async () => {
+  const { call } = await setup();
+  // Episodes 1-3 have aired.
+  await call("watch", { tmdbId: 5, season: 1, episodes: "1-3", watchedAt: "2024-02-18" }); // caught up
+  await call("watch", { tmdbId: 6, season: 1, episodes: "1", watchedAt: "2024-02-18" });
+  await call("watch", { tmdbId: 7, season: 1, episodes: "1" }); // today, the most recent
+  await call("set_status", { tmdbId: 8, status: "dropped" }); // never watched
+  const ids = async (input: Record<string, unknown>) => (await call("library", input)).map((series: { tmdbId: number }) => series.tmdbId);
+
+  expect(await ids({})).toEqual([5, 6, 7, 8]);
+  expect(await ids({ unwatchedOnly: true })).toEqual([7, 6, 8]);
+  expect(await ids({ unwatchedOnly: true, sort: "name" })).toEqual([6, 7, 8]);
+  expect(await ids({ unwatchedOnly: true, statuses: ["watching"] })).toEqual([7, 6]);
+  expect(await ids({ statuses: ["dropped"] })).toEqual([8]);
+  expect(await ids({ sort: "lastWatchedAt" })).toEqual([7, 5, 6, 8]);
+});
+
 test("calendar: episodes airing in the next days in watched series, with the day watched and the spoiler shield", async () => {
   const { call, identity } = await setup();
   await call("watch", { tmdbId: 9, season: 1, episodes: "2" });

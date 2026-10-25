@@ -167,13 +167,25 @@ export function registerTools(
     "library",
     {
       description:
-        "The user's series: status, progress (the furthest episode watched), next episode, rating, and lastWatchedAt (the day of the most recent watch, of any episode). Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
-      inputSchema: {},
+        "The user's series: status, progress (the furthest episode watched), next episode, rating, and lastWatchedAt (the day of the most recent watch, of any episode). Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\"). For \"what's left to watch\", pass unwatchedOnly (and statuses to narrow it) instead of reading the whole library.",
+      inputSchema: {
+        unwatchedOnly: z.boolean().default(false).describe("Only the series with aired episodes not watched yet."),
+        statuses: z.array(z.enum(STATUSES)).min(1).optional().describe("Only the series with one of these statuses; all when absent."),
+        sort: z
+          .enum(["name", "lastWatchedAt"])
+          .optional()
+          .describe("name, or lastWatchedAt (most recent first, never watched last). Default: lastWatchedAt with unwatchedOnly, name otherwise."),
+      },
       annotations: { readOnlyHint: true },
     },
-    async () =>
-      text(
-        (await tracking.library(userId)).map((card) => ({
+    async ({ unwatchedOnly, statuses, sort = unwatchedOnly ? "lastWatchedAt" : "name" }) => {
+      const cards = (await tracking.library(userId)).filter(
+        (card) => (!unwatchedOnly || card.airedCount > card.watchedCount) && (!statuses || statuses.includes(card.status)),
+      );
+      // library() already sorts by name; the stable sort keeps it as the tie-break.
+      if (sort === "lastWatchedAt") cards.sort((a, b) => (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""));
+      return text(
+        cards.map((card) => ({
           tmdbId: card.seriesId,
           name: card.name,
           year: card.year,
@@ -186,7 +198,8 @@ export function registerTools(
           aired: card.airedCount,
           lastWatchedAt: dayOf(card.lastWatchedAt),
         })),
-      ),
+      );
+    },
   );
 
   server.registerTool(
