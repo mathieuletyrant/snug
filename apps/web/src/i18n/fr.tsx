@@ -263,6 +263,7 @@ export const fr: Messages = {
         import: "Ajoute séries, épisodes vus et notes ; ce qui est déjà dans Snug est gardé.",
         library: "Vos séries, avec statut, progression, note et dernier visionnage.",
         series: "Une série en détail : saisons, épisodes, le jour où chacun a été vu. Respecte l'anti-spoiler.",
+        calendar: "Les épisodes qui sortent dans les prochains jours, dans les séries que vous regardez ou mettez de côté. Respecte l'anti-spoiler.",
         set_status: "Change le statut d'une série, ou l'ajoute.",
         watch: "Marque des épisodes vus.",
         unwatch: "Marque des épisodes non vus.",

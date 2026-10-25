@@ -19,22 +19,20 @@ test("the Sonarr list carries TVDB ids, and leaves out Series without one", asyn
 });
 
 test("the calendar lists the Episodes of the last month and to come, as all-day events", async () => {
-  const tracking = { seriesIdsWithStatus: async () => [1] } as unknown as TrackingService;
-  const episode = (number: number, airDate: string | null) => ({ season: 1, number, name: "Secret", airDate });
-  const catalog = {
-    getMany: async () =>
-      new Map([[1, { tmdbId: 1, name: "Pluribus, a very long name; that needs escaping and folding past 75 bytes", episodes: [
-        episode(1, "2026-08-01"), // more than a month ago
-        episode(2, "2026-10-20"),
-        episode(3, null),
-      ] }]]),
-  } as unknown as CatalogService;
+  let from = "";
+  const series = { tmdbId: 1, name: "Pluribus, a very long name; that needs escaping and folding past 75 bytes" };
+  const tracking = {
+    airing: async (_: string, since: string) => {
+      from = since;
+      return [{ series, episode: { season: 1, number: 2, name: "Secret", airDate: "2026-10-20" } }];
+    },
+  } as unknown as TrackingService;
+  const catalog = {} as CatalogService;
 
   const ics = await new FeedsService(tracking, catalog).calendar("u", new Date("2026-10-25T12:00:00Z"));
   expect(ics).toContain("UID:1-1-2@snug\r\n");
   expect(ics).toContain("DTSTART;VALUE=DATE:20261020\r\nDTEND;VALUE=DATE:20261021\r\n");
-  expect(ics).not.toContain("1-1-1@snug");
-  expect(ics).not.toContain("1-1-3@snug");
+  expect(from).toBe("2026-09-25");
   expect(ics).not.toContain("Secret");
   expect(ics).toContain("SUMMARY:Pluribus\\, a very long name\\; that");
   expect(ics.split("\r\n").every((line) => Buffer.byteLength(line) <= 75)).toBe(true);

@@ -104,6 +104,7 @@ export const MCP_FEATURES = [
   ["tool", "import"],
   ["tool", "library"],
   ["tool", "series"],
+  ["tool", "calendar"],
   ["tool", "set_status"],
   ["tool", "watch"],
   ["tool", "unwatch"],
