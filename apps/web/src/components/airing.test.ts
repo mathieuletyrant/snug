@@ -24,4 +24,5 @@ test("durations, in the app's language", () => {
   expect(en.common.duration(120)).toBe("2h");
   expect(fr.common.duration(485)).toBe("8 h 05");
   expect(fr.common.left(fr.common.duration(45))).toBe("encore 45 min");
+  expect(fr.common.aboutHours(274)).toBe("~274 h");
 });

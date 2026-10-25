@@ -17,7 +17,7 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
         overlay={card.status === "watching" && card.loaded && <AiringBadge card={card} />}
       >
         {card.airedCount > 0 && <ProgressBar value={card.watchedCount} max={card.airedCount} />}
-        {card.watchedCount < card.airedCount && <TileLine>{progressText(t, card)}</TileLine>}
+        {card.watchedCount < card.airedCount && <TileLine>{progressText(t, card, true)}</TileLine>}
       </PosterTile>
       {/* Change status without opening the series */}
       <div className="absolute top-1 right-1 rounded-full bg-bg/80">
@@ -57,8 +57,15 @@ function AiringBadge({ card }: { card: SeriesCard }) {
   );
 }
 
-/** "70% · 8h 20m left": how far along, and the time to catch up on what's out. */
-export function progressText(t: Messages, card: Pick<SeriesCard, "watchedCount" | "airedCount" | "minutesLeft">) {
+/** "70% · 8h 20m left": how far along, and the time to catch up on what's out. `short` for a tile: "70% · ~8h left". */
+export function progressText(
+  t: Messages,
+  card: Pick<SeriesCard, "watchedCount" | "airedCount" | "minutesLeft">,
+  short = false,
+) {
   const percent = `${Math.floor((card.watchedCount / card.airedCount) * 100)}%`;
-  return card.minutesLeft ? `${percent} · ${t.common.left(t.common.duration(card.minutesLeft))}` : percent;
+  const minutes = card.minutesLeft;
+  if (!minutes) return percent;
+  const time = short && minutes >= 60 ? t.common.aboutHours(Math.round(minutes / 60)) : t.common.duration(minutes);
+  return `${percent} · ${t.common.left(time)}`;
 }

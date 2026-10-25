@@ -155,7 +155,7 @@ test("new Episodes on a day: Watching Series only, Episodes not watched yet", as
   expect(found.map((f) => [f.userId, f.series.tmdbId, f.episodes.map((e) => e.number)])).toEqual([["u", 1, [2]]]);
 });
 
-test("home: fresh Episodes first, undated Upcoming hidden on demand", async () => {
+test("home: fresh Episodes first; undated Series hidden on demand, in the Library too", async () => {
   const catalog = [
     series(1, false, ["2026-10-01", "2026-10-02"]), // binged long ago
     series(2, false, ["2026-10-01", "2026-10-20"]), // E2 out yesterday, while waiting for it
@@ -172,6 +172,7 @@ test("home: fresh Episodes first, undated Upcoming hidden on demand", async () =
     [1, false, { kind: "ready", left: 1 }],
   ]);
   expect(home.upcoming).toEqual([]);
+  expect((await tracking.library("u")).map((c) => c.seriesId)).toEqual([1, 2]);
 });
 
 test("time left: aired Episodes not watched, an unknown runtime counting as the average", async () => {
