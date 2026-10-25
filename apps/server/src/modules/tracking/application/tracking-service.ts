@@ -209,7 +209,12 @@ export class TrackingService {
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
     for (const episode of series.episodes) {
       const season = seasons.get(episode.season) ?? { number: episode.season, rating: tracked.ratingOf(episode.season), episodes: [] };
-      season.episodes.push({ ...episode, watched: tracked.hasWatched(episode), aired: hasAired(episode, day) });
+      season.episodes.push({
+        ...episode,
+        watched: tracked.hasWatched(episode),
+        watchedAt: tracked.watchedAt(episode)?.toISOString() ?? null,
+        aired: hasAired(episode, day),
+      });
       seasons.set(episode.season, season);
     }
     const { loaded: _, ...card } = this.card(tracked, series, this.preferences(userId).newForDays);

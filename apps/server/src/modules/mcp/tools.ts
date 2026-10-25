@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { type Preferences, SAVING_TARGETS, STATUSES, isTitleHidden } from "@snug/shared";
 import { z } from "zod";
 import { forEachLimit } from "@/shared/async";
+import { startOf, today } from "@/shared/day";
 import { InvalidInputError, NotFoundError } from "@/shared/errors";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { ImportService } from "@/modules/import/application/import-service";
@@ -55,6 +56,9 @@ const importInput = {
     .max(200)
     .describe("Up to 200 series per call: send a large history in several calls."),
 };
+
+/** An ISO datetime as the Day it falls on, like the Days the Assistant sends. */
+const dayOf = (iso: string | null) => iso && today(new Date(iso));
 
 const tmdbId = z.int().positive().describe("The series' TMDB id, from find_series or library.");
 const episodes = z.string().describe('"1-10", "1-4,6" or "3".');
@@ -144,7 +148,7 @@ export function registerTools(
             parseEpisodes(group.episodes).map((number) => ({
               season: group.season,
               number,
-              watchedAt: group.watchedAt ? new Date(group.watchedAt) : new Date(),
+              watchedAt: group.watchedAt ? startOf(group.watchedAt) : new Date(),
             })),
           );
           episodes += watches.length;
@@ -162,7 +166,8 @@ export function registerTools(
   server.registerTool(
     "library",
     {
-      description: "The user's series: status, progress (the furthest episode watched), next episode and rating.",
+      description:
+        "The user's series: status, progress (the furthest episode watched), next episode, rating, and lastWatchedAt (the day of the most recent watch, of any episode).",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
@@ -178,6 +183,7 @@ export function registerTools(
           rating: card.rating,
           watched: card.watchedCount,
           aired: card.airedCount,
+          lastWatchedAt: dayOf(card.lastWatchedAt),
         })),
       ),
   );
@@ -186,7 +192,7 @@ export function registerTools(
     "series",
     {
       description:
-        "One series in detail, tracked or not: its seasons and episodes, which are watched, the next one. Titles of unwatched episodes may be hidden by the user's spoiler shield.",
+        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. Titles of unwatched episodes may be hidden by the user's spoiler shield.",
       inputSchema: { tmdbId },
       annotations: { readOnlyHint: true },
     },
@@ -213,7 +219,7 @@ export function registerTools(
               number: episode.number,
               name: isTitleHidden(preferences, { watched: episode.watched, next: isNext(episode) }) ? null : episode.name,
               airDate: episode.airDate,
-              watched: episode.watched,
+              watchedAt: dayOf(episode.watchedAt),
             })),
           })),
         };
@@ -254,7 +260,7 @@ export function registerTools(
     ({ tmdbId, season, episodes, watchedAt }) =>
       attempt(async () => {
         const numbers = parseEpisodes(episodes);
-        const at = watchedAt ? new Date(watchedAt) : new Date();
+        const at = watchedAt ? startOf(watchedAt) : new Date();
         for (const number of numbers) await tracking.watchEpisode(userId, tmdbId, { season, number }, at);
         return { episodes: numbers.length };
       }),

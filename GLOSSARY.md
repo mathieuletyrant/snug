@@ -27,7 +27,7 @@ An Episode whose air date is the Day or earlier.
 _Avoid_: Out, released, available
 
 **Watch**:
-The fact that a User saw an Episode, at a given time.
+The fact that a User saw an Episode, at a given time. Only the first time counts: a rewatch adds no Watch and keeps the first one's time.
 _Avoid_: Scrobble, view, play
 
 **Progress**:

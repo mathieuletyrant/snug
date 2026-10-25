@@ -2,6 +2,7 @@ import type { Status } from "@snug/shared";
 import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
 import { WHOLE_SERIES } from "@/modules/tracking/domain/tracked-series";
 import { STATUS_ALIASES } from "./import-file";
+import { startOf } from "@/shared/day";
 import { t } from "@/shared/i18n";
 
 /**
@@ -106,7 +107,7 @@ export function parseCsvImport(text: string): CsvRow[] {
 
     const watchedAt = get("watched_at");
     if (watchedAt) {
-      row.watchedAt = new Date(watchedAt);
+      row.watchedAt = /^\d{4}-\d{2}-\d{2}$/.test(watchedAt) ? startOf(watchedAt) : new Date(watchedAt);
       if (Number.isNaN(row.watchedAt.getTime())) problems.push(t().csv.notADate(line));
     }
 

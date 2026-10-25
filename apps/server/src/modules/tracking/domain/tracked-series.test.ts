@@ -16,6 +16,14 @@ describe("TrackedSeries", () => {
     expect(t.nextEpisode(episodes)).toEqual(ep(2, 2));
   });
 
+  test("watchedAt is the first Watch: a rewatch keeps it", () => {
+    const t = TrackedSeries.start("u", 1, "watching", now);
+    t.watch(ep(1, 1), now);
+    t.watch(ep(1, 1), new Date(now.getTime() + 1000));
+    expect(t.watchedAt(ep(1, 1))).toEqual(now);
+    expect(t.watchedAt(ep(1, 2))).toBeNull();
+  });
+
   test("next Episode is S01E01 when nothing is watched", () => {
     expect(TrackedSeries.start("u", 1, "watching", now).nextEpisode(episodes)).toEqual(ep(1, 1));
   });
