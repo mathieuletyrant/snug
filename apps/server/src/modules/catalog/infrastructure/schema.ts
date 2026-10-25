@@ -22,6 +22,7 @@ export const episodes = sqliteTable(
     number: integer("number").notNull(),
     name: text("name").notNull(),
     airDate: text("air_date"),
+    runtime: integer("runtime"),
   },
   (t) => [primaryKey({ columns: [t.seriesId, t.season, t.number] })],
 );

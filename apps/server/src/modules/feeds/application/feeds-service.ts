@@ -1,6 +1,7 @@
-import type { Status } from "@snug/shared";
+import { episodeCode, type Status } from "@snug/shared";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { TrackingService } from "@/modules/tracking/application/tracking-service";
+import { addDays, today } from "@/shared/day";
 import { moduleLogger } from "@/shared/logger";
 
 const log = moduleLogger("feeds");
@@ -10,6 +11,9 @@ export interface SonarrListItem {
   title: string;
   tvdbId: number;
 }
+
+/** The calendar shows the last month too, so a late catch-up still finds its Episodes. */
+const CALENDAR_PAST_DAYS = 30;
 
 /** Read-only views of a User's tracking for other apps (Sonarr). */
 export class FeedsService {
@@ -36,4 +40,47 @@ export class FeedsService {
     );
     return items;
   }
+
+  /**
+   * iCal calendar of the Episodes of Watching and Saving up Series, as all-day events (TMDB has no air time).
+   * Episode titles are left out: the calendar can't apply the spoiler shield.
+   */
+  async calendar(userId: string, now = new Date()): Promise<string> {
+    const ids = await this.tracking.seriesIdsWithStatus(userId, ["watching", "saving"]);
+    const from = addDays(today(now), -CALENDAR_PAST_DAYS);
+    const stamp = now.toISOString().replace(/[-:]|\.\d+/g, "");
+    const events: string[] = [];
+    for (const series of (await this.catalog.getMany(ids)).values()) {
+      for (const e of series.episodes) {
+        if (!e.airDate || e.airDate < from) continue;
+        events.push(
+          "BEGIN:VEVENT",
+          `UID:${series.tmdbId}-${e.season}-${e.number}@snug`,
+          `DTSTAMP:${stamp}`,
+          `DTSTART;VALUE=DATE:${e.airDate.replaceAll("-", "")}`,
+          `DTEND;VALUE=DATE:${addDays(e.airDate, 1).replaceAll("-", "")}`,
+          `SUMMARY:${escapeText(`${series.name} ${episodeCode(e)}`)}`,
+          "END:VEVENT",
+        );
+      }
+    }
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Snug//EN", "X-WR-CALNAME:Snug", ...events, "END:VCALENDAR"];
+    return lines.map(fold).join("\r\n") + "\r\n";
+  }
+}
+
+const escapeText = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
+
+/** iCal lines are at most 75 bytes; longer ones continue on lines starting with a space. */
+function fold(line: string): string {
+  const parts: string[] = [];
+  let part = "";
+  for (const char of line) {
+    if (Buffer.byteLength(part + char) > (parts.length ? 74 : 75)) {
+      parts.push(part);
+      part = "";
+    }
+    part += char;
+  }
+  return [...parts, part].join("\r\n ");
 }

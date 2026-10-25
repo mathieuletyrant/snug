@@ -276,6 +276,8 @@ export class TrackingService {
   private card(t: TrackedSeries, series: Series | undefined, newForDays: number): SeriesCard {
     const aired = series ? this.aired(series) : [];
     const day = today(this.now());
+    const runtimes = (series?.episodes ?? []).flatMap((e) => (e.runtime ? [e.runtime] : []));
+    const average = runtimes.length ? runtimes.reduce((a, b) => a + b, 0) / runtimes.length : 0;
     return {
       seriesId: t.seriesId,
       loaded: !!series,
@@ -292,6 +294,7 @@ export class TrackingService {
       fresh: !!series && t.isNew(series.episodes, day, newForDays),
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,
       airedCount: aired.length,
+      minutesLeft: Math.round(aired.filter((e) => !t.hasWatched(e)).reduce((sum, e) => sum + (e.runtime ?? average), 0)),
       lastWatchedAt: t.lastWatchedAt?.toISOString() ?? null,
     };
   }

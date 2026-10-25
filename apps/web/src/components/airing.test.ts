@@ -18,3 +18,11 @@ test("relative days, and lowered to follow a word", () => {
   expect(relativeDay(en, "2026-12-03", now, true)).toBe("Dec 3");
   expect(relativeDay(fr, null, now)).toBe("Date à venir");
 });
+
+test("durations, in the app's language", () => {
+  expect(en.common.duration(45)).toBe("45m");
+  expect(en.common.duration(120)).toBe("2h");
+  expect(fr.common.duration(485)).toBe("8 h 05");
+  expect(fr.common.left(fr.common.duration(45))).toBe("encore 45 min");
+  expect(fr.common.aboutHours(274)).toBe("~274 h");
+});

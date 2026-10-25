@@ -6,8 +6,17 @@ import {
   type Status,
   type WatchlistIntegration,
 } from "@snug/shared";
-import { Bot, Clapperboard, Download, Tv } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Bot,
+  CalendarDays,
+  Clapperboard,
+  Download,
+  type LucideIcon,
+  Tv,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { CopyField } from "@/components/copy-field";
 import { MultiChips } from "@/components/ui";
 import { useT } from "@/i18n";
@@ -18,12 +27,44 @@ export function IntegrationsSection() {
   const t = useT();
   return (
     <>
-      <p className="text-sm text-muted">{t.integrations.intro}</p>
-      <Jellyfin />
-      <Sonarr />
-      <Spotarr />
-      <Assistant />
+      <Group icon={ArrowDownToLine} title={t.integrations.toSnug} help={t.integrations.toSnugHelp}>
+        <Jellyfin />
+        <Spotarr />
+        <Assistant />
+      </Group>
+      <Group icon={ArrowUpFromLine} title={t.integrations.fromSnug} help={t.integrations.fromSnugHelp}>
+        <Sonarr />
+        <Calendar />
+      </Group>
     </>
+  );
+}
+
+/** Which way the data goes: apps feeding Snug, or apps reading from it. */
+function Group({
+  icon: Icon,
+  title,
+  help,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  help: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3 pt-4">
+      <div className="flex items-center gap-3 border-b border-line/60 pb-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
+          <Icon className="size-5" />
+        </span>
+        <div>
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          <p className="text-sm text-muted">{help}</p>
+        </div>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -63,6 +104,24 @@ function Sonarr() {
       />
       <p className="mb-4 text-xs text-muted">{t.integrations.sonarr.changed}</p>
       <CopyField label={t.integrations.sonarr.url} value={url} onRotate={rotate} />
+    </IntegrationCard>
+  );
+}
+
+function Calendar() {
+  const t = useT();
+  const { data, rotate } = useIntegration<Feeds>("/integrations/feeds");
+  const url = data ? location.origin + data.calendarPath : "…";
+
+  return (
+    <IntegrationCard
+      icon={CalendarDays}
+      title={t.integrations.calendar.title}
+      description={t.integrations.calendar.description}
+    >
+      <SetupSteps>{steps(t.integrations.calendar.steps)}</SetupSteps>
+      <CopyField label={t.integrations.calendar.url} value={url} onRotate={rotate} />
+      <p className="mt-2 text-xs text-muted">{t.integrations.calendar.sharedUrl}</p>
     </IntegrationCard>
   );
 }

@@ -18,6 +18,15 @@ export const en = {
     somethingWrong: "Something went wrong",
     tba: "TBA",
     dateTba: "Date TBA",
+    /** "45m", "8h", "8h 20m". */
+    duration: (minutes: number) => {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h ? `${h}h${m ? ` ${m}m` : ""}` : `${m}m`;
+    },
+    left: (what: string) => `${what} left`,
+    /** Rounded to the hour, short enough for a tile: "~7h". */
+    aboutHours: (hours: number) => `~${hours}h`,
   },
   days: {
     today: "Today",
@@ -100,6 +109,8 @@ export const en = {
     toWatch: (n: number) => (n === 1 ? "1 episode to watch" : `${n} episodes to watch`),
     nextOn: (date: string) => `Next episode on ${date}`,
     caughtUpUndated: "Caught up, next episode not dated yet",
+    sort: "Sort",
+    sorts: { name: "A–Z", lastWatched: "Last watched", nextEpisode: "Next episode" },
     changeStatus: "Change status",
     movedTo: (status: string) => `Moved to ${status}`,
   },
@@ -113,6 +124,7 @@ export const en = {
     ended: "Ended",
     airing: "Airing",
     at: (code: string) => `at ${code}`,
+    watched: (watched: number, aired: number) => `${watched}/${aired} episodes`,
     startWatching: "Start watching",
     addToWatchlist: "Add to watchlist",
     season: (n: number) => `Season ${n}`,
@@ -170,7 +182,10 @@ export const en = {
     testSent: "Test sent",
   },
   integrations: {
-    intro: "Each app gets its own secret URL. Replace it with ↻ if it leaks.",
+    toSnug: "Sent to Snug",
+    toSnugHelp: "Apps that mark episodes watched or add series.",
+    fromSnug: "Sent from Snug",
+    fromSnugHelp: "Apps that read your series.",
     howToConnect: "How to connect",
     copyUrl: "Copy URL",
     copy: (what: string) => `Copy ${what}`,
@@ -209,6 +224,16 @@ export const en = {
       toSendLabel: "Series to send to Sonarr",
       changed: "Changed your pick? Paste the new URL in Sonarr.",
     },
+    calendar: {
+      title: "Calendar",
+      description: "Episodes of the series you watch or save up, in your calendar app.",
+      url: "calendar URL",
+      steps: [
+        (b: Bold) => <>In your calendar app, {b("subscribe")} to a calendar by URL (Google Calendar: Other calendars → From URL).</>,
+        () => <>Paste the URL below. Episode titles stay out of it, no spoilers.</>,
+      ],
+      sharedUrl: "Replacing this URL also replaces Sonarr's.",
+    },
     spotarr: {
       description: "TV shows sent from Spotarr land on your Watchlist.",
       url: "Spotarr URL",
@@ -233,6 +258,8 @@ export const en = {
     hours: (n: number) => `${n} h ago`,
   },
   import: {
+    withAssistant: "From TV Time, Trakt…?",
+    withAssistantHelp: "An AI assistant can read your export and import it. Set it up in Integrations →",
     title: "Import",
     intro: (csv: ReactNode, template: ReactNode) => (
       <>

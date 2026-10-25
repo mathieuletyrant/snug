@@ -30,6 +30,7 @@ interface TmdbEpisode {
   episode_number: number;
   name: string;
   air_date: string | null;
+  runtime: number | null;
 }
 interface TmdbSearchResult {
   id: number;
@@ -114,7 +115,7 @@ export class TmdbClient implements SeriesSource {
       });
       for (const n of chunk) {
         for (const e of data[`season/${n}`]?.episodes ?? []) {
-          episodes.push({ season: e.season_number, number: e.episode_number, name: e.name, airDate: e.air_date || null });
+          episodes.push({ season: e.season_number, number: e.episode_number, name: e.name, airDate: e.air_date || null, runtime: e.runtime || null });
         }
       }
     }
