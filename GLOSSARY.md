@@ -18,8 +18,12 @@ _Avoid_: Library entry, follow, subscription
 **Episode**:
 One numbered episode of a Series, addressed as `SxxEyy` (season, episode).
 
+**Day**:
+A calendar day in the instance's time zone, wherever the User is. Aired, Next Episode, Ready, Upcoming and New are judged on a Day and can change overnight with nothing done; a Status is kept until something changes it.
+_Avoid_: Standing, local date
+
 **Aired**:
-An Episode whose air date is today or earlier, in the instance's time zone.
+An Episode whose air date is the Day or earlier.
 _Avoid_: Out, released, available
 
 **Watch**:

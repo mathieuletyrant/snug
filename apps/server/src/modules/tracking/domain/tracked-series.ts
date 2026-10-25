@@ -31,8 +31,8 @@ export const hasAired = (e: { airDate: string | null }, today: string) => e.airD
 
 type Dated = EpisodeRef & { airDate: string | null };
 
-/** What `TrackedSeries.standing` says; the words are the GLOSSARY's. */
-export interface Standing<E extends Dated> {
+/** A TrackedSeries on a Day (see `TrackedSeries.onDay`); the words are the GLOSSARY's. */
+export interface OnDay<E extends Dated> {
   next: E | null;
   /** Watching with the Next Episode aired, or Saving up with enough saved; always false for other Statuses. */
   ready: boolean;
@@ -165,10 +165,10 @@ export class TrackedSeries {
   }
 
   /**
-   * Where the Series stands on a day: its Next Episode, whether it is Ready, how it airs, how far its saving
+   * The Series on a Day: its Next Episode, whether it is Ready, how it airs, how far its saving
    * up is, whether it is New, and the Statuses the User can pick. Episodes are sorted once for all of them.
    */
-  standing<E extends Dated>(timeline: { ended: boolean; episodes: readonly E[] }, today: string, newForDays = 0): Standing<E> {
+  onDay<E extends Dated>(timeline: { ended: boolean; episodes: readonly E[] }, today: string, newForDays = 0): OnDay<E> {
     const sorted = [...timeline.episodes].sort(compareEpisodes);
     const next = this.nextIn(sorted);
     // The Episodes from the Next Episode on, not watched yet.

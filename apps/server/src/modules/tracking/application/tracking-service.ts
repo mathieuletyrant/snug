@@ -286,8 +286,8 @@ export class TrackingService {
   private card(t: TrackedSeries, series: Series | undefined, newForDays: number): SeriesCard {
     const day = today(this.now());
     const aired = series ? this.aired(series, day) : [];
-    const standing = series
-      ? t.standing(series, day, newForDays)
+    const onDay = series
+      ? t.onDay(series, day, newForDays)
       : { next: null, ready: false, airing: { kind: "tba" } as const, saving: null, fresh: false, choosable: [...STATUSES] };
     const runtimes = (series?.episodes ?? []).flatMap((e) => (e.runtime ? [e.runtime] : []));
     const average = runtimes.length ? runtimes.reduce((a, b) => a + b, 0) / runtimes.length : 0;
@@ -299,7 +299,7 @@ export class TrackingService {
       posterPath: series?.posterPath ?? null,
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
-      ...standing,
+      ...onDay,
       progress: t.progress,
       watchedCount: aired.filter((e) => t.hasWatched(e)).length,
       airedCount: aired.length,
