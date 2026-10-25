@@ -17,19 +17,31 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 
 ## ✨ Features
 
-- 🛋️ **Home that matters**: *Ready to watch* (next episode is out) and *Upcoming* (caught up, next air date). One tap ✓ marks the next episode, with undo.
-- 📺 **Per-episode progress**: Watchlist, Watching, Paused, Completed, Dropped. Series come back to *Watching* on their own when you resume them or a new season airs.
-- 🪼 **Jellyfin webhook**: finished or "mark played" episodes are tracked automatically, unknown series are added. Full webhook history with raw payloads.
-- 🔔 **Notifications**: “✓ Severance S02E05 · Next: S02E06” on your phone when Jellyfin marks an episode watched (Web Push, per device; on iPhone from the Home Screen app over HTTPS).
-- 🎬 **Spotarr**: a series identified from a shared reel lands on your Watchlist (series you already track keep their status).
-- 📡 **Sonarr import list**: your Watchlist as a Sonarr *Custom List* (TVDB ids), so adding a series in Snug gets it downloaded.
-- 📅 **Calendar feed**: an iCal URL of the episodes of the series you watch, for Google Calendar, Apple Calendar…
-- 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
-- 🤖 **AI assistant** (MCP): Claude or any MCP client manages your series with your own rights, nothing on your account: mark episodes, change statuses, rate, remove, see where you are, and import your history from TV Time, Trakt… with a guided prompt.
-- 🌍 **Your language**: the whole app in English or French, notifications included; descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
-- 📱 **PWA**: installable, works offline for what you've already seen, mobile-first.
-- 🔐 **Accounts**: email + password, the first account is admin, sign-up closed afterwards.
-- ⚡ **Fast**: Bun + SQLite, TMDB images cached on disk, home served in ~20 ms for 190 series.
+**Track**
+
+- 🛋️ **Home**: *Ready to watch* and *Upcoming*, one tap ✓ for the next episode (with undo)
+- 🆕 **New mode**: freshly aired episodes first
+- 📺 **Statuses**: Watchlist, Watching, Saving up (wait for a full season or N episodes), Paused, Completed, Dropped
+- 📊 **Progress** per season, time left to watch
+- ⭐ **Ratings** out of 10, per series and per season
+- 🙈 **Spoiler shield**: unwatched episode titles hidden until tapped
+
+**Connect**
+
+- 🪼 **Jellyfin**: watched episodes tracked automatically, webhook history
+- 🔔 **Push notifications**: new episode out, episode watched in Jellyfin (iPhone: Home Screen app over HTTPS)
+- 🤖 **AI assistant** (MCP): Claude manages your library, imports your TV Time / Trakt history
+- 📡 **Sonarr**: your Watchlist as a Custom List, so it gets downloaded
+- 🎬 **Spotarr**: a series from a shared reel lands on your Watchlist
+- 📅 **Calendar**: iCal feed of upcoming episodes
+- 📥 **Import**: CSV ([template](apps/web/public/snug-import-template.csv)) or JSON export
+
+**App**
+
+- 🌍 English or French, TMDB data in your language
+- 📱 PWA: installable, offline, mobile-first
+- 🔐 Accounts: the first one is admin, sign-up closed after
+- ⚡ Bun + SQLite, home in ~20 ms for 190 series
 
 <table>
   <tr>
@@ -88,10 +100,12 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     catalog      Series & Episodes from TMDB (cached, refreshed daily)
     tracking     TrackedSeries aggregate: Status, Watches, Progress
     identity     accounts, sessions, preferences, webhook tokens
+    mcp          AI assistant (MCP server): tools and prompts over the other modules
     jellyfin     webhook → Watches, history
     feeds        read-only lists for other apps (Sonarr, iCal calendar)
     notifications  Web Push to the User's devices
     import       JSON export → TrackedSeries
+    watchlist    add to the Watchlist from other apps (Spotarr)
 apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA
   src/pages        one file per screen (settings/: one per tab), made of components
   src/components   ui/ building blocks (Button, Chips, Card, Poster…), series/ series pieces,
