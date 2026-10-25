@@ -6,9 +6,10 @@ import { api, queryClient } from "@/api";
 import { earlierUnwatched } from "@/lib/episodes";
 import { CatchUp } from "@/components/catch-up";
 import { EpisodeTitle } from "@/components/spoilers";
+import { usePreferences } from "@/components/preferences";
 import { useT } from "@/i18n";
 import { longDate } from "@/components/airing";
-import { cx } from "@/components/ui";
+import { cx, ProgressBar } from "@/components/ui";
 
 type SeasonData = SeriesDetail["seasons"][number];
 type EpisodeData = SeasonData["episodes"][number];
@@ -21,6 +22,8 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   const watched = season.episodes.filter((e) => e.watched).length;
   const aired = season.episodes.filter((e) => e.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
+  const { seasonProgress } = usePreferences();
+  const showProgress = aired > 0 && (seasonProgress === "all" || season === series.seasons.at(-1));
   const base = `/series/${series.seriesId}`;
 
   const toggle = useMutation({
@@ -53,6 +56,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
         </span>
         <ChevronDown className={cx("size-5 text-muted transition", open && "rotate-180")} />
       </button>
+      {showProgress && <SeasonProgress episodes={season.episodes} watched={watched} aired={aired} />}
       {open && (
         <div className="border-t border-line/60">
           {watched < aired && (
@@ -83,6 +87,24 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
         onClose={() => setAsking(null)}
       />
     </section>
+  );
+}
+
+/** Past this many Episodes, segments get too thin: a plain bar instead. */
+const MAX_SEGMENTS = 40;
+
+/** One segment per Episode (watched, out, not out yet), so gaps show at a glance. */
+function SeasonProgress({ episodes, watched, aired }: { episodes: EpisodeData[]; watched: number; aired: number }) {
+  if (episodes.length > MAX_SEGMENTS) return <ProgressBar value={watched} max={aired} className="mx-5 mb-4" />;
+  return (
+    <div role="img" aria-label={`${watched}/${aired}`} className="mx-5 mb-4 flex gap-1">
+      {episodes.map((e) => (
+        <span
+          key={e.number}
+          className={cx("h-1.5 flex-1 rounded-full", e.watched ? "bg-accent" : e.aired ? "bg-accent/30" : "bg-raised")}
+        />
+      ))}
+    </div>
   );
 }
 
