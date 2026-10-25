@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { STATUSES, type Status } from "@snug/shared";
+import { type SeriesCard, STATUSES, type Status } from "@snug/shared";
 import { Library } from "lucide-react";
 import { useState } from "react";
 import { LibraryTile } from "@/components/series/library-tile";
@@ -8,10 +8,19 @@ import { Chips, Empty, PageTitle, POSTER_GRID, SearchInput } from "@/components/
 import { useT } from "@/i18n";
 import { libraryQuery } from "@/queries";
 
+const SORTS = {
+  name: (a: SeriesCard, b: SeriesCard) => a.name.localeCompare(b.name),
+  lastWatched: (a: SeriesCard, b: SeriesCard) => (b.lastWatchedAt ?? "").localeCompare(a.lastWatchedAt ?? ""),
+  // Undated last.
+  nextEpisode: (a: SeriesCard, b: SeriesCard) => (a.next?.airDate ?? "9999").localeCompare(b.next?.airDate ?? "9999"),
+};
+type Sort = keyof typeof SORTS;
+
 export function LibraryPage() {
   const { data, isPending } = useQuery(libraryQuery);
   const [status, setStatus] = useState<Status>("watching");
   const [filter, setFilter] = useState("");
+  const [sort, setSort] = useState<Sort>("name");
   const t = useT();
 
   if (isPending) {
@@ -23,7 +32,9 @@ export function LibraryPage() {
     );
   }
   const all = data ?? [];
-  const shown = all.filter((c) => c.status === status && c.name.toLowerCase().includes(filter.toLowerCase()));
+  const shown = all
+    .filter((c) => c.status === status && c.name.toLowerCase().includes(filter.toLowerCase()))
+    .sort(SORTS[sort]);
 
   return (
     <>
@@ -47,6 +58,14 @@ export function LibraryPage() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder={t.library.filter}
+        className="mb-3"
+      />
+      <Chips
+        label={t.library.sort}
+        small
+        value={sort}
+        onChange={setSort}
+        options={(Object.keys(SORTS) as Sort[]).map((s) => ({ value: s, label: t.library.sorts[s] }))}
         className="mb-6"
       />
       {shown.length ? (

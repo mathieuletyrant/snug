@@ -1,12 +1,13 @@
 import type { SeriesCard } from "@snug/shared";
 import { longDate, shortDay } from "@/components/airing";
-import { PosterTile } from "@/components/poster-tile";
+import { PosterTile, TileLine } from "@/components/poster-tile";
 import { StatusMenu } from "@/components/series-actions";
-import { useT } from "@/i18n";
+import { type Messages, useT } from "@/i18n";
 import { cx, ProgressBar } from "@/components/ui";
 
 /** A series in the Library: poster with how it airs, progress, and a menu to change its status. */
 export function LibraryTile({ card }: { card: SeriesCard }) {
+  const t = useT();
   return (
     <div className="relative">
       <PosterTile
@@ -16,6 +17,7 @@ export function LibraryTile({ card }: { card: SeriesCard }) {
         overlay={card.status === "watching" && card.loaded && <AiringBadge card={card} />}
       >
         {card.airedCount > 0 && <ProgressBar value={card.watchedCount} max={card.airedCount} />}
+        {card.watchedCount < card.airedCount && <TileLine>{progressText(t, card)}</TileLine>}
       </PosterTile>
       {/* Change status without opening the series */}
       <div className="absolute top-1 right-1 rounded-full bg-bg/80">
@@ -53,4 +55,10 @@ function AiringBadge({ card }: { card: SeriesCard }) {
       {label}
     </span>
   );
+}
+
+/** "70% · 8h 20m left": how far along, and the time to catch up on what's out. */
+export function progressText(t: Messages, card: Pick<SeriesCard, "watchedCount" | "airedCount" | "minutesLeft">) {
+  const percent = `${Math.floor((card.watchedCount / card.airedCount) * 100)}%`;
+  return card.minutesLeft ? `${percent} · ${t.common.left(t.common.duration(card.minutesLeft))}` : percent;
 }

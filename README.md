@@ -23,6 +23,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 🔔 **Notifications**: “✓ Severance S02E05 · Next: S02E06” on your phone when Jellyfin marks an episode watched (Web Push, per device; on iPhone from the Home Screen app over HTTPS).
 - 🎬 **Spotarr**: a series identified from a shared reel lands on your Watchlist (series you already track keep their status).
 - 📡 **Sonarr import list**: your Watchlist as a Sonarr *Custom List* (TVDB ids), so adding a series in Snug gets it downloaded.
+- 📅 **Calendar feed**: an iCal URL of the episodes of the series you watch, for Google Calendar, Apple Calendar…
 - 📥 **Import** your history from a CSV (one row per watched episode, [template](apps/web/public/snug-import-template.csv); titles are matched on TMDB) or a JSON export, with live progress.
 - 🌍 **Your language**: the whole app in English or French, notifications included; descriptions, episode titles and posters from TMDB in French, Spanish, German…, falling back to English.
 - 📱 **PWA**: installable, works offline for what you've already seen, mobile-first.
@@ -87,7 +88,7 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     tracking     TrackedSeries aggregate: Status, Watches, Progress
     identity     accounts, sessions, preferences, webhook tokens
     jellyfin     webhook → Watches, history
-    feeds        read-only lists for other apps (Sonarr)
+    feeds        read-only lists for other apps (Sonarr, iCal calendar)
     notifications  Web Push to the User's devices
     import       JSON export → TrackedSeries
 apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA

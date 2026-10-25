@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { image } from "@/api";
 import { useT } from "@/i18n";
 import { BackButton, Poster, ProgressBar } from "@/components/ui";
+import { progressText } from "./library-tile";
 
 /**
  * The top of a series page: its backdrop faded into the page, poster, name and progress, then `children`
@@ -37,7 +38,12 @@ export function SeriesHero({ series, children }: { series: SeriesDetail; childre
             {series.progress && ` · ${t.series.at(episodeCode(series.progress))}`}
           </p>
           {series.airedCount > 0 && (
-            <ProgressBar value={series.watchedCount} max={series.airedCount} className="max-w-xs" />
+            <>
+              <ProgressBar value={series.watchedCount} max={series.airedCount} className="max-w-xs" />
+              <p className="text-sm text-muted">
+                {t.series.watched(series.watchedCount, series.airedCount)} · {progressText(t, series)}
+              </p>
+            </>
           )}
         </header>
         <div className="col-span-2 space-y-5 md:col-span-1 md:col-start-2">{children}</div>

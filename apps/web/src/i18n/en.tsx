@@ -18,6 +18,13 @@ export const en = {
     somethingWrong: "Something went wrong",
     tba: "TBA",
     dateTba: "Date TBA",
+    /** "45m", "8h", "8h 20m". */
+    duration: (minutes: number) => {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h ? `${h}h${m ? ` ${m}m` : ""}` : `${m}m`;
+    },
+    left: (what: string) => `${what} left`,
   },
   days: {
     today: "Today",
@@ -100,6 +107,8 @@ export const en = {
     toWatch: (n: number) => (n === 1 ? "1 episode to watch" : `${n} episodes to watch`),
     nextOn: (date: string) => `Next episode on ${date}`,
     caughtUpUndated: "Caught up, next episode not dated yet",
+    sort: "Sort",
+    sorts: { name: "A–Z", lastWatched: "Last watched", nextEpisode: "Next episode" },
     changeStatus: "Change status",
     movedTo: (status: string) => `Moved to ${status}`,
   },
@@ -113,6 +122,7 @@ export const en = {
     ended: "Ended",
     airing: "Airing",
     at: (code: string) => `at ${code}`,
+    watched: (watched: number, aired: number) => `${watched}/${aired} episodes`,
     startWatching: "Start watching",
     addToWatchlist: "Add to watchlist",
     season: (n: number) => `Season ${n}`,
@@ -208,6 +218,16 @@ export const en = {
       toSend: "Series to send",
       toSendLabel: "Series to send to Sonarr",
       changed: "Changed your pick? Paste the new URL in Sonarr.",
+    },
+    calendar: {
+      title: "Calendar",
+      description: "Episodes of the series you watch or save up, in your calendar app.",
+      url: "calendar URL",
+      steps: [
+        (b: Bold) => <>In your calendar app, {b("subscribe")} to a calendar by URL (Google Calendar: Other calendars → From URL).</>,
+        () => <>Paste the URL below. Episode titles stay out of it, no spoilers.</>,
+      ],
+      sharedUrl: "Replacing this URL also replaces Sonarr's.",
     },
     spotarr: {
       description: "TV shows sent from Spotarr land on your Watchlist.",

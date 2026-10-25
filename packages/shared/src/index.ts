@@ -12,6 +12,8 @@ export interface Episode extends EpisodeRef {
   name: string;
   /** ISO date (YYYY-MM-DD), null when not announced. */
   airDate: string | null;
+  /** Minutes, when TMDB knows it. */
+  runtime?: number | null;
 }
 
 /** The Episode the home screen's one click marked, and the Status before it, to undo. */
@@ -40,6 +42,8 @@ export interface SeriesCard {
   fresh: boolean;
   watchedCount: number;
   airedCount: number;
+  /** Minutes to watch every aired Episode not watched yet; an Episode without a runtime counts as the Series' average. */
+  minutesLeft: number;
   /** ISO datetime. */
   lastWatchedAt: string | null;
 }
@@ -74,6 +78,8 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
 /** Read-only feed URLs (paths, to prefix with the origin) for other apps. */
 export interface Feeds {
   sonarrPath: string;
+  /** iCal calendar of the Episodes of Watching and Saving up Series. */
+  calendarPath: string;
 }
 
 /** URL path (to prefix with the origin) other apps POST `{ tmdbId }` to, adding a Series to the Watchlist. */

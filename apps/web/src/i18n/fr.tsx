@@ -13,6 +13,12 @@ export const fr: Messages = {
     somethingWrong: "Une erreur est survenue",
     tba: "À venir",
     dateTba: "Date à venir",
+    duration: (minutes) => {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h ? `${h} h${m ? ` ${String(m).padStart(2, "0")}` : ""}` : `${m} min`;
+    },
+    left: (what) => `encore ${what}`,
   },
   days: {
     today: "Aujourd'hui",
@@ -97,6 +103,8 @@ export const fr: Messages = {
     toWatch: (n) => (n === 1 ? "1 épisode à regarder" : `${n} épisodes à regarder`),
     nextOn: (date) => `Prochain épisode le ${date}`,
     caughtUpUndated: "À jour, prochain épisode pas encore daté",
+    sort: "Trier",
+    sorts: { name: "A–Z", lastWatched: "Dernier vu", nextEpisode: "Prochain épisode" },
     changeStatus: "Changer le statut",
     movedTo: (status) => `Déplacée dans ${status}`,
   },
@@ -110,6 +118,7 @@ export const fr: Messages = {
     ended: "Terminée",
     airing: "En diffusion",
     at: (code) => `à ${code}`,
+    watched: (watched, aired) => `${watched}/${aired} épisodes`,
     startWatching: "Commencer",
     addToWatchlist: "Ajouter à « À voir »",
     season: (n) => `Saison ${n}`,
@@ -204,6 +213,16 @@ export const fr: Messages = {
       toSend: "Séries à envoyer",
       toSendLabel: "Séries à envoyer à Sonarr",
       changed: "Choix modifié ? Collez la nouvelle URL dans Sonarr.",
+    },
+    calendar: {
+      title: "Calendrier",
+      description: "Les épisodes des séries que vous regardez ou mettez de côté, dans votre agenda.",
+      url: "l'URL du calendrier",
+      steps: [
+        (b) => <>Dans votre agenda, {b("abonnez-vous")} à un calendrier par URL (Google Agenda : Autres agendas → À partir de l'URL).</>,
+        () => <>Collez l'URL ci-dessous. Les titres des épisodes n'y sont pas, pas de spoiler.</>,
+      ],
+      sharedUrl: "Remplacer cette URL remplace aussi celle de Sonarr.",
     },
     spotarr: {
       description: "Les séries envoyées depuis Spotarr arrivent dans « À voir ».",

@@ -6,7 +6,7 @@ import {
   type Status,
   type WatchlistIntegration,
 } from "@snug/shared";
-import { Bot, Clapperboard, Download, Tv } from "lucide-react";
+import { Bot, CalendarDays, Clapperboard, Download, Tv } from "lucide-react";
 import { useState } from "react";
 import { CopyField } from "@/components/copy-field";
 import { MultiChips } from "@/components/ui";
@@ -21,6 +21,7 @@ export function IntegrationsSection() {
       <p className="text-sm text-muted">{t.integrations.intro}</p>
       <Jellyfin />
       <Sonarr />
+      <Calendar />
       <Spotarr />
       <Assistant />
     </>
@@ -63,6 +64,20 @@ function Sonarr() {
       />
       <p className="mb-4 text-xs text-muted">{t.integrations.sonarr.changed}</p>
       <CopyField label={t.integrations.sonarr.url} value={url} onRotate={rotate} />
+    </IntegrationCard>
+  );
+}
+
+function Calendar() {
+  const t = useT();
+  const { data, rotate } = useIntegration<Feeds>("/integrations/feeds");
+  const url = data ? location.origin + data.calendarPath : "…";
+
+  return (
+    <IntegrationCard icon={CalendarDays} title={t.integrations.calendar.title} description={t.integrations.calendar.description}>
+      <SetupSteps>{steps(t.integrations.calendar.steps)}</SetupSteps>
+      <CopyField label={t.integrations.calendar.url} value={url} onRotate={rotate} />
+      <p className="mt-2 text-xs text-muted">{t.integrations.calendar.sharedUrl}</p>
     </IntegrationCard>
   );
 }

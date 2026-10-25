@@ -173,3 +173,13 @@ test("home: fresh Episodes first, undated Upcoming hidden on demand", async () =
   ]);
   expect(home.upcoming).toEqual([]);
 });
+
+test("time left: aired Episodes not watched, an unknown runtime counting as the average", async () => {
+  const s = series(1, false, ["2026-10-01", "2026-10-08", "2026-10-15", "2026-10-28"]);
+  s.episodes = s.episodes.map((e, i) => ({ ...e, runtime: [30, 50, null, 60][i] }));
+  const tracking = setup([s]);
+  await tracking.watchEpisode("u", 1, { season: 1, number: 1 });
+
+  // E2 (50) + E3 (unknown: (30 + 50 + 60) / 3); E4 has not aired.
+  expect((await tracking.detail("u", 1)).minutesLeft).toBe(97);
+});
