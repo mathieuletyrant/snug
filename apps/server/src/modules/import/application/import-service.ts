@@ -43,11 +43,11 @@ export class ImportService {
       if (error instanceof CsvImportError) throw new InvalidInputError(error.message);
       throw error;
     }
-    const titles = [...new Set(rows.filter((r) => !r.tmdbId && r.title).map((r) => r.title as string))];
+    const titles = [...new Set(rows.filter((row) => !row.tmdbId && row.title).map((row) => row.title as string))];
     const ids = new Map<string, number | null>();
     await forEachLimit(titles, 6, async (title) => ids.set(title, await this.catalog.resolve({ title })));
     const entries = csvRowsToEntries(rows, (title) => ids.get(title) ?? null, new Date());
-    return this.run(userId, entries, titles.filter((t) => !ids.get(t)));
+    return this.run(userId, entries, titles.filter((title) => !ids.get(title)));
   }
 
   /**
@@ -62,7 +62,7 @@ export class ImportService {
   private async run(userId: string, entries: ImportEntry[], unresolved: string[]): Promise<ImportResult> {
     const ids = await this.tracking.import(userId, entries);
 
-    const watches = entries.reduce((n, e) => n + e.watches.length, 0);
+    const watches = entries.reduce((count, entry) => count + entry.watches.length, 0);
     log.info(
       `Imported ${entries.length} series and ${watches} watches` +
         (unresolved.length ? `; not found on TMDB: ${unresolved.join(", ")}` : "") +

@@ -78,7 +78,7 @@ function Display() {
           small
           value={String(preferences.newForDays)}
           onChange={(days) => update.mutate({ newForDays: Number(days) as (typeof NEW_FOR_DAYS)[number] })}
-          options={NEW_FOR_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t.settings.off : t.settings.days(d) }))}
+          options={NEW_FOR_DAYS.map((count) => ({ value: String(count), label: count === 0 ? t.settings.off : t.settings.days(count) }))}
         />
       </SettingRow>
       <Toggle

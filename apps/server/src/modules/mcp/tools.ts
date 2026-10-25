@@ -94,11 +94,11 @@ export function registerTools(server: McpServer, catalog: CatalogService, import
       const found: Record<string, { tmdbId: number; name: string; year: number | null; overview: string }[]> = {};
       await forEachLimit(titles, 6, async (title) => {
         const results = await catalog.search(title);
-        found[title] = results.slice(0, 3).map((r) => ({
-          tmdbId: r.tmdbId,
-          name: r.name,
-          year: r.year,
-          overview: r.overview.slice(0, 150),
+        found[title] = results.slice(0, 3).map((result) => ({
+          tmdbId: result.tmdbId,
+          name: result.name,
+          year: result.year,
+          overview: result.overview.slice(0, 150),
         }));
       });
       return text(found);
@@ -117,17 +117,17 @@ export function registerTools(server: McpServer, catalog: CatalogService, import
       const entries: ImportEntry[] = [];
       let episodes = 0;
       try {
-        for (const s of series) {
-          const watches = s.watched.flatMap((w) =>
-            parseEpisodes(w.episodes).map((number) => ({
-              season: w.season,
+        for (const entry of series) {
+          const watches = entry.watched.flatMap((group) =>
+            parseEpisodes(group.episodes).map((number) => ({
+              season: group.season,
               number,
-              watchedAt: w.watchedAt ? new Date(w.watchedAt) : new Date(),
+              watchedAt: group.watchedAt ? new Date(group.watchedAt) : new Date(),
             })),
           );
           episodes += watches.length;
-          const ratings = [...(s.rating ? [{ season: WHOLE_SERIES, rating: s.rating }] : []), ...s.seasonRatings];
-          entries.push({ seriesId: s.tmdbId, status: s.status, watches, ratings });
+          const ratings = [...(entry.rating ? [{ season: WHOLE_SERIES, rating: entry.rating }] : []), ...entry.seasonRatings];
+          entries.push({ seriesId: entry.tmdbId, status: entry.status, watches, ratings });
         }
       } catch (error) {
         return { isError: true, content: [{ type: "text" as const, text: (error as Error).message }] };

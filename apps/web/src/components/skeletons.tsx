@@ -11,8 +11,8 @@ function TitleSkeleton() {
 export function PosterGridSkeleton({ count = 16 }: { count?: number }) {
   return (
     <div className={POSTER_GRID}>
-      {times(count).map((i) => (
-        <PosterTileSkeleton key={i} />
+      {times(count).map((index) => (
+        <PosterTileSkeleton key={index} />
       ))}
     </div>
   );
@@ -24,8 +24,8 @@ export function HomeSkeleton() {
       <TitleSkeleton />
       <Skeleton className="mb-3 h-6 w-40" />
       <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-        {times(4).map((i) => (
-          <Skeleton key={i} className="aspect-video w-full" />
+        {times(4).map((index) => (
+          <Skeleton key={index} className="aspect-video w-full" />
         ))}
       </div>
       <Skeleton className="mb-3 h-6 w-32" />
@@ -46,8 +46,8 @@ export function SeriesSkeleton() {
         </div>
         <div className="col-span-2 space-y-4 md:col-span-1 md:col-start-2">
           <div className="flex gap-2">
-            {times(3).map((i) => (
-              <Skeleton key={i} className="h-9 w-24 rounded-full" />
+            {times(3).map((index) => (
+              <Skeleton key={index} className="h-9 w-24 rounded-full" />
             ))}
           </div>
           <Skeleton className="h-4 w-full rounded-full" />
@@ -55,8 +55,8 @@ export function SeriesSkeleton() {
         </div>
       </div>
       <div className="mt-8 space-y-3">
-        {times(3).map((i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-3xl" />
+        {times(3).map((index) => (
+          <Skeleton key={index} className="h-16 w-full rounded-3xl" />
         ))}
       </div>
     </>

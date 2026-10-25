@@ -100,7 +100,7 @@ function Sonarr() {
         small
         value={statuses}
         onChange={setStatuses}
-        options={STATUSES.map((s) => ({ value: s, label: t.status[s] }))}
+        options={STATUSES.map((option) => ({ value: option, label: t.status[option] }))}
         className="-mx-1 mb-2 px-1"
       />
       <p className="mb-4 text-xs text-muted">{t.integrations.sonarr.changed}</p>

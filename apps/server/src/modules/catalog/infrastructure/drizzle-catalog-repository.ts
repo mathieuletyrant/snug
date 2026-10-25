@@ -30,7 +30,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     this.db.transaction((tx) => {
       tx.insert(series).values(row).onConflictDoUpdate({ target: series.tmdbId, set: row }).run();
       tx.delete(episodes).where(eq(episodes.seriesId, row.tmdbId)).run();
-      if (eps.length) tx.insert(episodes).values(eps.map((e) => ({ ...e, seriesId: row.tmdbId }))).run();
+      if (eps.length) tx.insert(episodes).values(eps.map((episode) => ({ ...episode, seriesId: row.tmdbId }))).run();
     });
   }
 
@@ -47,14 +47,14 @@ export class DrizzleCatalogRepository implements CatalogRepository {
         .from(series)
         .where(inArray(series.tmdbId, ids))
         .all()
-        .map((r) => r.id),
+        .map((row) => row.id),
     );
     const old = this.db
       .select({ id: series.tmdbId })
       .from(series)
       .where(and(inArray(series.tmdbId, ids), lt(series.fetchedAt, before)))
       .all()
-      .map((r) => r.id);
+      .map((row) => row.id);
     return [...ids.filter((id) => !known.has(id)), ...old];
   }
 }

@@ -7,7 +7,7 @@ export type PushState = "loading" | "unsupported" | "denied" | "off" | "on";
 
 const base64UrlToBytes = (value: string) => {
   const base64 = (value + "=".repeat((4 - (value.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/");
-  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
 };
 
 /**

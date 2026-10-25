@@ -23,7 +23,7 @@ export function SavingPanel({ seriesId, saving }: { seriesId: number; saving: Sa
           small
           value={String(saving.target)}
           onChange={(target) => save.mutate(Number(target) as SavingTarget)}
-          options={SAVING_TARGETS.map((n) => ({ value: String(n), label: n === 0 ? t.saving.fullSeason : t.saving.episodes(n) }))}
+          options={SAVING_TARGETS.map((count) => ({ value: String(count), label: count === 0 ? t.saving.fullSeason : t.saving.episodes(count) }))}
         />
       </div>
       <ProgressBar value={saving.out} max={saving.needed} />

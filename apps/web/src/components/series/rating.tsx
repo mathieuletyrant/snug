@@ -81,19 +81,19 @@ export function RatingButton({
         >
           <p className="mb-2 px-1 text-xs font-semibold text-muted">{label}</p>
           <div className="grid grid-cols-5 gap-1.5">
-            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: 10 }, (_, index) => index + 1).map((rating) => (
               <button
-                key={n}
+                key={rating}
                 type="button"
-                aria-pressed={shown === n}
-                aria-label={t.series.rateAs(n)}
-                onClick={() => pick(n)}
+                aria-pressed={shown === rating}
+                aria-label={t.series.rateAs(rating)}
+                onClick={() => pick(rating)}
                 className={cx(
                   "h-10 rounded-xl text-sm font-bold transition active:scale-95",
-                  shown === n ? "bg-accent text-accent-ink" : "bg-surface hover:bg-line",
+                  shown === rating ? "bg-accent text-accent-ink" : "bg-surface hover:bg-line",
                 )}
               >
-                {n}
+                {rating}
               </button>
             ))}
           </div>

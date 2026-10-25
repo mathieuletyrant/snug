@@ -14,7 +14,7 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
   const t = useT();
   const [filter, setFilter] = useState<(typeof OUTCOMES)[number]>("all");
   const [all, setAll] = useState(false);
-  const matching = events?.filter((e) => filter === "all" || e.outcome === filter) ?? [];
+  const matching = events?.filter((event) => filter === "all" || event.outcome === filter) ?? [];
   const shown = all ? matching : matching.slice(0, 5);
 
   return (
@@ -26,7 +26,7 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
           small
           value={filter}
           onChange={setFilter}
-          options={OUTCOMES.map((o) => ({ value: o, label: t.integrations.jellyfin.outcomes[o] }))}
+          options={OUTCOMES.map((outcome) => ({ value: outcome, label: t.integrations.jellyfin.outcomes[outcome] }))}
           className="-mx-1 px-1"
         />
       </div>
@@ -34,8 +34,8 @@ export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefi
         <Skeleton className="h-24 w-full" />
       ) : shown.length ? (
         <ul className="max-h-96 space-y-1 overflow-y-auto text-sm">
-          {shown.map((e, i) => (
-            <EventRow key={`${e.receivedAt}-${i}`} event={e} />
+          {shown.map((event, index) => (
+            <EventRow key={`${event.receivedAt}-${index}`} event={event} />
           ))}
           {!all && matching.length > shown.length && (
             <li>

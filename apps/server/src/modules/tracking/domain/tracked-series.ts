@@ -73,8 +73,8 @@ export class TrackedSeries {
     savingTarget: SavingTarget;
     ratings?: Rating[];
   }) {
-    const watches = new Map(p.watches.map((w) => [keyOf(w), w]));
-    const ratings = new Map((p.ratings ?? []).map((r) => [r.season, r.rating]));
+    const watches = new Map(p.watches.map((watch) => [keyOf(watch), watch]));
+    const ratings = new Map((p.ratings ?? []).map((rating) => [rating.season, rating.rating]));
     return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings);
   }
 
@@ -108,7 +108,7 @@ export class TrackedSeries {
 
   /** Imported Ratings fill in what isn't rated yet: a Rating given in Snug wins. */
   mergeRatings(ratings: readonly Rating[]) {
-    for (const r of ratings) if (!this._ratings.has(r.season)) this.rate(r);
+    for (const rating of ratings) if (!this._ratings.has(rating.season)) this.rate(rating);
   }
 
   hasWatched(ep: EpisodeRef) {
@@ -123,7 +123,7 @@ export class TrackedSeries {
 
   /** Imported Watches merge in without moving the Status: an imported Paused Series stays Paused. */
   merge(watches: readonly Watch[]) {
-    for (const w of watches) this.add(w, w.watchedAt);
+    for (const watch of watches) this.add(watch, watch.watchedAt);
   }
 
   private add(ep: EpisodeRef, at: Date) {
@@ -149,13 +149,13 @@ export class TrackedSeries {
   /** Furthest Episode watched, regardless of rewatches. */
   get progress(): EpisodeRef | null {
     let furthest: EpisodeRef | null = null;
-    for (const w of this._watches.values()) if (!furthest || compareEpisodes(w, furthest) > 0) furthest = w;
+    for (const watch of this._watches.values()) if (!furthest || compareEpisodes(watch, furthest) > 0) furthest = watch;
     return furthest && { season: furthest.season, number: furthest.number };
   }
 
   get lastWatchedAt(): Date | null {
     let last: Date | null = null;
-    for (const w of this._watches.values()) if (!last || w.watchedAt > last) last = w.watchedAt;
+    for (const watch of this._watches.values()) if (!last || watch.watchedAt > last) last = watch.watchedAt;
     return last;
   }
 
@@ -172,11 +172,11 @@ export class TrackedSeries {
     const sorted = [...timeline.episodes].sort(compareEpisodes);
     const next = this.nextIn(sorted);
     // The Episodes from the Next Episode on, not watched yet.
-    const ahead = next ? sorted.filter((e) => compareEpisodes(e, next) >= 0 && !this.hasWatched(e)) : [];
+    const ahead = next ? sorted.filter((episode) => compareEpisodes(episode, next) >= 0 && !this.hasWatched(episode)) : [];
     const airing: Airing = !next?.airDate
       ? { kind: "tba" }
       : hasAired(next, today)
-        ? { kind: "ready", left: ahead.filter((e) => hasAired(e, today)).length }
+        ? { kind: "ready", left: ahead.filter((episode) => hasAired(episode, today)).length }
         : { kind: "dated", date: next.airDate };
     const saving = this._status === "saving" ? this.saving(next, ahead, today) : null;
     const ready =
@@ -186,22 +186,22 @@ export class TrackedSeries {
 
   private nextIn<E extends EpisodeRef>(sorted: readonly E[]): E | null {
     const progress = this.progress;
-    return sorted.find((e) => (!progress || compareEpisodes(e, progress) > 0) && !this.hasWatched(e)) ?? null;
+    return sorted.find((episode) => (!progress || compareEpisodes(episode, progress) > 0) && !this.hasWatched(episode)) ?? null;
   }
 
   /** A full season counts the Next Episode's season as TMDB lists it; a number counts across seasons. */
   private saving(next: Dated | null, ahead: readonly Dated[], today: string): Saving {
     if (this._savingTarget === 0) {
-      const season = ahead.filter((e) => e.season === next?.season);
+      const season = ahead.filter((episode) => episode.season === next?.season);
       return {
         target: 0,
-        out: season.filter((e) => hasAired(e, today)).length,
+        out: season.filter((episode) => hasAired(episode, today)).length,
         needed: season.length,
-        reached: season.length > 0 && season.every((e) => hasAired(e, today)),
+        reached: season.length > 0 && season.every((episode) => hasAired(episode, today)),
         completeOn: season.at(-1)?.airDate ?? null,
       };
     }
-    const out = ahead.filter((e) => hasAired(e, today)).length;
+    const out = ahead.filter((episode) => hasAired(episode, today)).length;
     return {
       target: this._savingTarget,
       out,
@@ -230,13 +230,13 @@ export class TrackedSeries {
   /** The Statuses `choose` keeps as picked: no Completed while Episodes are left, only Completed once done. */
   private choosable(timeline: Timeline, today: string): Status[] {
     const done = this.done(timeline, today);
-    return STATUSES.filter((s) => done === null || settle(s, done) === s);
+    return STATUSES.filter((status) => done === null || settle(status, done) === status);
   }
 
   /** Whether the Series has ended with nothing aired left after the Progress; null before the Catalog knows its Episodes. */
   private done(timeline: Timeline, today: string) {
     if (!timeline.episodes.length) return null;
-    return timeline.ended && !this.nextEpisode(timeline.episodes.filter((e) => hasAired(e, today)));
+    return timeline.ended && !this.nextEpisode(timeline.episodes.filter((episode) => hasAired(episode, today)));
   }
 }
 

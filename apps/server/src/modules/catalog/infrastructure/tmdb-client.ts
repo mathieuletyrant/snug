@@ -71,15 +71,15 @@ const GENERIC_EPISODE_NAME = /^(episode|épisode|episodio|episódio|folge|afleve
 
 /** Fills what TMDB has not translated (empty overview, placeholder episode names) from English. */
 export function withEnglishFallback(localized: Series, english: Series): Series {
-  const englishNames = new Map(english.episodes.map((e) => [`${e.season}x${e.number}`, e.name]));
+  const englishNames = new Map(english.episodes.map((episode) => [`${episode.season}x${episode.number}`, episode.name]));
   return {
     ...localized,
     overview: localized.overview || english.overview,
     posterPath: localized.posterPath ?? english.posterPath,
     backdropPath: localized.backdropPath ?? english.backdropPath,
-    episodes: localized.episodes.map((e) => {
-      const translated = e.name.trim() && !GENERIC_EPISODE_NAME.test(e.name.trim());
-      return translated ? e : { ...e, name: englishNames.get(`${e.season}x${e.number}`) ?? e.name };
+    episodes: localized.episodes.map((episode) => {
+      const translated = episode.name.trim() && !GENERIC_EPISODE_NAME.test(episode.name.trim());
+      return translated ? episode : { ...episode, name: englishNames.get(`${episode.season}x${episode.number}`) ?? episode.name };
     }),
   };
 }
@@ -105,17 +105,17 @@ export class TmdbClient implements SeriesSource {
 
   private async fetchIn(tmdbId: number, language: string): Promise<Series> {
     const show = await this.get<TmdbShow>(`/tv/${tmdbId}`, { language, append_to_response: "external_ids" });
-    const seasons = show.seasons.map((s) => s.season_number).filter((n) => n > 0);
+    const seasons = show.seasons.map((season) => season.season_number).filter((number) => number > 0);
     const episodes: Episode[] = [];
     for (let i = 0; i < seasons.length; i += SEASONS_PER_CALL) {
       const chunk = seasons.slice(i, i + SEASONS_PER_CALL);
       const data = await this.get<TmdbShow>(`/tv/${tmdbId}`, {
         language,
-        append_to_response: chunk.map((n) => `season/${n}`).join(","),
+        append_to_response: chunk.map((seasonNumber) => `season/${seasonNumber}`).join(","),
       });
-      for (const n of chunk) {
-        for (const e of data[`season/${n}`]?.episodes ?? []) {
-          episodes.push({ season: e.season_number, number: e.episode_number, name: e.name, airDate: e.air_date || null, runtime: e.runtime || null });
+      for (const seasonNumber of chunk) {
+        for (const episode of data[`season/${seasonNumber}`]?.episodes ?? []) {
+          episodes.push({ season: episode.season_number, number: episode.episode_number, name: episode.name, airDate: episode.air_date || null, runtime: episode.runtime || null });
         }
       }
     }
@@ -139,12 +139,12 @@ export class TmdbClient implements SeriesSource {
 
   async search(query: string): Promise<SeriesSummary[]> {
     const data = await this.get<{ results: TmdbSearchResult[] }>("/search/tv", { query });
-    return data.results.map((r) => ({
-      tmdbId: r.id,
-      name: r.name,
-      year: yearOf(r.first_air_date),
-      overview: r.overview,
-      posterPath: r.poster_path,
+    return data.results.map((result) => ({
+      tmdbId: result.id,
+      name: result.name,
+      year: yearOf(result.first_air_date),
+      overview: result.overview,
+      posterPath: result.poster_path,
     }));
   }
 

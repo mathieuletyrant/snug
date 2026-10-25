@@ -60,8 +60,8 @@ async function setup() {
 
 test("Integrations lists every tool and prompt", async () => {
   const { client } = await setup();
-  const prompts = (await client.listPrompts()).prompts.map((p) => ["prompt", p.name]);
-  const tools = (await client.listTools()).tools.map((t) => ["tool", t.name]);
+  const prompts = (await client.listPrompts()).prompts.map((prompt) => ["prompt", prompt.name]);
+  const tools = (await client.listTools()).tools.map((tool) => ["tool", tool.name]);
   expect([...prompts, ...tools]).toEqual(MCP_FEATURES.map(([kind, name]) => [kind, name]));
 });
 
@@ -86,7 +86,7 @@ test("an unknown token is refused", async () => {
 test("find_series: the 3 best TMDB results of each title", async () => {
   const { call } = await setup();
   const found = await call("find_series", { titles: ["The Office 2005"] });
-  expect(found["The Office 2005"].map((r: { tmdbId: number }) => r.tmdbId)).toEqual([2316, 2996, 1]);
+  expect(found["The Office 2005"].map((result: { tmdbId: number }) => result.tmdbId)).toEqual([2316, 2996, 1]);
 });
 
 test("import: 200 series and 6 000 episodes in one call, sent again without duplicates", async () => {

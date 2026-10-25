@@ -11,7 +11,7 @@ const log = moduleLogger("feeds");
 const statuses = z
   .string()
   .default("watchlist")
-  .transform((s) => s.split(",").map((x) => x.trim()))
+  .transform((s) => s.split(",").map((part) => part.trim()))
   .pipe(z.array(z.enum(STATUSES, `Use statuses among ${STATUSES.join(", ")}`)).min(1));
 
 /** Public, authenticated by the read-only feed token in the URL (Sonarr and calendar apps can't sign in). */

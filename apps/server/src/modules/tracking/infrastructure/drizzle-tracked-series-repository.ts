@@ -37,7 +37,7 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
       .from(trackedSeries)
       .where(inArray(trackedSeries.status, [...statuses]))
       .all()
-      .map((r) => r.id);
+      .map((row) => row.id);
   }
 
   async save(t: TrackedSeries) {
@@ -52,14 +52,14 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
         })
         .run();
       tx.delete(watches).where(key).run();
-      const rows = t.watches.map((w) => ({ ...w, userId: t.userId, seriesId: t.seriesId }));
+      const rows = t.watches.map((watch) => ({ ...watch, userId: t.userId, seriesId: t.seriesId }));
       // ponytail: rewrites all Watches of the Series on save; diff them if Series with thousands of Episodes get slow.
       for (let i = 0; i < rows.length; i += 500) tx.insert(watches).values(rows.slice(i, i + 500)).run();
       tx.delete(ratings)
         .where(and(eq(ratings.userId, t.userId), eq(ratings.seriesId, t.seriesId), eq(ratings.episode, 0)))
         .run();
       if (t.ratings.length) {
-        tx.insert(ratings).values(t.ratings.map((r) => ({ ...r, userId: t.userId, seriesId: t.seriesId }))).run();
+        tx.insert(ratings).values(t.ratings.map((rating) => ({ ...rating, userId: t.userId, seriesId: t.seriesId }))).run();
       }
     });
   }
@@ -79,8 +79,8 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
     if (!rows.length) return [];
     const byKey = new Map<string, Watch[]>();
     const ratingsByKey = new Map<string, Rating[]>();
-    for (const userId of new Set(rows.map((r) => r.userId))) {
-      const ids = rows.filter((r) => r.userId === userId).map((r) => r.seriesId);
+    for (const userId of new Set(rows.map((row) => row.userId))) {
+      const ids = rows.filter((row) => row.userId === userId).map((row) => row.seriesId);
       const ws = this.db
         .select()
         .from(watches)
@@ -103,9 +103,9 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
         ratingsByKey.set(k, [...(ratingsByKey.get(k) ?? []), r]);
       }
     }
-    return rows.map((r) => {
-      const k = `${r.userId}:${r.seriesId}`;
-      return TrackedSeries.restore({ ...r, watches: byKey.get(k) ?? [], ratings: ratingsByKey.get(k) ?? [] });
+    return rows.map((row) => {
+      const key = `${row.userId}:${row.seriesId}`;
+      return TrackedSeries.restore({ ...row, watches: byKey.get(key) ?? [], ratings: ratingsByKey.get(key) ?? [] });
     });
   }
 }

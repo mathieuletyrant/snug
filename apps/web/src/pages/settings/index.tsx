@@ -14,8 +14,8 @@ type Section = (typeof SECTIONS)[number];
 export function SettingsPage({ me }: { me: Me }) {
   const t = useT();
   const [params, setParams] = useSearchParams();
-  const sections = SECTIONS.filter((s) => s !== "admin" || me.isAdmin);
-  const section: Section = sections.find((s) => s === params.get("section")) ?? "general";
+  const sections = SECTIONS.filter((name) => name !== "admin" || me.isAdmin);
+  const section: Section = sections.find((name) => name === params.get("section")) ?? "general";
 
   return (
     <>
@@ -24,7 +24,7 @@ export function SettingsPage({ me }: { me: Me }) {
         label={t.settings.sectionLabel}
         value={section}
         onChange={(value) => setParams({ section: value }, { replace: true })}
-        options={sections.map((s) => ({ value: s, label: t.settings.sections[s] }))}
+        options={sections.map((name) => ({ value: name, label: t.settings.sections[name] }))}
         className="-mx-4 mb-5 gap-2 px-4 pb-1 md:mx-0 md:px-0"
       />
       <div className="space-y-5">

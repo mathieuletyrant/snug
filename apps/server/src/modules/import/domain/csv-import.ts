@@ -57,7 +57,7 @@ export function readCsv(text: string): string[][] {
     } else field += ch;
   }
   if (field || row.length) rows.push([...row, field]);
-  return rows.filter((r) => r.some((cell) => cell.trim()));
+  return rows.filter((row) => row.some((cell) => cell.trim()));
 }
 
 const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status", "rating", "season_rating"] as const;
@@ -65,7 +65,7 @@ const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status"
 export function parseCsvImport(text: string): CsvRow[] {
   const [header, ...lines] = readCsv(text);
   if (!header) throw new CsvImportError([t().csv.empty]);
-  const index = new Map(header.map((h, i) => [h.trim().toLowerCase(), i]));
+  const index = new Map(header.map((name, position) => [name.trim().toLowerCase(), position]));
   if (!index.has("title") && !index.has("tmdb_id")) {
     throw new CsvImportError([t().csv.header(COLUMNS.join(","))]);
   }
@@ -139,7 +139,7 @@ export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => 
       if (!entry.explicit) entry.status = "watching";
     }
     if (row.status) Object.assign(entry, { status: row.status, explicit: true });
-    const ratings = new Map((entry.ratings ?? []).map((r) => [r.season, r.rating]));
+    const ratings = new Map((entry.ratings ?? []).map((rating) => [rating.season, rating.rating]));
     if (row.rating) ratings.set(WHOLE_SERIES, row.rating);
     if (row.seasonRating && row.season) ratings.set(row.season, row.seasonRating);
     if (ratings.size) entry.ratings = [...ratings].map(([season, rating]) => ({ season, rating }));

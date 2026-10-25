@@ -41,9 +41,9 @@ function People() {
     <Card>
       <CardHeader title={t.admin.people}>{t.admin.peopleHelp}</CardHeader>
       <ul className="mb-5 space-y-1 text-sm">
-        {data?.map((u) => (
-          <li key={u.id}>
-            <b>{u.name}</b> <span className="text-muted">{u.email}</span>
+        {data?.map((user) => (
+          <li key={user.id}>
+            <b>{user.name}</b> <span className="text-muted">{user.email}</span>
           </li>
         ))}
       </ul>

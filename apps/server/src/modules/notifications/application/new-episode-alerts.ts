@@ -41,7 +41,7 @@ export class NewEpisodeAlerts {
     let sent = 0;
     for (const { userId, series, episodes } of await this.source.newEpisodesOn(days)) {
       if (!this.preferences(userId).notifyNewEpisodes) continue;
-      const fresh = episodes.filter((e) => !this.alreadySent(userId, series.tmdbId, e));
+      const fresh = episodes.filter((episode) => !this.alreadySent(userId, series.tmdbId, episode));
       if (!fresh.length) continue;
       await this.notifier.notify(userId, {
         title: `📺 ${series.name}`,
@@ -49,10 +49,10 @@ export class NewEpisodeAlerts {
         url: `/series/${series.tmdbId}`,
         tag: `new-${series.tmdbId}`,
       });
-      for (const e of fresh) {
+      for (const episode of fresh) {
         this.db
           .insert(episodeAlerts)
-          .values({ userId, seriesId: series.tmdbId, season: e.season, number: e.number, sentAt: now })
+          .values({ userId, seriesId: series.tmdbId, season: episode.season, number: episode.number, sentAt: now })
           .onConflictDoNothing()
           .run();
       }

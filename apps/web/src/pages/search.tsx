@@ -35,9 +35,9 @@ export function SearchPage() {
         <PosterGridSkeleton count={8} />
       ) : data?.length ? (
         <div className={POSTER_GRID}>
-          {data.map((s) => (
-            <PosterTile key={s.tmdbId} href={`/series/${s.tmdbId}`} posterPath={s.posterPath} name={s.name}>
-              <TileLine>{s.year ?? "—"}</TileLine>
+          {data.map((result) => (
+            <PosterTile key={result.tmdbId} href={`/series/${result.tmdbId}`} posterPath={result.posterPath} name={result.name}>
+              <TileLine>{result.year ?? "—"}</TileLine>
             </PosterTile>
           ))}
         </div>

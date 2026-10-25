@@ -21,7 +21,7 @@ test("untranslated overview and placeholder episode names fall back to English",
     series("A missing child…", ["Secrets", "Lies", "Past and Present"]),
   );
   expect(merged.overview).toBe("A missing child…");
-  expect(merged.episodes.map((e) => e.name)).toEqual(["Secrets", "Lies", "Past and Present"]);
+  expect(merged.episodes.map((episode) => episode.name)).toEqual(["Secrets", "Lies", "Past and Present"]);
   expect(merged.backdropPath).toBe("/en.jpg");
 });
 

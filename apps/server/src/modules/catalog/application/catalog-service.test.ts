@@ -21,7 +21,7 @@ function setup(source: Partial<SeriesSource> = {}) {
   const repo: CatalogRepository = {
     get: async (id) => store.get(id) ?? null,
     getMany: async (ids) => new Map(ids.flatMap((id) => (store.has(id) ? [[id, store.get(id)!] as const] : []))),
-    save: async (s) => void store.set(s.tmdbId, s),
+    save: async (entry) => void store.set(entry.tmdbId, entry),
     setTvdbId: async (id, tvdbId) => void store.set(id, { ...store.get(id)!, tvdbId }),
     stale: async (ids, before) => ids.filter((id) => !store.has(id) || store.get(id)!.fetchedAt < before),
   };

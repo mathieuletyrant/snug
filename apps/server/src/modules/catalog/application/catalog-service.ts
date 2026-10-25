@@ -52,8 +52,8 @@ export class CatalogService {
    */
   async tvdbIds(tmdbIds: readonly number[]): Promise<Map<number, number | null>> {
     const cached = await this.repo.getMany(tmdbIds);
-    const result = new Map([...cached.values()].map((s) => [s.tmdbId, s.tvdbId]));
-    const missing = [...cached.values()].filter((s) => s.tvdbId === null).map((s) => s.tmdbId);
+    const result = new Map([...cached.values()].map((entry) => [entry.tmdbId, entry.tvdbId]));
+    const missing = [...cached.values()].filter((entry) => entry.tvdbId === null).map((entry) => entry.tmdbId);
     await forEachLimit(missing, 4, async (id) => {
       const tvdbId = await this.source.tvdbId(id);
       result.set(id, tvdbId);
@@ -79,8 +79,8 @@ export class CatalogService {
     }
     if (!hint.title) return null;
     const results = await this.source.search(hint.title);
-    const exact = results.filter((r) => r.name.toLowerCase() === hint.title?.toLowerCase());
+    const exact = results.filter((result) => result.name.toLowerCase() === hint.title?.toLowerCase());
     const pool = exact.length ? exact : results;
-    return (pool.find((r) => hint.year && r.year === hint.year) ?? pool[0])?.tmdbId ?? null;
+    return (pool.find((result) => hint.year && result.year === hint.year) ?? pool[0])?.tmdbId ?? null;
   }
 }

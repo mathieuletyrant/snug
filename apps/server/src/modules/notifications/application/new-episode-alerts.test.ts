@@ -18,7 +18,7 @@ function setup(at: string, episodes: Episode[], notifyNewEpisodes = true) {
     {
       newEpisodesOn: async (days) => {
         asked.push([...days]);
-        const airing = episodes.filter((e) => days.includes(e.airDate!));
+        const airing = episodes.filter((episode) => days.includes(episode.airDate!));
         return airing.length ? [{ userId: "u", series: { tmdbId: 7, name: "Tracker" }, episodes: airing }] : [];
       },
     },
