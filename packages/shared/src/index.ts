@@ -38,7 +38,9 @@ export interface SeriesCard {
   progress: EpisodeRef | null;
   next: Episode | null;
   airing: Airing;
-  /** New mode (see `Preferences.newForDays`): the Next Episode came out lately, while you were waiting for it. */
+  /** Something to watch now: Watching with the Next Episode aired, or Saving up with enough saved. */
+  ready: boolean;
+  /** New mode (see `Preferences.newForDays`): Ready, and the Next Episode came out lately, while you were waiting for it. */
   fresh: boolean;
   watchedCount: number;
   airedCount: number;
@@ -114,6 +116,8 @@ export interface SetupState {
   hasTmdbKey: boolean;
   /** Language of series details (descriptions, episode names, posters). */
   language: string;
+  /** The instance's time zone (`TZ`): its days decide what has aired, so the app counts days in it too. */
+  timeZone: string;
 }
 
 export const DEFAULT_LANGUAGE = "en-US";

@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { DEFAULT_PREFERENCES, type Preferences } from "@snug/shared";
+import { DEFAULT_PREFERENCES, type Preferences, type SetupState } from "@snug/shared";
 import { api, queryClient } from "@/api";
 import { homeQuery, libraryQuery } from "@/queries";
+import { dayIn } from "./airing";
 
 const KEY = ["preferences"];
 
@@ -27,4 +28,10 @@ export function useUpdatePreferences() {
       void queryClient.invalidateQueries({ queryKey: libraryQuery.queryKey });
     },
   });
+}
+
+/** Today in the instance's time zone (see `dayIn`); the browser's until `/setup` has answered. */
+export function useToday() {
+  const { data } = useQuery({ queryKey: ["setup"], queryFn: () => api<SetupState>("/setup") });
+  return dayIn(data?.timeZone);
 }

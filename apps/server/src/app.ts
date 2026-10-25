@@ -23,6 +23,7 @@ import { notificationRoutes } from "@/modules/notifications/http/routes";
 import { trackingRoutes } from "@/modules/tracking/http/routes";
 import { watchlistRoutes, watchlistWebhook } from "@/modules/watchlist/http/routes";
 import { type AuthEnv, onError } from "@/shared/http";
+import { timeZone } from "@/shared/day";
 import { requestLog } from "@/shared/request-log";
 
 const api = new Hono<AuthEnv>()
@@ -38,6 +39,7 @@ const api = new Hono<AuthEnv>()
       hasUsers: identity.hasUsers(),
       hasTmdbKey: !!catalogSettings.tmdbKey(),
       language: catalogSettings.language(),
+      timeZone: timeZone(),
     }),
   )
   // Signed in

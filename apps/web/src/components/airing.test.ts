@@ -1,15 +1,22 @@
 import { expect, test } from "bun:test";
 import { en } from "@/i18n/en";
 import { fr } from "@/i18n/fr";
-import { relativeDay, shortDay } from "./airing";
+import { dayIn, relativeDay, shortDay } from "./airing";
 
-const now = new Date(2026, 9, 22, 21, 30); // Thu 22 Oct 2026, evening
+const now = "2026-10-22"; // a Thursday
 
 test("badge dates stay short, in the app's language", () => {
   expect(shortDay(en, "2026-10-22", now)).toBe("Today");
   expect(shortDay(fr, "2026-10-23", now)).toBe("Demain");
   expect(shortDay(en, "2026-10-26", now)).toBe("Mon");
   expect(shortDay(fr, "2026-11-30", now)).toBe("30 nov.");
+});
+
+test("today is the instance's day, wherever the browser is", () => {
+  const lateInParis = new Date("2026-10-22T23:30:00+02:00");
+  expect(dayIn("Europe/Paris", lateInParis)).toBe("2026-10-22");
+  expect(dayIn("Asia/Tokyo", lateInParis)).toBe("2026-10-23");
+  expect(relativeDay(en, "2026-10-23", dayIn("Europe/Paris", lateInParis))).toBe("Tomorrow");
 });
 
 test("relative days, and lowered to follow a word", () => {

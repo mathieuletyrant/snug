@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { TrackedSeries } from "./tracked-series";
+import type { SavingTarget } from "@snug/shared";
+import { type Status, TrackedSeries } from "./tracked-series";
 
 const now = new Date("2026-10-21T20:00:00Z");
 const today = "2026-10-21";
@@ -62,10 +63,10 @@ describe("TrackedSeries", () => {
   test("choosable: no Completed while Episodes are left, only Completed once done", () => {
     const t = TrackedSeries.start("u", 1, "watching", now);
     t.watch(ep(1, 1), now);
-    expect(t.choosable({ ended: true, episodes }, today)).toEqual(["watchlist", "watching", "saving", "paused", "dropped"]);
+    expect(t.onDay({ ended: true, episodes }, today).choosable).toEqual(["watchlist", "watching", "saving", "paused", "dropped"]);
     t.watch(ep(2, 2), now);
-    expect(t.choosable({ ended: true, episodes }, today)).toEqual(["watchlist", "paused", "completed", "dropped"]);
-    expect(t.choosable({ ended: true, episodes: [] }, today)).toHaveLength(6); // Catalog not fetched yet
+    expect(t.onDay({ ended: true, episodes }, today).choosable).toEqual(["watchlist", "paused", "completed", "dropped"]);
+    expect(t.onDay({ ended: true, episodes: [] }, today).choosable).toHaveLength(6); // Catalog not fetched yet
   });
 
   test("Saving up on an ended Series with nothing left becomes Completed", () => {
@@ -94,18 +95,19 @@ test("airing: Ready with the Episodes out after the Progress, dated, or TBA", ()
   t.watch(ep(1, 1), now);
   t.watch(ep(2, 1), now); // S01E02 skipped: a gap before the Progress doesn't count
   const list = [ep(1, 1), ep(1, 2), ep(2, 1), ep(2, 2, "2026-10-14"), ep(2, 3, "2026-10-21"), ep(2, 4, "2026-10-28")];
-  expect(t.airing(list, today)).toEqual({ kind: "ready", left: 2 });
+  const airing = (episodes: typeof list) => t.onDay({ ended: false, episodes }, today).airing;
+  expect(airing(list)).toEqual({ kind: "ready", left: 2 });
   t.watch(ep(2, 3), now);
-  expect(t.airing(list, today)).toEqual({ kind: "dated", date: "2026-10-28" });
-  expect(t.airing([...list.slice(0, 5), ep(2, 4, null)], today)).toEqual({ kind: "tba" });
-  expect(t.airing(list.slice(0, 5), today)).toEqual({ kind: "tba" }); // nothing after the Progress
+  expect(airing(list)).toEqual({ kind: "dated", date: "2026-10-28" });
+  expect(airing([...list.slice(0, 5), ep(2, 4, null)])).toEqual({ kind: "tba" });
+  expect(airing(list.slice(0, 5))).toEqual({ kind: "tba" }); // nothing after the Progress
 });
 
 test("an Episode is new when it aired lately, after the last Watch", () => {
   const isNew = (airDate: string | null, lastWatch: string | null, days = 7) => {
     const t = TrackedSeries.start("u", 1, "watching", now);
     if (lastWatch) t.watch(ep(1, 1), new Date(`${lastWatch}T21:00:00Z`));
-    return t.isNew([ep(1, 1), ep(1, 2, airDate)], today, days);
+    return t.onDay({ ended: false, episodes: [ep(1, 1), ep(1, 2, airDate)] }, today, days).fresh;
   };
   expect(isNew("2026-10-20", "2026-10-14")).toBe(true);
   expect(isNew("2026-10-20", "2026-10-21")).toBe(false); // binging
@@ -121,15 +123,39 @@ test("Saving up a full season: reached once every Episode of the next season has
   const t = TrackedSeries.start("u", 1, "watching", now);
   t.watch(ep(1, 1), now);
   t.choose("saving", { ended: false, episodes: list }, today, 0);
-  expect(t.saving(list, today)).toEqual({ target: 0, out: 2, needed: 3, reached: false, completeOn: "2026-10-28" });
-  expect(t.saving(list, "2026-10-28").reached).toBe(true);
+  const saving = (day: string) => t.onDay({ ended: false, episodes: list }, day).saving;
+  expect(saving(today)).toEqual({ target: 0, out: 2, needed: 3, reached: false, completeOn: "2026-10-28" });
+  expect(saving("2026-10-28")?.reached).toBe(true);
 });
 
 test("Saving up a number of Episodes counts across seasons", () => {
   const list = [ep(1, 1), ep(1, 2), ep(2, 1, "2026-10-07"), ep(2, 2, "2026-11-04")];
   const t = TrackedSeries.start("u", 1, "saving", now);
   t.choose("saving", { ended: false, episodes: list }, today, 3);
-  expect(t.saving(list, today)).toEqual({ target: 3, out: 3, needed: 3, reached: true, completeOn: "2026-10-07" });
+  expect(t.onDay({ ended: false, episodes: list }, today).saving).toEqual({
+    target: 3,
+    out: 3,
+    needed: 3,
+    reached: true,
+    completeOn: "2026-10-07",
+  });
+});
+
+test("Ready: Watching with the Next Episode aired, Saving up with enough saved, never another Status", () => {
+  // S01E01 watched; S01E02 to S01E04 aired, S01E05 not yet.
+  const list = [ep(1, 1), ep(1, 2), ep(1, 3), ep(1, 4), ep(1, 5, "2026-10-28")];
+  const ready = (status: Status, savingTarget?: SavingTarget) => {
+    const t = TrackedSeries.start("u", 1, "watching", now);
+    t.watch(ep(1, 1), now);
+    t.choose(status, { ended: false, episodes: list }, today, savingTarget);
+    const s = t.onDay({ ended: false, episodes: list }, today);
+    return [s.airing.kind, s.ready];
+  };
+  expect(ready("watching")).toEqual(["ready", true]);
+  expect(ready("saving", 0)).toEqual(["ready", false]); // the Next Episode is out, but not the whole season
+  expect(ready("saving", 3)).toEqual(["ready", true]);
+  expect(ready("paused")).toEqual(["ready", false]);
+  expect(ready("watchlist")).toEqual(["ready", false]);
 });
 
 test("ratings: the whole Series or a season, out of 10, cleared with null", () => {

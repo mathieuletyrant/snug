@@ -9,3 +9,6 @@ export const today = (now: Date = new Date()) => now.toLocaleDateString("en-CA")
 /** A YYYY-MM-DD day moved by a number of days. */
 export const addDays = (day: string, days: number) =>
   new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+
+/** The instance's time zone (`TZ`), e.g. "Europe/Paris", for the app to count days the same way. */
+export const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
