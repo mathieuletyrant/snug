@@ -1,6 +1,6 @@
 /** Catalog: shared, read-only metadata about Series, sourced from TMDB. */
 
-import type { Episode, SeriesSummary } from "@snug/shared";
+import type { Episode, EpisodeRef, Numbered, SeriesSummary } from "@snug/shared";
 
 export type { Episode, SeriesSummary };
 
@@ -18,6 +18,29 @@ export interface Series {
   /** Regular seasons only; specials (season 0) are not tracked. */
   episodes: Episode[];
   fetchedAt: Date;
+}
+
+/**
+ * Gives Episodes their Absolute number (see GLOSSARY). TMDB numbers some Series across seasons already (One
+ * Piece's season 23 starts at 1156) and others from 1 in every season: a season whose first number is past the
+ * Episodes before it keeps its numbers, any other one counts on from them. `all` is every Episode of the Series.
+ */
+export function numberAbsolutely(all: readonly EpisodeRef[]) {
+  const seasons = new Map<number, { first: number; count: number }>();
+  for (const episode of all) {
+    const season = seasons.get(episode.season);
+    if (season) {
+      season.first = Math.min(season.first, episode.number);
+      season.count++;
+    } else seasons.set(episode.season, { first: episode.number, count: 1 });
+  }
+  const offsets = new Map<number, number>();
+  let before = 0;
+  for (const [number, season] of [...seasons].sort(([a], [b]) => a - b)) {
+    offsets.set(number, season.first > before ? 0 : before);
+    before += season.count;
+  }
+  return <E extends EpisodeRef>(episode: E): Numbered<E> => ({ ...episode, absolute: episode.number + (offsets.get(episode.season) ?? 0) });
 }
 
 /** Hints a third party (e.g. a media server) gives about which Series an Episode belongs to. */

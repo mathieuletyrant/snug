@@ -167,7 +167,7 @@ export function registerTools(
     "library",
     {
       description:
-        "The user's series: status, progress (the furthest episode watched), next episode, rating, and lastWatchedAt (the day of the most recent watch, of any episode).",
+        "The user's series: status, progress (the furthest episode watched), next episode, rating, and lastWatchedAt (the day of the most recent watch, of any episode). Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
@@ -178,8 +178,9 @@ export function registerTools(
           name: card.name,
           year: card.year,
           status: card.status,
+          absoluteNumbering: card.absoluteNumbering,
           progress: card.progress,
-          next: card.next && { season: card.next.season, number: card.next.number, airDate: card.next.airDate },
+          next: card.next && { season: card.next.season, number: card.next.number, absolute: card.next.absolute, airDate: card.next.airDate },
           rating: card.rating,
           watched: card.watchedCount,
           aired: card.airedCount,
@@ -192,7 +193,7 @@ export function registerTools(
     "series",
     {
       description:
-        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere.",
+        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere. Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
       inputSchema: { tmdbId },
       annotations: { readOnlyHint: true },
     },
@@ -209,14 +210,16 @@ export function registerTools(
           ended: detail.ended,
           tracked: detail.tracked,
           status: detail.tracked ? detail.status : null,
+          absoluteNumbering: detail.absoluteNumbering,
           progress: detail.progress,
-          next: detail.next && { season: detail.next.season, number: detail.next.number, airDate: detail.next.airDate },
+          next: detail.next && { season: detail.next.season, number: detail.next.number, absolute: detail.next.absolute, airDate: detail.next.airDate },
           rating: detail.rating,
           seasons: detail.seasons.map((season) => ({
             number: season.number,
             rating: season.rating,
             episodes: season.episodes.map((episode) => ({
               number: episode.number,
+              absolute: episode.absolute,
               name: isTitleHidden(preferences, { watched: episode.watched, next: isNext(episode) }) ? null : episode.name,
               airDate: episode.airDate,
               watchedAt: dayOf(episode.watchedAt),
@@ -230,19 +233,21 @@ export function registerTools(
     "calendar",
     {
       description:
-        "The episodes airing from today to the next `days` days in the series the user watches or saves up, by air date, with the day each one was watched (watchedAt, null when not watched). An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere.",
+        "The episodes airing from today to the next `days` days in the series the user watches or saves up, by air date, with the day each one was watched (watchedAt, null when not watched). An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere. Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
       inputSchema: { days: z.int().min(0).max(90).default(7).describe("How many days ahead; 0 for today only.") },
       annotations: { readOnlyHint: true },
     },
     async ({ days }) => {
       const from = today();
       return text(
-        (await tracking.airing(userId, from, addDays(from, days))).map(({ series, episode, watchedAt, next }) => ({
+        (await tracking.airing(userId, from, addDays(from, days))).map(({ series, episode, absoluteNumbering, watchedAt, next }) => ({
           airDate: episode.airDate,
           tmdbId: series.tmdbId,
           series: series.name,
           season: episode.season,
           number: episode.number,
+          absolute: episode.absolute,
+          absoluteNumbering,
           name: isTitleHidden(preferences, { watched: !!watchedAt, next }) ? null : episode.name,
           watchedAt: dayOf(watchedAt?.toISOString() ?? null),
         })),

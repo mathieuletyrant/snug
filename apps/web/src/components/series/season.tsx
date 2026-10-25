@@ -95,6 +95,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
               <EpisodeRow
                 key={episode.number}
                 episode={episode}
+                absoluteNumbering={series.absoluteNumbering}
                 next={series.next?.season === season.number && series.next.number === episode.number}
                 onToggle={() => onToggle(episode)}
               />
@@ -130,11 +131,21 @@ function SeasonProgress({ episodes, watched, aired }: { episodes: EpisodeData[];
   );
 }
 
-function EpisodeRow({ episode, next, onToggle }: { episode: EpisodeData; next: boolean; onToggle: () => void }) {
+function EpisodeRow({
+  episode,
+  absoluteNumbering,
+  next,
+  onToggle,
+}: {
+  episode: EpisodeData;
+  absoluteNumbering: boolean;
+  next: boolean;
+  onToggle: () => void;
+}) {
   const t = useT();
   return (
     <li className="flex items-center gap-4 px-5 py-3 odd:bg-raised/30">
-      <span className="w-8 text-sm font-bold text-muted">{episode.number}</span>
+      <span className="min-w-8 text-sm font-bold text-muted">{absoluteNumbering ? episode.absolute : episode.number}</span>
       <div className="min-w-0 flex-1">
         <p className={cx("truncate text-sm font-semibold", !episode.aired && "text-muted")}>
           <EpisodeTitle name={episode.name} watched={episode.watched} next={next} />

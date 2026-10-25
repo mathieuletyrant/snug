@@ -1,5 +1,11 @@
 /** Small text helpers shared by the pages, in the app's language. */
+import { type EpisodeRef, episodeCode } from "@snug/shared";
 import type { Messages } from "@/i18n";
+
+/** "S01E05", or "Ep. 1156" for a Series read with Absolute numbering. */
+export function episodeLabel(t: Messages, episode: EpisodeRef & { absolute?: number }, absoluteNumbering: boolean) {
+  return absoluteNumbering && episode.absolute ? t.common.episode(episode.absolute) : episodeCode(episode);
+}
 
 export function greeting(t: Messages, now = new Date()) {
   const h = now.getHours();

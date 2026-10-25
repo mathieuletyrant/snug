@@ -1,5 +1,6 @@
 import { desc, eq, and, ne, notInArray } from "drizzle-orm";
 import { type Episode, type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
+import { numberAbsolutely } from "@/modules/catalog/domain/series";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
 import type { IdentityService } from "@/modules/identity/application/identity-service";
 import type { Db } from "@/shared/db";
@@ -9,7 +10,7 @@ import type { Notifier } from "@/modules/notifications/application/notification-
 import type { TrackingService } from "@/modules/tracking/application/tracking-service";
 import { type JellyfinEvent, parseJellyfinEvent } from "@/modules/jellyfin/domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "@/modules/jellyfin/infrastructure/schema";
-import { t } from "@/shared/i18n";
+import { episodeLabel, t } from "@/shared/i18n";
 import { today } from "@/shared/day";
 
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
@@ -99,24 +100,34 @@ export class JellyfinService {
       await this.catalog.refresh(seriesId);
     }
     const next = await this.tracking.watchEpisode(userId, seriesId, event);
-    void this.announce(userId, seriesId, series.name, event, next);
-    return { outcome: "watched", message: t().webhook.marked(series.name, episodeCode(event)), seriesId };
+    const numbered = numberAbsolutely((await this.catalog.ensure(seriesId)).episodes);
+    const absolute = (await this.tracking.absolutelyNumbered(userId)).has(seriesId);
+    const label = (episode: EpisodeRef) => episodeLabel(numbered(episode), absolute);
+    void this.announce(userId, seriesId, series.name, event, next, label);
+    return { outcome: "watched", message: t().webhook.marked(series.name, label(event)), seriesId };
   }
 
   /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
-  private async announce(userId: string, seriesId: number, name: string, ep: EpisodeRef, next: Episode | null) {
+  private async announce(
+    userId: string,
+    seriesId: number,
+    name: string,
+    ep: EpisodeRef,
+    next: Episode | null,
+    label: (episode: EpisodeRef) => string,
+  ) {
     try {
       const day = today();
       const title = next && !isTitleHidden(this.identity.preferences(userId), { watched: false, next: true });
       await this.notifier.notify(userId, {
-        title: `✓ ${name} ${episodeCode(ep)}`,
+        title: `✓ ${name} ${label(ep)}`,
         body: !next
           ? t().push.caughtUp
           : next.airDate && next.airDate <= day
-            ? t().push.next(episodeCode(next), title ? next.name : null)
+            ? t().push.next(label(next), title ? next.name : null)
             : next.airDate
-              ? t().push.nextOn(episodeCode(next), next.airDate)
-              : t().push.nextUndated(episodeCode(next)),
+              ? t().push.nextOn(label(next), next.airDate)
+              : t().push.nextUndated(label(next)),
         url: `/series/${seriesId}`,
         tag: `series-${seriesId}`,
       });

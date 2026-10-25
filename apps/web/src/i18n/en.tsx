@@ -27,6 +27,8 @@ export const en = {
     left: (what: string) => `${what} left`,
     /** Rounded to the hour, short enough for a tile: "~7h". */
     aboutHours: (hours: number) => `~${hours}h`,
+    /** An Episode by its Absolute number. */
+    episode: (absolute: number) => `Ep. ${absolute}`,
   },
   days: {
     today: "Today",
@@ -143,6 +145,8 @@ export const en = {
     removeBody: "Its status and every episode you marked watched are deleted from Snug.",
     removeConfirm: "Remove",
     removed: "Removed from your library",
+    absoluteNumbering: "Absolute numbering",
+    absoluteNumberingHint: "Ep. 1156 rather than S23E1156, as for anime.",
     catchUpTitle: (n: number) => (n === 1 ? "1 earlier episode not watched" : `${n} earlier episodes not watched`),
     catchUpBody: "Mark them watched too?",
     onlyThisOne: "Only this one",

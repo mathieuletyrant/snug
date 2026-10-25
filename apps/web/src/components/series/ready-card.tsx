@@ -1,7 +1,8 @@
-import { episodeCode, type SeriesCard } from "@snug/shared";
+import type { SeriesCard } from "@snug/shared";
 import { Check } from "lucide-react";
 import { Link } from "wouter";
 import { useT } from "@/i18n";
+import { episodeLabel } from "@/lib/format";
 import { useWatchNext } from "@/components/series-actions";
 import { EpisodeTitle } from "@/components/spoilers";
 import { Backdrop, Badge } from "@/components/ui";
@@ -11,6 +12,7 @@ export function ReadyCard({ card }: { card: SeriesCard }) {
   const watchNext = useWatchNext();
   const t = useT();
   const next = card.next;
+  const code = next && episodeLabel(t, next, card.absoluteNumbering);
   const left = card.airing.kind === "ready" ? card.airing.left : 0;
   // overflow-hidden clips the image and progress bar to the card's corners: a 4px-tall bar can't hold a 16px radius.
   return (
@@ -33,7 +35,7 @@ export function ReadyCard({ card }: { card: SeriesCard }) {
             <h3 className="truncate text-sm leading-tight sm:text-base">{card.name}</h3>
             {next && (
               <p className="truncate text-xs text-muted">
-                <span className="font-bold text-accent">{episodeCode(next)}</span>
+                <span className="font-bold text-accent">{code}</span>
                 <span className="hidden sm:inline">
                   {" · "}
                   <EpisodeTitle name={next.name} watched={false} next />
@@ -47,9 +49,9 @@ export function ReadyCard({ card }: { card: SeriesCard }) {
         </div>
       </Link>
       <button
-        aria-label={next ? t.home.markWatched(episodeCode(next)) : t.home.markNextWatched}
+        aria-label={code ? t.home.markWatched(code) : t.home.markNextWatched}
         disabled={watchNext.isPending}
-        onClick={() => watchNext.mutate(card.seriesId)}
+        onClick={() => watchNext.mutate(card)}
         className="absolute right-2 bottom-3.5 flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lg shadow-black/40 transition hover:bg-accent-strong active:scale-90 disabled:opacity-60 sm:right-2.5 sm:size-10"
       >
         <Check className="size-5" strokeWidth={3} />

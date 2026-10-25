@@ -1,13 +1,14 @@
 import {
   DEFAULT_PREFERENCES,
   type Home,
+  type Numbered,
   type Preferences,
   type SavingTarget,
   type SeriesCard,
   type SeriesDetail,
   type WatchedNext,
 } from "@snug/shared";
-import type { Episode, Series } from "@/modules/catalog/domain/series";
+import { type Episode, numberAbsolutely, type Series } from "@/modules/catalog/domain/series";
 import { today } from "@/shared/day";
 import { NotFoundError } from "@/shared/errors";
 import {
@@ -125,7 +126,7 @@ export class TrackingService {
       const previousStatus = tracked.status;
       tracked.watch(next, this.now());
       await this.saveReconciled(tracked, series);
-      return { ...next, previousStatus };
+      return { ...numberAbsolutely(series.episodes)(next), previousStatus };
     });
   }
 
@@ -134,6 +135,15 @@ export class TrackingService {
     await this.exclusive(userId, seriesId, async () => {
       const tracked = await this.get(userId, seriesId);
       tracked.rate(rate);
+      await this.repo.save(tracked);
+    });
+  }
+
+  /** Absolute numbering on or off for a tracked Series. */
+  async numberAbsolutely(userId: string, seriesId: number, on: boolean) {
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked = await this.get(userId, seriesId);
+      tracked.numberAbsolutely(on);
       await this.repo.save(tracked);
     });
   }
@@ -206,11 +216,12 @@ export class TrackingService {
     const [series, found] = await Promise.all([this.catalog.ensure(seriesId), this.repo.find(userId, seriesId)]);
     const tracked = found ?? TrackedSeries.start(userId, seriesId, "watchlist", this.now());
     const day = today(this.now());
+    const numbered = numberAbsolutely(series.episodes);
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
     for (const episode of series.episodes) {
       const season = seasons.get(episode.season) ?? { number: episode.season, rating: tracked.ratingOf(episode.season), episodes: [] };
       season.episodes.push({
-        ...episode,
+        ...numbered(episode),
         watched: tracked.hasWatched(episode),
         watchedAt: tracked.watchedAt(episode)?.toISOString() ?? null,
         aired: hasAired(episode, day),
@@ -235,7 +246,9 @@ export class TrackingService {
     userId: string,
     from: string,
     to = "9999-12-31",
-  ): Promise<{ series: Series; episode: Episode & { airDate: string }; watchedAt: Date | null; next: boolean }[]> {
+  ): Promise<
+    { series: Series; episode: Numbered<Episode> & { airDate: string }; absoluteNumbering: boolean; watchedAt: Date | null; next: boolean }[]
+  > {
     const list = (await this.repo.listByUser(userId)).filter((tracked) => tracked.status === "watching" || tracked.status === "saving");
     const catalog = await this.catalog.getMany(list.map((tracked) => tracked.seriesId));
     const found = [];
@@ -243,31 +256,47 @@ export class TrackingService {
       const series = catalog.get(tracked.seriesId);
       if (!series) continue;
       const next = tracked.nextEpisode(series.episodes);
+      const numbered = numberAbsolutely(series.episodes);
       for (const episode of series.episodes) {
         if (!episode.airDate || episode.airDate < from || episode.airDate > to) continue;
-        found.push({ series, episode: { ...episode, airDate: episode.airDate }, watchedAt: tracked.watchedAt(episode), next: episode === next });
+        found.push({
+          series,
+          episode: { ...numbered(episode), airDate: episode.airDate },
+          absoluteNumbering: tracked.absoluteNumbering,
+          watchedAt: tracked.watchedAt(episode),
+          next: episode === next,
+        });
       }
     }
     return found.sort((a, b) => a.episode.airDate.localeCompare(b.episode.airDate));
   }
 
   /** For every User, the un-watched Episodes of their Watching Series that air on one of these days. */
-  async newEpisodesOn(days: readonly string[]): Promise<{ userId: string; series: Series; episodes: Episode[] }[]> {
+  async newEpisodesOn(
+    days: readonly string[],
+  ): Promise<{ userId: string; series: Series; episodes: Numbered<Episode>[]; absoluteNumbering: boolean }[]> {
     const ids = [...new Set(await this.repo.seriesIdsWithStatus(["watching"]))];
     const catalog = await this.catalog.getMany(ids);
     const found = [];
     for (const id of ids) {
       const series = catalog.get(id);
       if (!series) continue;
-      const airing = series.episodes.filter((episode) => episode.airDate !== null && days.includes(episode.airDate));
+      const airing = series.episodes
+        .filter((episode) => episode.airDate !== null && days.includes(episode.airDate))
+        .map(numberAbsolutely(series.episodes));
       if (!airing.length) continue;
       for (const tracked of await this.repo.listBySeries(id)) {
         if (tracked.status !== "watching") continue;
         const episodes = airing.filter((episode) => !tracked.hasWatched(episode));
-        if (episodes.length) found.push({ userId: tracked.userId, series, episodes });
+        if (episodes.length) found.push({ userId: tracked.userId, series, episodes, absoluteNumbering: tracked.absoluteNumbering });
       }
     }
     return found;
+  }
+
+  /** Ids of the Series the User reads with Absolute numbering. */
+  async absolutelyNumbered(userId: string): Promise<Set<number>> {
+    return new Set((await this.repo.listByUser(userId)).filter((tracked) => tracked.absoluteNumbering).map((tracked) => tracked.seriesId));
   }
 
   /** Series ids tracked with one of these Statuses. */
@@ -318,6 +347,7 @@ export class TrackingService {
     const onDay = series
       ? t.onDay(series, day, newForDays)
       : { next: null, ready: false, airing: { kind: "tba" } as const, saving: null, fresh: false, choosable: [...STATUSES] };
+    const numbered = numberAbsolutely(series?.episodes ?? []);
     const runtimes = (series?.episodes ?? []).flatMap((episode) => (episode.runtime ? [episode.runtime] : []));
     const average = runtimes.length ? runtimes.reduce((sum, runtime) => sum + runtime, 0) / runtimes.length : 0;
     return {
@@ -329,7 +359,9 @@ export class TrackingService {
       backdropPath: series?.backdropPath ?? null,
       status: t.status,
       ...onDay,
-      progress: t.progress,
+      next: onDay.next && numbered(onDay.next),
+      absoluteNumbering: t.absoluteNumbering,
+      progress: t.progress && numbered(t.progress),
       watchedCount: aired.filter((episode) => t.hasWatched(episode)).length,
       airedCount: aired.length,
       rating: t.ratingOf(),

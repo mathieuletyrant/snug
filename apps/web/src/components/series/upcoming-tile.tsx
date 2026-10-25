@@ -1,6 +1,7 @@
-import { episodeCode, type SeriesCard } from "@snug/shared";
+import type { SeriesCard } from "@snug/shared";
 import { PiggyBank, Sparkles } from "lucide-react";
 import { useT } from "@/i18n";
+import { episodeLabel } from "@/lib/format";
 import { relativeDay } from "@/components/airing";
 import { useToday } from "@/components/preferences";
 import { PosterTile, PosterTileSkeleton, TileLine } from "@/components/poster-tile";
@@ -35,7 +36,7 @@ export function UpcomingTile({ card }: { card: SeriesCard }) {
             <Sparkles className="size-3 shrink-0" />
             <span className="truncate">{relativeDay(t, card.next?.airDate, today)}</span>
           </TileLine>
-          {card.next && <TileLine>{episodeCode(card.next)}</TileLine>}
+          {card.next && <TileLine>{episodeLabel(t, card.next, card.absoluteNumbering)}</TileLine>}
         </>
       )}
     </PosterTile>

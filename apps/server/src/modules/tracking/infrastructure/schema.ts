@@ -13,6 +13,8 @@ export const trackedSeries = sqliteTable(
     status: text("status").$type<Status>().notNull(),
     /** Saving up until a full season (0) or this many Episodes. */
     savingTarget: integer("saving_target").$type<SavingTarget>().notNull().default(0),
+    /** Absolute numbering: Episodes read as "Ep. 1156" rather than SxxEyy. */
+    absoluteNumbering: integer("absolute_numbering", { mode: "boolean" }).notNull().default(false),
     addedAt: integer("added_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.seriesId] })],

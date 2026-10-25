@@ -74,7 +74,7 @@ test("import keeps existing Statuses and merges Watches", async () => {
   ]);
   const detail = await tracking.detail("u", 1);
   expect(detail.status).toBe("paused");
-  expect(detail.progress).toEqual({ season: 1, number: 2 });
+  expect(detail.progress).toEqual({ season: 1, number: 2, absolute: 2 });
 });
 
 
@@ -182,4 +182,29 @@ test("time left: aired Episodes not watched, an unknown runtime counting as the 
 
   // E2 (50) + E3 (unknown: (30 + 50 + 60) / 3); E4 has not aired.
   expect((await tracking.detail("u", 1)).minutesLeft).toBe(97);
+});
+
+test("Absolute numbering is kept per User and Series, and the Episodes carry their Absolute numbers", async () => {
+  const { db } = testDb(["u", "v"]);
+  const show = series(1, false, ["2026-10-01", "2026-10-08", "2026-10-15"]);
+  // Season 2 numbered from 1 again: its Episodes count on from season 1's two.
+  show.episodes = show.episodes.map((episode, index) => (index === 2 ? { ...episode, season: 2, number: 1 } : episode));
+  const catalog: CatalogPort = { ensure: async () => show, getMany: async () => new Map([[1, show]]) };
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog, undefined, () => now);
+  await tracking.track("u", 1);
+  await tracking.track("v", 1);
+  await tracking.watchEpisode("u", 1, { season: 1, number: 2 });
+
+  await tracking.numberAbsolutely("u", 1, true);
+  const detail = await tracking.detail("u", 1);
+  expect(detail.absoluteNumbering).toBe(true);
+  expect(detail.progress).toEqual({ season: 1, number: 2, absolute: 2 });
+  expect(detail.next).toMatchObject({ season: 2, number: 1, absolute: 3 });
+  expect(detail.seasons.map((season) => season.episodes.map((episode) => episode.absolute))).toEqual([[1, 2], [3]]);
+  expect((await tracking.watchNext("u", 1)).absolute).toBe(3);
+  expect([...(await tracking.absolutelyNumbered("u"))]).toEqual([1]);
+  expect((await tracking.detail("v", 1)).absoluteNumbering).toBe(false);
+
+  await tracking.numberAbsolutely("u", 1, false);
+  expect((await tracking.library("u"))[0]?.absoluteNumbering).toBe(false);
 });

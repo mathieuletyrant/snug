@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { en } from "@/i18n/en";
 import { fr } from "@/i18n/fr";
-import { ago, greeting } from "./format";
+import { ago, episodeLabel, greeting } from "./format";
 
 test("greeting follows the hour, in the app's language", () => {
   expect(greeting(en, new Date(2026, 9, 24, 8))).toBe("Good morning");
@@ -14,4 +14,11 @@ test("ago counts minutes, then hours", () => {
   expect(ago(en, "2026-10-24T11:59:40Z", now)).toBe("just now");
   expect(ago(en, "2026-10-24T11:55:00Z", now)).toBe("5 min ago");
   expect(ago(fr, "2026-10-24T09:00:00Z", now)).toBe("il y a 3 h");
+});
+
+test("an Episode goes by its Absolute number in a Series read with Absolute numbering", () => {
+  const episode = { season: 23, number: 1, absolute: 1156 };
+  expect(episodeLabel(en, episode, false)).toBe("S23E01");
+  expect(episodeLabel(en, episode, true)).toBe("Ep. 1156");
+  expect(episodeLabel(fr, episode, true)).toBe("Ép. 1156");
 });

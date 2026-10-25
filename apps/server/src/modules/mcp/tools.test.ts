@@ -175,8 +175,8 @@ test("calendar: episodes airing in the next days in watched series, with the day
   await call("watch", { tmdbId: 9, season: 1, episodes: "2" });
   await call("set_status", { tmdbId: 10, status: "dropped" });
   expect(await call("calendar", {})).toEqual([
-    { airDate: today(), tmdbId: 9, series: "Series 9", season: 1, number: 2, name: "Episode 2", watchedAt: today() },
-    { airDate: addDays(today(), 3), tmdbId: 9, series: "Series 9", season: 1, number: 3, name: "Episode 3", watchedAt: null },
+    { airDate: today(), tmdbId: 9, series: "Series 9", season: 1, number: 2, absolute: 2, absoluteNumbering: false, name: "Episode 2", watchedAt: today() },
+    { airDate: addDays(today(), 3), tmdbId: 9, series: "Series 9", season: 1, number: 3, absolute: 3, absoluteNumbering: false, name: "Episode 3", watchedAt: null },
   ]);
 
   identity.updatePreferences("u", { episodeTitles: "hideUnwatched" });

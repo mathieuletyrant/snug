@@ -78,6 +78,13 @@
       "when": 1792922692874,
       "tag": "0010_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1792957726302,
+      "tag": "0011_absolute_numbering",
+      "breakpoints": true
     }
   ]
 }

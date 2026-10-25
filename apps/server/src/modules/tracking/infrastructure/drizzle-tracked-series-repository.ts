@@ -42,13 +42,20 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
 
   async save(t: TrackedSeries) {
     const key = and(eq(watches.userId, t.userId), eq(watches.seriesId, t.seriesId));
-    const row = { userId: t.userId, seriesId: t.seriesId, status: t.status, addedAt: t.addedAt, savingTarget: t.savingTarget };
+    const row = {
+      userId: t.userId,
+      seriesId: t.seriesId,
+      status: t.status,
+      addedAt: t.addedAt,
+      savingTarget: t.savingTarget,
+      absoluteNumbering: t.absoluteNumbering,
+    };
     this.db.transaction((tx) => {
       tx.insert(trackedSeries)
         .values(row)
         .onConflictDoUpdate({
           target: [trackedSeries.userId, trackedSeries.seriesId],
-          set: { status: t.status, savingTarget: t.savingTarget },
+          set: { status: t.status, savingTarget: t.savingTarget, absoluteNumbering: t.absoluteNumbering },
         })
         .run();
       tx.delete(watches).where(key).run();

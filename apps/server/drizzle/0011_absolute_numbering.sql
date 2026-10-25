@@ -1,0 +1,1 @@
+ALTER TABLE `tracked_series` ADD `absolute_numbering` integer DEFAULT false NOT NULL;

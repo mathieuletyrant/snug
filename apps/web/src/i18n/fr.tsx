@@ -20,6 +20,7 @@ export const fr: Messages = {
     },
     left: (what) => `encore ${what}`,
     aboutHours: (hours) => `~${hours} h`,
+    episode: (absolute) => `Ép. ${absolute}`,
   },
   days: {
     today: "Aujourd'hui",
@@ -138,6 +139,8 @@ export const fr: Messages = {
     removeBody: "Son statut et tous les épisodes marqués comme vus sont supprimés de Snug.",
     removeConfirm: "Retirer",
     removed: "Retirée de votre bibliothèque",
+    absoluteNumbering: "Numérotation absolue",
+    absoluteNumberingHint: "Ép. 1156 plutôt que S23E1156, comme pour les animés.",
     catchUpTitle: (n) => (n === 1 ? "1 épisode précédent non vu" : `${n} épisodes précédents non vus`),
     catchUpBody: "Les marquer comme vus aussi ?",
     onlyThisOne: "Seulement celui-ci",
