@@ -51,15 +51,15 @@ export class FeedsService {
     const stamp = now.toISOString().replace(/[-:]|\.\d+/g, "");
     const events: string[] = [];
     for (const series of (await this.catalog.getMany(ids)).values()) {
-      for (const e of series.episodes) {
-        if (!e.airDate || e.airDate < from) continue;
+      for (const episode of series.episodes) {
+        if (!episode.airDate || episode.airDate < from) continue;
         events.push(
           "BEGIN:VEVENT",
-          `UID:${series.tmdbId}-${e.season}-${e.number}@snug`,
+          `UID:${series.tmdbId}-${episode.season}-${episode.number}@snug`,
           `DTSTAMP:${stamp}`,
-          `DTSTART;VALUE=DATE:${e.airDate.replaceAll("-", "")}`,
-          `DTEND;VALUE=DATE:${addDays(e.airDate, 1).replaceAll("-", "")}`,
-          `SUMMARY:${escapeText(`${series.name} ${episodeCode(e)}`)}`,
+          `DTSTART;VALUE=DATE:${episode.airDate.replaceAll("-", "")}`,
+          `DTEND;VALUE=DATE:${addDays(episode.airDate, 1).replaceAll("-", "")}`,
+          `SUMMARY:${escapeText(`${series.name} ${episodeCode(episode)}`)}`,
           "END:VEVENT",
         );
       }
@@ -69,7 +69,7 @@ export class FeedsService {
   }
 }
 
-const escapeText = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
+const escapeText = (s: string) => s.replace(/[\\;,]/g, (char) => `\\${char}`).replace(/\n/g, "\\n");
 
 /** iCal lines are at most 75 bytes; longer ones continue on lines starting with a space. */
 function fold(line: string): string {

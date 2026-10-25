@@ -37,7 +37,7 @@ export function LibraryPage() {
   }
   const all = data ?? [];
   const shown = all
-    .filter((c) => c.status === status && c.name.toLowerCase().includes(filter.toLowerCase()))
+    .filter((card) => card.status === status && card.name.toLowerCase().includes(filter.toLowerCase()))
     .sort(SORTS[sort === "rating" && !showRatings ? "name" : sort]);
 
   return (
@@ -47,11 +47,11 @@ export function LibraryPage() {
         label={t.library.statusFilter}
         value={status}
         onChange={setStatus}
-        options={STATUSES.map((s) => ({
-          value: s,
+        options={STATUSES.map((option) => ({
+          value: option,
           label: (
             <>
-              {t.status[s]} <span className="opacity-60">{all.filter((c) => c.status === s).length}</span>
+              {t.status[option]} <span className="opacity-60">{all.filter((card) => card.status === option).length}</span>
             </>
           ),
         }))}
@@ -70,8 +70,8 @@ export function LibraryPage() {
         value={sort}
         onChange={setSort}
         options={(Object.keys(SORTS) as Sort[])
-          .filter((s) => s !== "rating" || showRatings)
-          .map((s) => ({ value: s, label: t.library.sorts[s] }))}
+          .filter((option) => option !== "rating" || showRatings)
+          .map((option) => ({ value: option, label: t.library.sorts[option] }))}
         className="mb-6"
       />
       {shown.length ? (

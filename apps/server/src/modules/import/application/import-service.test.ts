@@ -50,7 +50,7 @@ test("imports right away, then fetches the Series and applies the Completed rule
 
   while (importer.progressOf("u").running) await Bun.sleep(1);
   expect(importer.progressOf("u")).toEqual({ running: false, total: 3, done: 2, failed: 1 });
-  const statuses = (await tracking.library("u")).map((c) => [c.seriesId, c.status]);
+  const statuses = (await tracking.library("u")).map((card) => [card.seriesId, card.status]);
   expect(statuses).toEqual([
     [1, "completed"],
     [2, "watching"],

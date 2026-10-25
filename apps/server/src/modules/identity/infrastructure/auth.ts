@@ -18,7 +18,7 @@ export function createAuth(db: Db) {
   return betterAuth({
     secret: AUTH_SECRET,
     // Several origins (LAN name, IP, Tailscale…) → resolve per request among the allowed hosts.
-    baseURL: ORIGINS.length > 1 ? { allowedHosts: ORIGINS.map((o) => new URL(o).host), fallback: ORIGINS[0] } : ORIGINS[0],
+    baseURL: ORIGINS.length > 1 ? { allowedHosts: ORIGINS.map((origin) => new URL(origin).host), fallback: ORIGINS[0] } : ORIGINS[0],
     trustedOrigins: ORIGINS,
     basePath: "/api/auth",
     database: drizzleAdapter(db, { provider: "sqlite", schema }),
@@ -28,7 +28,7 @@ export function createAuth(db: Db) {
     logger: {
       level: LOG_LEVEL === "debug" || LOG_LEVEL === "trace" ? "debug" : "warn",
       log: (level, message, ...args) => {
-        const extra = args.map((a) => (a instanceof Error ? a.message : typeof a === "string" ? a : JSON.stringify(a)));
+        const extra = args.map((arg) => (arg instanceof Error ? arg.message : typeof arg === "string" ? arg : JSON.stringify(arg)));
         log[level]([message, ...extra].join(" "));
       },
     },

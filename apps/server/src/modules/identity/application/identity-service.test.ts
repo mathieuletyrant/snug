@@ -10,7 +10,7 @@ test("the first account is the admin", () => {
   const identity = setup();
   expect(identity.isAdmin("first")).toBe(true);
   expect(identity.isAdmin("second")).toBe(false);
-  expect(identity.listUsers().map((u) => u.id)).toEqual(["first", "second"]);
+  expect(identity.listUsers().map((user) => user.id)).toEqual(["first", "second"]);
 });
 
 test("preferences start from the defaults and keep what was changed", () => {

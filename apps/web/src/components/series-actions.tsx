@@ -72,9 +72,9 @@ export function StatusMenu({
             value={status}
             onValueChange={(s) => setStatus.mutate({ seriesId, status: s as Status })}
           >
-            {STATUSES.map((s) => (
-              <DropdownMenu.RadioItem key={s} value={s} disabled={!choosable.includes(s)} className={MENU_ITEM}>
-                {t.status[s]}
+            {STATUSES.map((option) => (
+              <DropdownMenu.RadioItem key={option} value={option} disabled={!choosable.includes(option)} className={MENU_ITEM}>
+                {t.status[option]}
                 <DropdownMenu.ItemIndicator>
                   <Check className="size-4" strokeWidth={3} />
                 </DropdownMenu.ItemIndicator>

@@ -48,7 +48,7 @@ test("csvRowsToEntries groups by series and infers the status", () => {
   );
   const ids: Record<string, number> = { Severance: 1, "The Bear": 2, Dark: 3 };
   const entries = csvRowsToEntries(rows, (title) => ids[title] ?? null, now);
-  expect(entries.map((e) => [e.seriesId, e.status, e.watches.length])).toEqual([
+  expect(entries.map((entry) => [entry.seriesId, entry.status, entry.watches.length])).toEqual([
     [1, "watching", 2],
     [2, "watchlist", 0],
     [3, "dropped", 1],

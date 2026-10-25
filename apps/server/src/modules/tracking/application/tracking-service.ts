@@ -98,7 +98,7 @@ export class TrackingService {
     await this.exclusive(userId, seriesId, async () => {
       const tracked =
         (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
-      for (const earlier of this.aired(series).filter((e) => compareEpisodes(e, ep) < 0)) tracked.watch(earlier, this.now());
+      for (const earlier of this.aired(series).filter((episode) => compareEpisodes(episode, ep) < 0)) tracked.watch(earlier, this.now());
       tracked.watch(ep, this.now());
       await this.saveReconciled(tracked, series);
     });
@@ -143,7 +143,7 @@ export class TrackingService {
     await this.exclusive(userId, seriesId, async () => {
       const tracked =
         (await this.repo.find(userId, seriesId)) ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
-      for (const ep of this.aired(series).filter((e) => e.season === season)) tracked.watch(ep, this.now());
+      for (const ep of this.aired(series).filter((episode) => episode.season === season)) tracked.watch(ep, this.now());
       await this.saveReconciled(tracked, series);
     });
   }
@@ -160,7 +160,7 @@ export class TrackingService {
         await this.repo.save(tracked);
       });
     }
-    return entries.map((e) => e.seriesId);
+    return entries.map((entry) => entry.seriesId);
   }
 
   /** Re-applies the Completed rule for everyone tracking a Series, e.g. after a Catalog refresh. */
@@ -181,11 +181,11 @@ export class TrackingService {
   // ---- Queries
 
   async home(userId: string): Promise<Home> {
-    const list = (await this.repo.listByUser(userId)).filter((t) => t.status === "watching" || t.status === "saving");
+    const list = (await this.repo.listByUser(userId)).filter((tracked) => tracked.status === "watching" || tracked.status === "saving");
     const cards = await this.cards(userId, list);
-    const ready = cards.filter((c) => c.ready);
+    const ready = cards.filter((card) => card.ready);
     const hideUndated = this.preferences(userId).hideUndatedUpcoming;
-    const upcoming = cards.filter((c) => !ready.includes(c) && (!hideUndated || !c.loaded || c.next?.airDate));
+    const upcoming = cards.filter((card) => !ready.includes(card) && (!hideUndated || !card.loaded || card.next?.airDate));
     // Fresh Episodes first (New mode), then Saved up, then the most recently watched.
     ready.sort(
       (a, b) =>
@@ -207,10 +207,10 @@ export class TrackingService {
     const tracked = found ?? TrackedSeries.start(userId, seriesId, "watchlist", this.now());
     const day = today(this.now());
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
-    for (const e of series.episodes) {
-      const season = seasons.get(e.season) ?? { number: e.season, rating: tracked.ratingOf(e.season), episodes: [] };
-      season.episodes.push({ ...e, watched: tracked.hasWatched(e), aired: hasAired(e, day) });
-      seasons.set(e.season, season);
+    for (const episode of series.episodes) {
+      const season = seasons.get(episode.season) ?? { number: episode.season, rating: tracked.ratingOf(episode.season), episodes: [] };
+      season.episodes.push({ ...episode, watched: tracked.hasWatched(episode), aired: hasAired(episode, day) });
+      seasons.set(episode.season, season);
     }
     const { loaded: _, ...card } = this.card(tracked, series, this.preferences(userId).newForDays);
     return {
@@ -230,11 +230,11 @@ export class TrackingService {
     for (const id of ids) {
       const series = catalog.get(id);
       if (!series) continue;
-      const airing = series.episodes.filter((e) => e.airDate !== null && days.includes(e.airDate));
+      const airing = series.episodes.filter((episode) => episode.airDate !== null && days.includes(episode.airDate));
       if (!airing.length) continue;
       for (const tracked of await this.repo.listBySeries(id)) {
         if (tracked.status !== "watching") continue;
-        const episodes = airing.filter((e) => !tracked.hasWatched(e));
+        const episodes = airing.filter((episode) => !tracked.hasWatched(episode));
         if (episodes.length) found.push({ userId: tracked.userId, series, episodes });
       }
     }
@@ -243,7 +243,7 @@ export class TrackingService {
 
   /** Series ids tracked with one of these Statuses. */
   async seriesIdsWithStatus(userId: string, statuses: readonly Status[]): Promise<number[]> {
-    return (await this.repo.listByUser(userId)).filter((t) => statuses.includes(t.status)).map((t) => t.seriesId);
+    return (await this.repo.listByUser(userId)).filter((tracked) => statuses.includes(tracked.status)).map((tracked) => tracked.seriesId);
   }
 
   // ---- Helpers
@@ -269,7 +269,7 @@ export class TrackingService {
   }
 
   private aired(series: Series, day = today(this.now())) {
-    return series.episodes.filter((e) => hasAired(e, day));
+    return series.episodes.filter((episode) => hasAired(episode, day));
   }
 
   private async saveReconciled(tracked: TrackedSeries, series: Series) {
@@ -278,9 +278,9 @@ export class TrackingService {
   }
 
   private async cards(userId: string, list: TrackedSeries[]): Promise<SeriesCard[]> {
-    const catalog = await this.catalog.getMany(list.map((t) => t.seriesId));
+    const catalog = await this.catalog.getMany(list.map((tracked) => tracked.seriesId));
     const { newForDays } = this.preferences(userId);
-    return list.map((t) => this.card(t, catalog.get(t.seriesId), newForDays));
+    return list.map((tracked) => this.card(tracked, catalog.get(tracked.seriesId), newForDays));
   }
 
   private card(t: TrackedSeries, series: Series | undefined, newForDays: number): SeriesCard {
@@ -289,8 +289,8 @@ export class TrackingService {
     const onDay = series
       ? t.onDay(series, day, newForDays)
       : { next: null, ready: false, airing: { kind: "tba" } as const, saving: null, fresh: false, choosable: [...STATUSES] };
-    const runtimes = (series?.episodes ?? []).flatMap((e) => (e.runtime ? [e.runtime] : []));
-    const average = runtimes.length ? runtimes.reduce((a, b) => a + b, 0) / runtimes.length : 0;
+    const runtimes = (series?.episodes ?? []).flatMap((episode) => (episode.runtime ? [episode.runtime] : []));
+    const average = runtimes.length ? runtimes.reduce((sum, runtime) => sum + runtime, 0) / runtimes.length : 0;
     return {
       seriesId: t.seriesId,
       loaded: !!series,
@@ -301,10 +301,10 @@ export class TrackingService {
       status: t.status,
       ...onDay,
       progress: t.progress,
-      watchedCount: aired.filter((e) => t.hasWatched(e)).length,
+      watchedCount: aired.filter((episode) => t.hasWatched(episode)).length,
       airedCount: aired.length,
       rating: t.ratingOf(),
-      minutesLeft: Math.round(aired.filter((e) => !t.hasWatched(e)).reduce((sum, e) => sum + (e.runtime ?? average), 0)),
+      minutesLeft: Math.round(aired.filter((episode) => !t.hasWatched(episode)).reduce((sum, episode) => sum + (episode.runtime ?? average), 0)),
       lastWatchedAt: t.lastWatchedAt?.toISOString() ?? null,
     };
   }

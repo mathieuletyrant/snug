@@ -33,10 +33,10 @@ test("a burst of ignored calls never pushes Watched ones out of the history", as
   for (let i = 0; i < 120; i++) await service.handle("token", { NotificationType: "UserDataSaved", Name: "Episode 1" });
 
   const events = service.events("u");
-  expect(events.filter((e) => e.outcome === "watched")).toHaveLength(150);
-  expect(events.filter((e) => e.outcome === "ignored")).toHaveLength(100);
+  expect(events.filter((event) => event.outcome === "watched")).toHaveLength(150);
+  expect(events.filter((event) => event.outcome === "ignored")).toHaveLength(100);
   // Only the 100 latest Watched calls keep their raw payload.
-  expect(events.filter((e) => e.outcome === "watched" && e.payload)).toHaveLength(100);
+  expect(events.filter((event) => event.outcome === "watched" && event.payload)).toHaveLength(100);
 });
 
 test("a Watch of an Episode newer than the Catalog refreshes the Series, marks it, and says what's next", async () => {

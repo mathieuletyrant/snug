@@ -63,9 +63,9 @@ export function Chips<T extends string>({
       onValueChange={(v) => v && onChange(v as T)}
       className={cx(chipRow(wrap), className)}
     >
-      {options.map((o) => (
-        <ToggleGroup.Item key={o.value} value={o.value} disabled={o.disabled} className={cx(CHIP, chipSize(small))}>
-          {o.label}
+      {options.map((option) => (
+        <ToggleGroup.Item key={option.value} value={option.value} disabled={option.disabled} className={cx(CHIP, chipSize(small))}>
+          {option.label}
         </ToggleGroup.Item>
       ))}
     </ToggleGroup.Root>
@@ -88,12 +88,12 @@ export function MultiChips<T extends string>({
       aria-label={label}
       value={value}
       // Kept in the options' order, never empty.
-      onValueChange={(picked) => picked.length > 0 && onChange(options.map((o) => o.value).filter((v) => picked.includes(v)))}
+      onValueChange={(picked) => picked.length > 0 && onChange(options.map((option) => option.value).filter((value) => picked.includes(value)))}
       className={cx(chipRow(wrap), className)}
     >
-      {options.map((o) => (
-        <ToggleGroup.Item key={o.value} value={o.value} className={cx(CHIP, chipSize(small))}>
-          {o.label}
+      {options.map((option) => (
+        <ToggleGroup.Item key={option.value} value={option.value} className={cx(CHIP, chipSize(small))}>
+          {option.label}
         </ToggleGroup.Item>
       ))}
     </ToggleGroup.Root>

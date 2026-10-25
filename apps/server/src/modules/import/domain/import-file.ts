@@ -41,11 +41,11 @@ export function parseImportFile(json: unknown): ImportEntry[] {
       watches: [],
     });
   }
-  for (const w of file.episodeWatches) {
-    if (w.seasonNumber === 0) continue; // specials are not tracked
-    const entry = entries.get(w.showTmdbId) ?? { seriesId: w.showTmdbId, status: "watching", watches: [] };
-    entry.watches.push({ season: w.seasonNumber, number: w.episodeNumber, watchedAt: w.watchedAt });
-    entries.set(w.showTmdbId, entry);
+  for (const watch of file.episodeWatches) {
+    if (watch.seasonNumber === 0) continue; // specials are not tracked
+    const entry = entries.get(watch.showTmdbId) ?? { seriesId: watch.showTmdbId, status: "watching", watches: [] };
+    entry.watches.push({ season: watch.seasonNumber, number: watch.episodeNumber, watchedAt: watch.watchedAt });
+    entries.set(watch.showTmdbId, entry);
   }
   return [...entries.values()];
 }

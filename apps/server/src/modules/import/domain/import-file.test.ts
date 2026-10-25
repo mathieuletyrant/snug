@@ -16,7 +16,7 @@ test("maps library statuses and groups watches by series, skipping movies and sp
     ],
     ratings: [],
   });
-  expect(entries.map((e) => [e.seriesId, e.status, e.watches.length])).toEqual([
+  expect(entries.map((entry) => [entry.seriesId, entry.status, entry.watches.length])).toEqual([
     [1, "watching", 1],
     [2, "watchlist", 0],
     [4, "watching", 1],

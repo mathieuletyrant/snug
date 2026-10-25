@@ -12,14 +12,14 @@ function setup(series: Series[], preferences: Partial<Preferences> = {}) {
   const store = new Map<string, TrackedSeries>();
   const key = (u: string, s: number) => `${u}:${s}`;
   const repo: TrackedSeriesRepository = {
-    find: async (u, s) => store.get(key(u, s)) ?? null,
-    listByUser: async (u) => [...store.values()].filter((t) => t.userId === u),
-    listBySeries: async (s) => [...store.values()].filter((t) => t.seriesId === s),
-    seriesIdsWithStatus: async (st) => [...store.values()].filter((t) => st.includes(t.status)).map((t) => t.seriesId),
-    save: async (t) => void store.set(key(t.userId, t.seriesId), t),
-    delete: async (u, s) => void store.delete(key(u, s)),
+    find: async (userId, seriesId) => store.get(key(userId, seriesId)) ?? null,
+    listByUser: async (userId) => [...store.values()].filter((tracked) => tracked.userId === userId),
+    listBySeries: async (seriesId) => [...store.values()].filter((tracked) => tracked.seriesId === seriesId),
+    seriesIdsWithStatus: async (statuses) => [...store.values()].filter((tracked) => statuses.includes(tracked.status)).map((tracked) => tracked.seriesId),
+    save: async (tracked) => void store.set(key(tracked.userId, tracked.seriesId), tracked),
+    delete: async (userId, seriesId) => void store.delete(key(userId, seriesId)),
   };
-  const byId = new Map(series.map((s) => [s.tmdbId, s]));
+  const byId = new Map(series.map((entry) => [entry.tmdbId, entry]));
   const catalog: CatalogPort = {
     ensure: async (id) => byId.get(id) ?? Promise.reject(new Error("unknown")),
     getMany: async (ids) => new Map(ids.flatMap((id) => (byId.has(id) ? [[id, byId.get(id)!] as const] : []))),
@@ -50,8 +50,8 @@ test("one click watches the Next Episode; the home splits Ready and Upcoming", a
   await expect(tracking.watchNext("u", 1)).rejects.toThrow(); // E3 has not aired
 
   const home = await tracking.home("u");
-  expect(home.ready.map((c) => c.seriesId)).toEqual([2]);
-  expect(home.upcoming.map((c) => [c.seriesId, c.next?.airDate])).toEqual([[1, "2026-10-28"]]);
+  expect(home.ready.map((card) => card.seriesId)).toEqual([2]);
+  expect(home.upcoming.map((card) => [card.seriesId, card.next?.airDate])).toEqual([[1, "2026-10-28"]]);
 
   // Finishing an ended Series completes it and drops it from the home.
   await tracking.watchNext("u", 2);
@@ -104,8 +104,8 @@ test("catching up watches every aired Episode before the one marked, across seas
 
   await tracking.watchThrough("u", 1, { season: 2, number: 2 });
 
-  const watched = (await tracking.detail("u", 1)).seasons.flatMap((s) =>
-    s.episodes.filter((e) => e.watched).map((e) => `${s.number}x${e.number}`),
+  const watched = (await tracking.detail("u", 1)).seasons.flatMap((season) =>
+    season.episodes.filter((episode) => episode.watched).map((episode) => `${season.number}x${episode.number}`),
   );
   expect(watched).toEqual(["1x1", "1x2", "2x1", "2x2"]);
 });
@@ -121,8 +121,8 @@ test("Saving up waits in Upcoming, then goes first in Ready once enough is out",
   await tracking.track("u", 3);
 
   const home = await tracking.home("u");
-  expect(home.ready.map((c) => c.seriesId)).toEqual([2, 3]);
-  expect(home.upcoming.map((c) => [c.seriesId, c.saving?.out, c.saving?.needed])).toEqual([[1, 2, 3]]);
+  expect(home.ready.map((card) => card.seriesId)).toEqual([2, 3]);
+  expect(home.upcoming.map((card) => [card.seriesId, card.saving?.out, card.saving?.needed])).toEqual([[1, 2, 3]]);
 
   // Watching an Episode ends the saving; undoing it saves up again.
   const ep = await tracking.watchNext("u", 2);
@@ -141,7 +141,7 @@ test("overlapping Watches of one Series are all kept", async () => {
 
   await Promise.all([1, 2, 3, 4].map((number) => tracking.watchEpisode("u", 1, { season: 1, number })));
 
-  expect((await tracking.detail("u", 1)).seasons[0]?.episodes.filter((e) => e.watched)).toHaveLength(4);
+  expect((await tracking.detail("u", 1)).seasons[0]?.episodes.filter((episode) => episode.watched)).toHaveLength(4);
 });
 
 test("new Episodes on a day: Watching Series only, Episodes not watched yet", async () => {
@@ -152,7 +152,7 @@ test("new Episodes on a day: Watching Series only, Episodes not watched yet", as
   await tracking.watchEpisode("v", 1, { season: 1, number: 2 });
 
   const found = await tracking.newEpisodesOn(["2026-10-24"]);
-  expect(found.map((f) => [f.userId, f.series.tmdbId, f.episodes.map((e) => e.number)])).toEqual([["u", 1, [2]]]);
+  expect(found.map((hit) => [hit.userId, hit.series.tmdbId, hit.episodes.map((episode) => episode.number)])).toEqual([["u", 1, [2]]]);
 });
 
 test("home: fresh Episodes first, undated Upcoming hidden on demand", async () => {
@@ -167,7 +167,7 @@ test("home: fresh Episodes first, undated Upcoming hidden on demand", async () =
   await tracking.watchEpisode("u", 3, { season: 1, number: 1 });
 
   const home = await tracking.home("u");
-  expect(home.ready.map((c) => [c.seriesId, c.fresh, c.airing])).toEqual([
+  expect(home.ready.map((card) => [card.seriesId, card.fresh, card.airing])).toEqual([
     [2, true, { kind: "ready", left: 1 }],
     [1, false, { kind: "ready", left: 1 }],
   ]);
@@ -175,9 +175,9 @@ test("home: fresh Episodes first, undated Upcoming hidden on demand", async () =
 });
 
 test("time left: aired Episodes not watched, an unknown runtime counting as the average", async () => {
-  const s = series(1, false, ["2026-10-01", "2026-10-08", "2026-10-15", "2026-10-28"]);
-  s.episodes = s.episodes.map((e, i) => ({ ...e, runtime: [30, 50, null, 60][i] }));
-  const tracking = setup([s]);
+  const show = series(1, false, ["2026-10-01", "2026-10-08", "2026-10-15", "2026-10-28"]);
+  show.episodes = show.episodes.map((episode, index) => ({ ...episode, runtime: [30, 50, null, 60][index] }));
+  const tracking = setup([show]);
   await tracking.watchEpisode("u", 1, { season: 1, number: 1 });
 
   // E2 (50) + E3 (unknown: (30 + 50 + 60) / 3); E4 has not aired.

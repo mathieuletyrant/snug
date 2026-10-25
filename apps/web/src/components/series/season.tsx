@@ -20,8 +20,8 @@ const refresh = () => queryClient.invalidateQueries();
 /** One season, folded unless it's the one in progress: its Episodes to tick, with catching up. */
 export function Season({ series, season }: { series: SeriesDetail; season: SeasonData }) {
   const t = useT();
-  const watched = season.episodes.filter((e) => e.watched).length;
-  const aired = season.episodes.filter((e) => e.aired).length;
+  const watched = season.episodes.filter((episode) => episode.watched).length;
+  const aired = season.episodes.filter((episode) => episode.aired).length;
   const [open, setOpen] = useState(watched > 0 && watched < aired);
   const { seasonProgress, showRatings } = usePreferences();
   // The current season: the Next Episode's, or the last one once caught up.
@@ -91,12 +91,12 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
             </button>
           )}
           <ul>
-            {season.episodes.map((e) => (
+            {season.episodes.map((episode) => (
               <EpisodeRow
-                key={e.number}
-                episode={e}
-                next={series.next?.season === season.number && series.next.number === e.number}
-                onToggle={() => onToggle(e)}
+                key={episode.number}
+                episode={episode}
+                next={series.next?.season === season.number && series.next.number === episode.number}
+                onToggle={() => onToggle(episode)}
               />
             ))}
           </ul>
@@ -120,34 +120,34 @@ function SeasonProgress({ episodes, watched, aired }: { episodes: EpisodeData[];
   if (episodes.length > MAX_SEGMENTS) return <ProgressBar value={watched} max={aired} className="mx-5 mb-4" />;
   return (
     <div role="img" aria-label={`${watched}/${aired}`} className="mx-5 mb-4 flex gap-1">
-      {episodes.map((e) => (
+      {episodes.map((episode) => (
         <span
-          key={e.number}
-          className={cx("h-1.5 flex-1 rounded-full", e.watched ? "bg-accent" : e.aired ? "bg-accent/30" : "bg-raised")}
+          key={episode.number}
+          className={cx("h-1.5 flex-1 rounded-full", episode.watched ? "bg-accent" : episode.aired ? "bg-accent/30" : "bg-raised")}
         />
       ))}
     </div>
   );
 }
 
-function EpisodeRow({ episode: e, next, onToggle }: { episode: EpisodeData; next: boolean; onToggle: () => void }) {
+function EpisodeRow({ episode, next, onToggle }: { episode: EpisodeData; next: boolean; onToggle: () => void }) {
   const t = useT();
   return (
     <li className="flex items-center gap-4 px-5 py-3 odd:bg-raised/30">
-      <span className="w-8 text-sm font-bold text-muted">{e.number}</span>
+      <span className="w-8 text-sm font-bold text-muted">{episode.number}</span>
       <div className="min-w-0 flex-1">
-        <p className={cx("truncate text-sm font-semibold", !e.aired && "text-muted")}>
-          <EpisodeTitle name={e.name} watched={e.watched} next={next} />
+        <p className={cx("truncate text-sm font-semibold", !episode.aired && "text-muted")}>
+          <EpisodeTitle name={episode.name} watched={episode.watched} next={next} />
         </p>
-        <p className="text-xs text-muted">{e.airDate ? longDate(t.tag, e.airDate) : t.common.tba}</p>
+        <p className="text-xs text-muted">{episode.airDate ? longDate(t.tag, episode.airDate) : t.common.tba}</p>
       </div>
       <button
-        aria-label={e.watched ? t.series.markUnwatched : t.series.markWatched}
-        disabled={!e.aired && !e.watched}
+        aria-label={episode.watched ? t.series.markUnwatched : t.series.markWatched}
+        disabled={!episode.aired && !episode.watched}
         onClick={onToggle}
         className={cx(
           "flex size-9 items-center justify-center rounded-full border-2 transition active:scale-90 disabled:opacity-30",
-          e.watched ? "border-accent bg-accent text-accent-ink" : "border-line text-transparent hover:border-accent",
+          episode.watched ? "border-accent bg-accent text-accent-ink" : "border-line text-transparent hover:border-accent",
         )}
       >
         <Check className="size-4" strokeWidth={3} />

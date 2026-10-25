@@ -30,7 +30,7 @@ const preferencesPatch = z
   .object({
     hideUndatedUpcoming: z.boolean(),
     episodeTitles: z.enum(EPISODE_TITLES),
-    newForDays: z.union(NEW_FOR_DAYS.map((d) => z.literal(d))),
+    newForDays: z.union(NEW_FOR_DAYS.map((days) => z.literal(days))),
     notifyNewEpisodes: z.boolean(),
     seasonProgress: z.enum(SEASON_PROGRESS),
     showRatings: z.boolean(),

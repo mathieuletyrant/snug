@@ -18,7 +18,7 @@ function vapidKeys(): { publicKey: string; privateKey: string } {
 
 /** Push services (Apple's included) want an https: or mailto: contact; never a localhost one. */
 const SUBJECT =
-  process.env.SNUG_PUSH_CONTACT ?? ORIGINS.find((o) => o.startsWith("https://")) ?? "https://github.com/mathieuletyrant/snug";
+  process.env.SNUG_PUSH_CONTACT ?? ORIGINS.find((origin) => origin.startsWith("https://")) ?? "https://github.com/mathieuletyrant/snug";
 
 export class WebPushSender {
   private readonly keys = vapidKeys();

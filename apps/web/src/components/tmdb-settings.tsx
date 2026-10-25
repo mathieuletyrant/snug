@@ -46,7 +46,7 @@ export function LanguageSelect() {
     mutationFn: (language: string) => api("/settings/language", { method: "PUT", body: { language } }),
     onSuccess: async (_, language) => {
       await queryClient.invalidateQueries({ queryKey: ["setup"] });
-      const label = LANGUAGES.find((l) => l.code === language)?.label ?? language;
+      const label = LANGUAGES.find((entry) => entry.code === language)?.label ?? language;
       toast({ message: t.tmdb.switching(label) });
     },
     onError: (e) => toast({ message: e.message }),
@@ -60,9 +60,9 @@ export function LanguageSelect() {
       disabled={!setup || save.isPending}
       onChange={(e) => save.mutate(e.target.value)}
     >
-      {LANGUAGES.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.label}
+      {LANGUAGES.map((entry) => (
+        <option key={entry.code} value={entry.code}>
+          {entry.label}
         </option>
       ))}
     </Select>

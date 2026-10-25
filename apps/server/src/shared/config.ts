@@ -9,7 +9,7 @@ export const PORT = Number(process.env.PORT ?? 3000);
 /** Public URL(s) Snug is reached at, comma separated (e.g. "http://umbrel.local:3000,https://snug.tailnet.ts.net"). */
 export const ORIGINS = (process.env.SNUG_ORIGINS ?? "")
   .split(",")
-  .map((o) => o.trim())
+  .map((origin) => origin.trim())
   .filter(Boolean);
 
 /** Auth secret: env wins, otherwise generated once and persisted next to the database. */

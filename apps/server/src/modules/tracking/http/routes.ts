@@ -16,7 +16,7 @@ export const trackingRoutes = (tracking: TrackingService) =>
     .get("/series/:id", async (c) => c.json(await tracking.detail(c.var.user.id, parse(id, c.req.param("id")))))
     .put("/series/:id", async (c) => {
       const { status, savingTarget } = parse(
-        z.object({ status: z.enum(STATUSES), savingTarget: z.union(SAVING_TARGETS.map((t) => z.literal(t))).optional() }),
+        z.object({ status: z.enum(STATUSES), savingTarget: z.union(SAVING_TARGETS.map((target) => z.literal(target))).optional() }),
         await jsonBody(c),
       );
       await tracking.track(c.var.user.id, parse(id, c.req.param("id")), status, savingTarget);

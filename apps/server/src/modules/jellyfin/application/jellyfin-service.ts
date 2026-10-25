@@ -77,13 +77,13 @@ export class JellyfinService {
       .where(eq(jellyfinEvents.userId, userId))
       .orderBy(desc(jellyfinEvents.id))
       .all()
-      .map((e) => ({
-        receivedAt: e.receivedAt.toISOString(),
-        summary: e.summary,
-        outcome: e.outcome,
-        message: e.message,
-        seriesId: e.seriesId,
-        payload: e.payload,
+      .map((row) => ({
+        receivedAt: row.receivedAt.toISOString(),
+        summary: row.summary,
+        outcome: row.outcome,
+        message: row.message,
+        seriesId: row.seriesId,
+        payload: row.payload,
       }));
   }
 
@@ -95,7 +95,7 @@ export class JellyfinService {
 
     // An Episode newer than the cached Catalog means the Series needs a refresh.
     const series = await this.catalog.ensure(seriesId);
-    if (!series.episodes.some((e) => e.season === event.season && e.number === event.number)) {
+    if (!series.episodes.some((episode) => episode.season === event.season && episode.number === event.number)) {
       await this.catalog.refresh(seriesId);
     }
     const next = await this.tracking.watchEpisode(userId, seriesId, event);
@@ -169,6 +169,6 @@ export class JellyfinService {
       .orderBy(desc(jellyfinEvents.id))
       .limit(KEEP_EVENTS)
       .all()
-      .map((e) => e.id);
+      .map((row) => row.id);
   }
 }

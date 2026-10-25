@@ -28,7 +28,7 @@ export function StatusPicker({ series }: { series: SeriesDetail }) {
       wrap
       value={series.status}
       onChange={set}
-      options={STATUSES.map((s) => ({ value: s, label: t.status[s], disabled: !series.choosable.includes(s) }))}
+      options={STATUSES.map((option) => ({ value: option, label: t.status[option], disabled: !series.choosable.includes(option) }))}
     />
   );
 }
