@@ -45,12 +45,15 @@ export function PageTitle({ children, action }: { children: ReactNode; action?: 
   );
 }
 
-/** A section's title with its count: "Ready to watch 6". */
-export function SectionTitle({ children, count }: { children: ReactNode; count: number }) {
+/** A section's title with its count: "Ready to watch 6", and an `action` on the right. */
+export function SectionTitle({ children, count, action }: { children: ReactNode; count: number; action?: ReactNode }) {
   return (
-    <h2 className="mb-3 flex items-baseline gap-2 text-xl">
-      {children} <span className="font-sans text-sm font-bold text-muted">{count}</span>
-    </h2>
+    <div className="mb-3 flex items-center justify-between gap-4">
+      <h2 className="flex items-baseline gap-2 text-xl">
+        {children} <span className="font-sans text-sm font-bold text-muted">{count}</span>
+      </h2>
+      {action}
+    </div>
   );
 }
 

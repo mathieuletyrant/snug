@@ -19,6 +19,13 @@ export interface Episode extends EpisodeRef {
   runtime?: number | null;
 }
 
+/** An Aired Episode ahead, for a Pick: its runtime, or the Series' average when TMDB has none. */
+export type AheadEpisode = Numbered & { minutes: number; seasonEnd: boolean };
+
+/** The Time budgets a Pick can be asked for, in minutes (see GLOSSARY). */
+export const TIME_BUDGETS = [20, 30, 45, 60] as const;
+export type TimeBudget = (typeof TIME_BUDGETS)[number];
+
 /** The Episode the home screen's one click marked, and the Status before it, to undo. */
 export type WatchedNext = Numbered<Episode> & { previousStatus: Status };
 
@@ -53,6 +60,8 @@ export interface SeriesCard {
   rating: number | null;
   /** Minutes to watch every aired Episode not watched yet; an Episode without a runtime counts as the Series' average. */
   minutesLeft: number;
+  /** When Ready: the Aired Episodes from the Next Episode on, as far as the longest Time budget goes (the first always); empty when no runtime is known. */
+  ahead: AheadEpisode[];
   /** ISO datetime. */
   lastWatchedAt: string | null;
 }
@@ -180,6 +189,8 @@ export interface Preferences {
   seasonProgress: SeasonProgress;
   /** Rating Series and seasons out of 10; off hides every rating control. */
   showRatings: boolean;
+  /** On Home, the "I have 25 minutes" button that proposes a Pick for a Time budget. */
+  showPick: boolean;
   /** Push a notification when an Episode of a Series you're watching comes out. */
   notifyNewEpisodes: boolean;
 }
@@ -194,7 +205,7 @@ export type SeasonProgress = (typeof SEASON_PROGRESS)[number];
 export const NEW_FOR_DAYS = [0, 3, 7, 14] as const;
 export type NewForDays = (typeof NEW_FOR_DAYS)[number];
 
-export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show", newForDays: 7, notifyNewEpisodes: true, seasonProgress: "all", showRatings: true };
+export const DEFAULT_PREFERENCES: Preferences = { hideUndatedUpcoming: false, episodeTitles: "show", newForDays: 7, notifyNewEpisodes: true, seasonProgress: "all", showPick: true, showRatings: true };
 
 /** Whether the spoiler shield hides an Episode's title. */
 export function isTitleHidden(p: Preferences, e: { watched: boolean; next: boolean }) {

@@ -32,6 +32,14 @@ export function PreferencesSection() {
             options={NEW_FOR_DAYS.map((count) => ({ value: String(count), label: count === 0 ? t.settings.off : t.settings.days(count) }))}
           />
         </Row>
+        <Row>
+          <Toggle
+            label={t.settings.showPick}
+            description={t.settings.showPickHelp}
+            checked={preferences.showPick}
+            onChange={(showPick) => update.mutate({ showPick })}
+          />
+        </Row>
       </ListGroup>
       <ListGroup title={t.settings.groups.seriesPage}>
         <Row>

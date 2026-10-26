@@ -1,4 +1,4 @@
-import { AlertDialog } from "radix-ui";
+import { AlertDialog, Dialog } from "radix-ui";
 import type { ReactNode } from "react";
 import { Button } from "./ui";
 
@@ -51,5 +51,21 @@ export function AskSheet({
         </AlertDialog.Content>
       </AlertDialog.Portal>
     </AlertDialog.Root>
+  );
+}
+
+/** Anything in a sheet, opened by its `trigger`; a tap outside or Escape closes it. */
+export function Sheet({ title, trigger, children }: { title: ReactNode; trigger: ReactNode; children: ReactNode }) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className={SHEET_OVERLAY} />
+        <Dialog.Content className={SHEET_CONTENT} aria-describedby={undefined}>
+          <Dialog.Title className="text-xl">{title}</Dialog.Title>
+          <div className="mt-4 pb-4 sm:pb-0">{children}</div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
