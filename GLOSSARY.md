@@ -78,11 +78,15 @@ Hiding the titles of Episodes a User has not Watched yet.
 _Avoid_: Blur, hidden titles
 
 **Import**:
-Loading a User's Series, Statuses, Watches and Ratings from another tracker (CSV, export file or an Assistant); it never overrides what Snug already has.
+Loading a User's Series, Statuses, Watches and Ratings from a Snug Export or another tracker (CSV, export file or an Assistant); it never overrides what Snug already has, so an Export restores as-is only into an empty account.
+
+**Export**:
+A copy of one User's TrackedSeries (Status, Saving up target, Absolute numbering), Watches and Ratings at a given time, as a file. Snug's Import reads it back without loss; another tracker or a spreadsheet can read it. Account settings and secrets are not part of it.
+_Avoid_: Backup, dump
 
 **Feed**:
-A read-only view of a User's Series for another app (Sonarr list, calendar).
-_Avoid_: Export, sync
+A live, read-only view of a User's Series for another app (Sonarr list, calendar).
+_Avoid_: Sync
 
 **Assistant**:
 An AI acting on a User's TrackedSeries over MCP, with the User's own rights on their Series and none on their account.

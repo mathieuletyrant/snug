@@ -61,8 +61,8 @@ export class TrackedSeries {
     private _absoluteNumbering = false,
   ) {}
 
-  static start(userId: string, seriesId: number, status: Status, now: Date) {
-    return new TrackedSeries(userId, seriesId, status, new Map(), now);
+  static start(userId: string, seriesId: number, status: Status, now: Date, savingTarget: SavingTarget = 0, absoluteNumbering = false) {
+    return new TrackedSeries(userId, seriesId, status, new Map(), now, savingTarget, new Map(), absoluteNumbering);
   }
 
   static restore(p: {

@@ -35,6 +35,9 @@ export interface ImportEntry {
   status: Status;
   watches: Watch[];
   ratings?: Rating[];
+  /** Like `status`, they only apply to a Series not tracked yet. */
+  savingTarget?: SavingTarget;
+  absoluteNumbering?: boolean;
 }
 
 export class TrackingService {
@@ -164,7 +167,7 @@ export class TrackingService {
       await this.exclusive(userId, entry.seriesId, async () => {
         const tracked =
           (await this.repo.find(userId, entry.seriesId)) ??
-          TrackedSeries.start(userId, entry.seriesId, entry.status, this.now());
+          TrackedSeries.start(userId, entry.seriesId, entry.status, this.now(), entry.savingTarget, entry.absoluteNumbering);
         tracked.merge(entry.watches);
         tracked.mergeRatings(entry.ratings ?? []);
         await this.repo.save(tracked);
@@ -189,6 +192,11 @@ export class TrackingService {
   }
 
   // ---- Queries
+
+  /** Every TrackedSeries of the User, as stored (for the Export). */
+  async all(userId: string): Promise<TrackedSeries[]> {
+    return this.repo.listByUser(userId);
+  }
 
   async home(userId: string): Promise<Home> {
     const list = (await this.repo.listByUser(userId)).filter((tracked) => tracked.status === "watching" || tracked.status === "saving");

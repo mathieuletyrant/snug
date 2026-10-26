@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import type { ImportResult } from "@snug/shared";
-import { Bot, Upload } from "lucide-react";
+import { Bot, Download, Upload } from "lucide-react";
 import { Link } from "wouter";
 import { api, queryClient } from "@/api";
 import { ImportProgressBar, useImportProgress } from "@/components/import-progress";
@@ -44,7 +44,7 @@ export function ImportSection() {
         </CardHeader>
         <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 text-xs text-muted">
           <code className="mb-1 block font-mono break-all text-text">
-            title,tmdb_id,season,episode,watched_at,status,rating,season_rating
+            title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering
           </code>
           <span>{t.import.columnsHelp(<b>title</b>, <b>tmdb_id</b>)}</span>
         </p>
@@ -90,6 +90,16 @@ export function ImportSection() {
           <b>{t.import.withAssistant}</b> <span className="text-muted">{t.import.withAssistantHelp}</span>
         </span>
       </Link>
+      <Card>
+        <CardHeader title={t.export.title}>{t.export.intro}</CardHeader>
+        <a
+          href="/api/export"
+          download
+          className="inline-flex items-center gap-2 rounded-2xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-ink"
+        >
+          <Download className="size-4" /> {t.export.download}
+        </a>
+      </Card>
     </>
   );
 }

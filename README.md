@@ -34,7 +34,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 - 📡 **Sonarr**: your Watchlist as a Custom List, so it gets downloaded
 - 🎬 **Spotarr**: a series from a shared reel lands on your Watchlist
 - 📅 **Calendar**: iCal feed of upcoming episodes
-- 📥 **Import**: CSV ([template](apps/web/public/snug-import-template.csv)) or JSON export
+- 📥 **Import & export**: CSV ([template](apps/web/public/snug-import-template.csv)) or JSON export in, the same CSV out
 
 **App**
 
@@ -73,6 +73,8 @@ Open http://localhost:3000, create the admin account, paste a [TMDB key](https:/
 
 The image is multi-arch (amd64 / arm64), tagged `latest`, `x.y` and `x.y.z`.
 
+To back up the whole instance, copy `DATA_DIR` while Snug is stopped. Each user can also download their own series as CSV from Settings → Import & export.
+
 ## 🪼 Jellyfin
 
 1. Install the **Webhook** plugin (Dashboard → Plugins → Catalog) and restart Jellyfin.
@@ -104,7 +106,7 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     jellyfin     webhook → Watches, history
     feeds        read-only lists for other apps (Sonarr, iCal calendar)
     notifications  Web Push to the User's devices
-    import       JSON export → TrackedSeries
+    import       CSV / JSON export ⇄ TrackedSeries
     watchlist    add to the Watchlist from other apps (Spotarr)
 apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA
   src/pages        one file per screen (settings/: one per tab), made of components
