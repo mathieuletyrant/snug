@@ -3,11 +3,11 @@ import { useSearchParams } from "wouter";
 import { Chips, PageTitle } from "@/components/ui";
 import { useT } from "@/i18n";
 import { AdminSection } from "./admin";
-import { GeneralSection } from "./general";
 import { ImportSection } from "./import";
 import { IntegrationsSection } from "./integrations";
+import { PreferencesSection } from "./preferences";
 
-const SECTIONS = ["general", "integrations", "import", "admin"] as const;
+const SECTIONS = ["preferences", "integrations", "import", "admin"] as const;
 type Section = (typeof SECTIONS)[number];
 
 /** One section at a time, chosen by `?section=` so a link (or Back) lands on the right one. */
@@ -15,7 +15,7 @@ export function SettingsPage({ me }: { me: Me }) {
   const t = useT();
   const [params, setParams] = useSearchParams();
   const sections = SECTIONS.filter((name) => name !== "admin" || me.isAdmin);
-  const section: Section = sections.find((name) => name === params.get("section")) ?? "general";
+  const section: Section = sections.find((name) => name === params.get("section")) ?? "preferences";
 
   return (
     <>
@@ -28,7 +28,7 @@ export function SettingsPage({ me }: { me: Me }) {
         className="-mx-4 mb-5 gap-2 px-4 pb-1 md:mx-0 md:px-0"
       />
       <div className="space-y-5">
-        {section === "general" && <GeneralSection me={me} />}
+        {section === "preferences" && <PreferencesSection />}
         {section === "integrations" && <IntegrationsSection />}
         {section === "import" && <ImportSection />}
         {section === "admin" && <AdminSection />}

@@ -189,19 +189,17 @@ export function Select({
   );
 }
 
-/** One setting: its name and what it does, with its control on the right or below (`stacked`). */
+/** One setting: its name and what it does, with its control on the right. */
 export function SettingRow({
   label,
   description,
   htmlFor,
-  stacked = false,
   children,
 }: {
   label: string;
   description?: ReactNode;
   /** The control's id, so a tap on the label reaches it. */
   htmlFor?: string;
-  stacked?: boolean;
   children: ReactNode;
 }) {
   const text = (
@@ -211,16 +209,52 @@ export function SettingRow({
     </>
   );
   return (
-    <div className={cx("py-2", !stacked && "flex items-center justify-between gap-4")}>
+    <div className="flex items-center justify-between gap-4 py-2">
       {htmlFor ? (
         <label htmlFor={htmlFor} className="cursor-pointer">
           {text}
         </label>
       ) : (
-        <div className={cx(stacked && "mb-2")}>{text}</div>
+        <div>{text}</div>
       )}
       {children}
     </div>
+  );
+}
+
+/** A setting with a few choices: the chosen one on the right, a native menu on tap (a wheel on iPhone). */
+export function Choice<T extends string>({
+  label,
+  description,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  description?: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  const id = useId();
+  return (
+    <SettingRow label={label} description={description} htmlFor={id}>
+      <span className="relative shrink-0">
+        <select
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value as T)}
+          className="cursor-pointer appearance-none rounded-full bg-raised py-1.5 pr-8 pl-3 text-sm font-bold text-text transition hover:bg-line focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted" />
+      </span>
+    </SettingRow>
   );
 }
 

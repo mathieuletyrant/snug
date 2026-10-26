@@ -24,7 +24,7 @@ import { api } from "@/api";
 import { CopyField } from "@/components/copy-field";
 import { usePush } from "@/components/push";
 import { useToast } from "@/components/toast";
-import { Badge, Button, Card, cx, MultiChips, Toggle } from "@/components/ui";
+import { Badge, Button, Card, cx, ListGroup, MultiChips, Toggle } from "@/components/ui";
 import { useT } from "@/i18n";
 import { ago } from "@/lib/format";
 import { SetupSteps, steps, useIntegration } from "./integration-card";
@@ -91,16 +91,11 @@ export function IntegrationsSection() {
   };
 
   return GROUPS.map((group) => (
-    <section key={group}>
-      <h2 className="mb-2 px-1 font-sans text-xs font-bold tracking-wider text-muted uppercase">
-        {t.integrations.groups[group]}
-      </h2>
-      <ul className="divide-y divide-line/60 overflow-hidden rounded-3xl border border-line/60 bg-surface">
-        {APPS.filter((candidate) => candidate.group === group).map((app) => (
-          <Row key={app.id} app={app} status={status[app.id]} onOpen={() => open(app.id)} />
-        ))}
-      </ul>
-    </section>
+    <ListGroup key={group} title={t.integrations.groups[group]}>
+      {APPS.filter((candidate) => candidate.group === group).map((app) => (
+        <Row key={app.id} app={app} status={status[app.id]} onOpen={() => open(app.id)} />
+      ))}
+    </ListGroup>
   ));
 }
 
@@ -247,7 +242,7 @@ function Assistant() {
   );
 }
 
-/** Push on this device (Web Push); which events are sent is chosen in General. */
+/** Push on this device (Web Push); which events are sent is chosen in Preferences. */
 function WebPush() {
   const toast = useToast();
   const t = useT();

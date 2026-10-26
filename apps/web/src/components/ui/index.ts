@@ -1,5 +1,5 @@
 /** The app's building blocks: every page is made of these. */
-export { Button, Chips, Input, MultiChips, SearchInput, Select, SettingRow, Toggle } from "./controls";
+export { Button, Chips, Choice, Input, MultiChips, SearchInput, Select, SettingRow, Toggle } from "./controls";
 export { cx } from "./cx";
 export { Badge, Empty, ErrorText, Skeleton, Spinner } from "./feedback";
 export {
@@ -8,6 +8,7 @@ export {
   CardHeader,
   CenteredPage,
   COLLISION_PADDING,
+  ListGroup,
   MENU,
   MENU_ITEM,
   PageTitle,
