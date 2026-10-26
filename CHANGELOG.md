@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/mathieuletyrant/snug/compare/v0.14.0...v0.15.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **import:** CSV export of a user's series, read back by the import ([#80](https://github.com/mathieuletyrant/snug/issues/80)) ([035db3c](https://github.com/mathieuletyrant/snug/commit/035db3ce24c63a9118c134609452036232a66c90))
+
 ## [0.14.0](https://github.com/mathieuletyrant/snug/compare/v0.13.0...v0.14.0) (2026-10-25)
 
 
