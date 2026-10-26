@@ -184,6 +184,20 @@ test("time left: aired Episodes not watched, an unknown runtime counting as the 
   expect((await tracking.detail("u", 1)).minutesLeft).toBe(97);
 });
 
+test("a Ready card carries the Aired Episodes ahead, as far as the longest Time budget goes", async () => {
+  const show = series(1, false, ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-28"]);
+  show.episodes = show.episodes.map((episode, index) => ({ ...episode, runtime: [20, 25, null, 25, 20][index] }));
+  const tracking = setup([show]);
+  await tracking.watchEpisode("u", 1, { season: 1, number: 1 });
+
+  // E3 counts as the average (22.5); E4 would pass 60 minutes; E5 has not aired.
+  const [card] = (await tracking.home("u")).ready;
+  expect(card!.ahead.map((episode) => [episode.number, episode.minutes, episode.seasonEnd])).toEqual([
+    [2, 25, false],
+    [3, 23, false],
+  ]);
+});
+
 test("Absolute numbering is kept per User and Series, and the Episodes carry their Absolute numbers", async () => {
   const { db } = testDb(["u", "v"]);
   const show = series(1, false, ["2026-10-01", "2026-10-08", "2026-10-15"]);

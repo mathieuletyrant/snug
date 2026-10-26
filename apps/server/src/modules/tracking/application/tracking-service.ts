@@ -1,4 +1,5 @@
 import {
+  type AheadEpisode,
   DEFAULT_PREFERENCES,
   type Home,
   type Numbered,
@@ -6,6 +7,7 @@ import {
   type SavingTarget,
   type SeriesCard,
   type SeriesDetail,
+  TIME_BUDGETS,
   type WatchedNext,
 } from "@snug/shared";
 import { type Episode, numberAbsolutely, type Series } from "@/modules/catalog/domain/series";
@@ -374,7 +376,26 @@ export class TrackingService {
       airedCount: aired.length,
       rating: t.ratingOf(),
       minutesLeft: Math.round(aired.filter((episode) => !t.hasWatched(episode)).reduce((sum, episode) => sum + (episode.runtime ?? average), 0)),
+      ahead: series && onDay.ready && onDay.next && average ? this.ahead(t, series, onDay.next, aired, average) : [],
       lastWatchedAt: t.lastWatchedAt?.toISOString() ?? null,
     };
+  }
+
+  /** The Aired Episodes from the Next Episode on, while the longest Time budget lasts: what a Pick is made of. */
+  private ahead(t: TrackedSeries, series: Series, next: EpisodeRef, aired: Episode[], average: number): AheadEpisode[] {
+    const numbered = numberAbsolutely(series.episodes);
+    const seasonEnds = new Map<number, number>();
+    for (const episode of series.episodes) seasonEnds.set(episode.season, Math.max(seasonEnds.get(episode.season) ?? 0, episode.number));
+    const longest = Math.max(...TIME_BUDGETS);
+    const ahead: AheadEpisode[] = [];
+    let total = 0;
+    for (const episode of aired.filter((episode) => compareEpisodes(episode, next) >= 0 && !t.hasWatched(episode)).sort(compareEpisodes)) {
+      const minutes = Math.round(episode.runtime ?? average);
+      total += minutes;
+      if (ahead.length && total > longest) break;
+      const { season, number, absolute } = numbered(episode);
+      ahead.push({ season, number, absolute, minutes, seasonEnd: seasonEnds.get(season) === number });
+    }
+    return ahead;
   }
 }

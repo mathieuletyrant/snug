@@ -69,6 +69,14 @@ _Avoid_: Caught up, waiting
 A Ready Series whose Next Episode Aired lately, while the User was caught up and waiting for it.
 _Avoid_: Fresh
 
+**Time budget**:
+How many minutes a User has to watch right now ("I have 25 minutes").
+_Avoid_: Slot, window, free time
+
+**Pick**:
+What Snug proposes for a Time budget: one Ready Series and as many of its Aired Episodes, in order from the Next Episode, as fit the budget. A Saving up Series is proposed only when everything it saved fits. A Pick marks nothing Watched.
+_Avoid_: Suggestion, recommendation
+
 **Rating**:
 How a User rates a Series or one of its seasons, out of 10.
 _Avoid_: Score, stars, grade

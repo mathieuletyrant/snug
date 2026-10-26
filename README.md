@@ -21,6 +21,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 
 - 🛋️ **Home**: *Ready to watch* and *Upcoming*, one tap ✓ for the next episode (with undo)
 - 🆕 **New mode**: freshly aired episodes first
+- ⏱️ **"I have 25 minutes"**: pick a time budget, Snug proposes what fits tonight
 - 📺 **Statuses**: Watchlist, Watching, Saving up (wait for a full season or N episodes), Paused, Completed, Dropped
 - 📊 **Progress** per season, time left to watch
 - ⭐ **Ratings** out of 10, per series and per season

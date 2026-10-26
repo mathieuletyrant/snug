@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Coffee } from "lucide-react";
 import { Link } from "wouter";
+import { usePreferences } from "@/components/preferences";
+import { PickSheet } from "@/components/series/pick-sheet";
 import { ReadyCard } from "@/components/series/ready-card";
 import { UpcomingTile } from "@/components/series/upcoming-tile";
 import { HomeSkeleton } from "@/components/skeletons";
@@ -12,6 +14,7 @@ import { homeQuery } from "@/queries";
 export function HomePage() {
   const { data, isPending } = useQuery(homeQuery);
   const t = useT();
+  const { showPick } = usePreferences();
 
   if (isPending) return <HomeSkeleton />;
   if (!data || (!data.ready.length && !data.upcoming.length)) {
@@ -36,7 +39,9 @@ export function HomePage() {
 
       {data.ready.length > 0 && (
         <section className="mb-10">
-          <SectionTitle count={data.ready.length}>{t.home.ready}</SectionTitle>
+          <SectionTitle count={data.ready.length} action={showPick && <PickSheet ready={data.ready} />}>
+            {t.home.ready}
+          </SectionTitle>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {data.ready.map((card) => (
               <ReadyCard key={card.seriesId} card={card} />
