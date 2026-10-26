@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/mathieuletyrant/snug/compare/v0.15.0...v0.16.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **notifications:** ntfy for the admin's notifications ([#84](https://github.com/mathieuletyrant/snug/issues/84)) ([f0726a8](https://github.com/mathieuletyrant/snug/commit/f0726a8c1e75abb3b383838f2e2c097dc15f292e))
+* **settings:** integrations and preferences as grouped lists, account in the nav ([#82](https://github.com/mathieuletyrant/snug/issues/82)) ([8639423](https://github.com/mathieuletyrant/snug/commit/8639423d805a04ff2e33eb02d4ee7da2083d97a3))
+
 ## [0.15.0](https://github.com/mathieuletyrant/snug/compare/v0.14.0...v0.15.0) (2026-10-26)
 
 
