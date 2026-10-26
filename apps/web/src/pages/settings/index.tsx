@@ -29,7 +29,7 @@ export function SettingsPage({ me }: { me: Me }) {
       />
       <div className="space-y-5">
         {section === "preferences" && <PreferencesSection />}
-        {section === "integrations" && <IntegrationsSection />}
+        {section === "integrations" && <IntegrationsSection isAdmin={me.isAdmin} />}
         {section === "import" && <ImportSection />}
         {section === "admin" && <AdminSection />}
       </div>

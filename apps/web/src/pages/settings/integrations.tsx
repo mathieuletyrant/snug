@@ -3,12 +3,15 @@ import {
   type JellyfinIntegration,
   MCP_FEATURES,
   type McpIntegration,
+  type NtfyInput,
+  type NtfySettings,
   STATUSES,
   type Status,
   type WatchlistIntegration,
 } from "@snug/shared";
 import {
   ArrowLeft,
+  Bell,
   Bot,
   CalendarDays,
   ChevronRight,
@@ -18,19 +21,21 @@ import {
   Smartphone,
   Tv,
 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { useSearchParams } from "wouter";
-import { api } from "@/api";
+import { api, queryClient } from "@/api";
 import { CopyField } from "@/components/copy-field";
+import { useForm } from "@/components/form";
 import { usePush } from "@/components/push";
 import { useToast } from "@/components/toast";
-import { Badge, Button, Card, cx, ListGroup, MultiChips, Toggle } from "@/components/ui";
+import { Badge, Button, Card, cx, ErrorText, Input, ListGroup, MultiChips, Toggle } from "@/components/ui";
 import { useT } from "@/i18n";
 import { ago } from "@/lib/format";
 import { SetupSteps, steps, useIntegration } from "./integration-card";
 import { WebhookHistory } from "./webhook-history";
 
-type AppId = "jellyfin" | "sonarr" | "spotarr" | "push" | "calendar" | "mcp";
+type AppId = "jellyfin" | "sonarr" | "spotarr" | "push" | "ntfy" | "calendar" | "mcp";
 
 interface App {
   id: AppId;
@@ -38,6 +43,8 @@ interface App {
   icon: LucideIcon;
   /** What its row opens. */
   Content: () => ReactNode;
+  /** Set for the whole instance: only the admin sees it. */
+  instance?: boolean;
 }
 
 /** What a row can tell at a glance: Jellyfin's last call, push on this device. */
@@ -52,18 +59,20 @@ const APPS: App[] = [
   { id: "sonarr", group: "arr", icon: Download, Content: Sonarr },
   { id: "spotarr", group: "arr", icon: Clapperboard, Content: Spotarr },
   { id: "push", group: "notifications", icon: Smartphone, Content: WebPush },
+  { id: "ntfy", group: "notifications", icon: Bell, Content: Ntfy, instance: true },
   { id: "calendar", group: "other", icon: CalendarDays, Content: Calendar },
   { id: "mcp", group: "other", icon: Bot, Content: Assistant },
 ];
 
-const GROUPS = [...new Set(APPS.map((app) => app.group))];
+const NTFY_PATH = "/integrations/ntfy";
 
 /** The list of integrations, or the one chosen by `?app=` so a link (or Back) lands on it. */
-export function IntegrationsSection() {
+export function IntegrationsSection({ isAdmin }: { isAdmin: boolean }) {
   const t = useT();
   const [params, setParams] = useSearchParams();
-  const app = APPS.find((candidate) => candidate.id === params.get("app"));
-  const status = useStatus();
+  const apps = APPS.filter((candidate) => !candidate.instance || isAdmin);
+  const app = apps.find((candidate) => candidate.id === params.get("app"));
+  const status = useStatus(isAdmin);
 
   if (app) {
     const text = t.integrations[app.id];
@@ -77,6 +86,7 @@ export function IntegrationsSection() {
             <AppIcon icon={app.icon} />
             <h2 className="text-xl leading-tight">{text.title}</h2>
             <Badge tone="plain">{text.term}</Badge>
+            {app.instance && <Badge>{t.integrations.instance}</Badge>}
           </div>
           <app.Content />
         </Card>
@@ -90,9 +100,9 @@ export function IntegrationsSection() {
     setParams(next);
   };
 
-  return GROUPS.map((group) => (
+  return [...new Set(apps.map((candidate) => candidate.group))].map((group) => (
     <ListGroup key={group} title={t.integrations.groups[group]}>
-      {APPS.filter((candidate) => candidate.group === group).map((app) => (
+      {apps.filter((candidate) => candidate.group === group).map((app) => (
         <Row key={app.id} app={app} status={status[app.id]} onOpen={() => open(app.id)} />
       ))}
     </ListGroup>
@@ -111,6 +121,7 @@ function Row({ app, status, onOpen }: { app: App; status: ConnectionState | unde
           <span className="flex items-center gap-2 font-bold">
             {text.title}
             <Badge tone="plain">{text.term}</Badge>
+            {app.instance && <Badge>{t.integrations.instance}</Badge>}
           </span>
           <span className="block text-sm text-muted">{text.description}</span>
         </span>
@@ -134,10 +145,11 @@ function AppIcon({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
-function useStatus(): Partial<Record<AppId, ConnectionState>> {
+function useStatus(isAdmin: boolean): Partial<Record<AppId, ConnectionState>> {
   const t = useT();
   const { data } = useIntegration<JellyfinIntegration>("/integrations/jellyfin", 15_000);
   const push = usePush();
+  const ntfy = useQuery({ queryKey: ["integration", NTFY_PATH], queryFn: () => api<NtfySettings>(NTFY_PATH), enabled: isAdmin });
   const last = data?.events[0];
   return {
     jellyfin: data && (last ? { label: ago(t, last.receivedAt), on: true } : { label: t.integrations.jellyfin.neverCalled, on: false }),
@@ -147,6 +159,7 @@ function useStatus(): Partial<Record<AppId, ConnectionState>> {
         : push.state === "on"
           ? { label: t.integrations.push.on(push.devices), on: true }
           : { label: t.settings.off, on: false },
+    ntfy: ntfy.data && (ntfy.data.topics.length ? { label: t.integrations.ntfy.on, on: true } : { label: t.settings.off, on: false }),
   };
 }
 
@@ -278,5 +291,80 @@ function WebPush() {
         </div>
       )}
     </>
+  );
+}
+
+/** The instance's ntfy (admin only): saved, or tested with the form's values before saving. */
+function Ntfy() {
+  const t = useT();
+  const { data } = useQuery({ queryKey: ["integration", NTFY_PATH], queryFn: () => api<NtfySettings>(NTFY_PATH) });
+  return (
+    <>
+      <p className="mb-4 text-sm text-muted">{t.integrations.ntfy.instanceHelp}</p>
+      {data && <NtfyForm settings={data} />}
+    </>
+  );
+}
+
+function NtfyForm({ settings }: { settings: NtfySettings }) {
+  const t = useT();
+  const toast = useToast();
+  const form = useForm({ server: settings.server, token: "", topics: settings.topics.join(", "), tags: settings.tags.join(", ") });
+  const list = (text: string) => text.split(/[,\s]+/).filter(Boolean);
+  const input = (): NtfyInput => ({ ...form.values, topics: list(form.values.topics), tags: list(form.values.tags) });
+  const save = useMutation({
+    mutationFn: () => api(NTFY_PATH, { method: "PUT", body: input() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["integration", NTFY_PATH] }),
+    onError: form.fromError,
+  });
+  const test = useMutation({
+    mutationFn: () => api(`${NTFY_PATH}/test`, { body: input() }),
+    onSuccess: () => toast({ message: t.integrations.ntfy.testSent }),
+    onError: form.fromError,
+  });
+
+  return (
+    <form {...form.formProps} onSubmit={form.onSubmit(() => save.mutate())} className="space-y-4">
+      <Input
+        label={t.integrations.ntfy.server}
+        placeholder="https://ntfy.sh"
+        hint={t.integrations.ntfy.serverHint}
+        autoComplete="off"
+        spellCheck={false}
+        {...form.field("server")}
+      />
+      <Input
+        label={t.integrations.ntfy.token}
+        type="password"
+        placeholder={settings.hasToken ? "••••••••" : "tk_…"}
+        hint={settings.hasToken ? t.integrations.ntfy.tokenSaved : t.integrations.ntfy.tokenHint}
+        autoComplete="off"
+        {...form.field("token")}
+      />
+      <Input
+        label={t.integrations.ntfy.topics}
+        placeholder="arr"
+        hint={t.integrations.ntfy.topicsHint}
+        autoComplete="off"
+        spellCheck={false}
+        {...form.field("topics")}
+      />
+      <Input
+        label={t.integrations.ntfy.tags}
+        placeholder="tv"
+        hint={t.integrations.ntfy.tagsHint}
+        autoComplete="off"
+        spellCheck={false}
+        {...form.field("tags")}
+      />
+      <ErrorText error={form.formError} />
+      {save.isSuccess && <p className="text-sm text-sage">{t.integrations.ntfy.saved}</p>}
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={save.isPending}>{t.integrations.ntfy.save}</Button>
+        <Button type="button" variant="ghost" disabled={test.isPending} onClick={() => test.mutate()}>
+          {t.integrations.ntfy.test}
+        </Button>
+      </div>
+    </form>
   );
 }

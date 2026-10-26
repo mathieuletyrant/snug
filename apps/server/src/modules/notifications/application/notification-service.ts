@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/shared/db";
 import { moduleLogger, reason } from "@/shared/logger";
 import { pushSubscriptions } from "@/modules/notifications/infrastructure/schema";
+import type { Ntfy } from "@/modules/notifications/infrastructure/ntfy";
 import type { WebPushSender } from "@/modules/notifications/infrastructure/web-push-sender";
 
 const log = moduleLogger("push");
@@ -24,6 +25,8 @@ export class NotificationService implements Notifier {
   constructor(
     private readonly db: Db,
     private readonly sender: WebPushSender,
+    private readonly ntfy: Ntfy,
+    private readonly isAdmin: (userId: string) => boolean,
   ) {}
 
   get publicKey() {
@@ -46,11 +49,15 @@ export class NotificationService implements Notifier {
     return this.db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId)).all().length;
   }
 
-  /** Sends to every device of the User; forgets devices the push service says are gone. Never throws. */
+  /**
+   * Sends to every device of the User, and to ntfy for the admin; forgets devices the push service says are gone.
+   * Never throws.
+   */
   async notify(userId: string, notification: Notification) {
     const devices = this.db.select().from(pushSubscriptions).where(eq(pushSubscriptions.userId, userId)).all();
-    await Promise.all(
-      devices.map(async (device) => {
+    await Promise.all([
+      this.toNtfy(userId, notification),
+      ...devices.map(async (device) => {
         try {
           const status = await this.sender.send(device, notification);
           const host = new URL(device.endpoint).host;
@@ -66,6 +73,18 @@ export class NotificationService implements Notifier {
           log.warn(`Push failed: ${reason(error)}`);
         }
       }),
-    );
+    ]);
+  }
+
+  /** ntfy is set for the instance, so only the admin's notifications go there (ADR 0004). */
+  private async toNtfy(userId: string, notification: Notification) {
+    const config = this.isAdmin(userId) ? this.ntfy.config() : null;
+    if (!config) return;
+    try {
+      await this.ntfy.send(config, notification);
+      log.debug(`Sent "${notification.title}" to ntfy`);
+    } catch (error) {
+      log.warn(`Push to ntfy failed: ${reason(error)}`);
+    }
   }
 }

@@ -30,6 +30,7 @@ Where you are (S02E05), what's next, what airs soon. One tap to mark an episode 
 
 - 🪼 **Jellyfin**: watched episodes tracked automatically, webhook history
 - 🔔 **Push notifications**: new episode out, episode watched in Jellyfin (iPhone: Home Screen app over HTTPS)
+- 📣 **ntfy**: the admin's notifications on ntfy topics, next to the *arr stack's
 - 🤖 **AI assistant** (MCP): Claude manages your library, imports your TV Time / Trakt history
 - 📡 **Sonarr**: your Watchlist as a Custom List, so it gets downloaded
 - 🎬 **Spotarr**: a series from a shared reel lands on your Watchlist
@@ -84,6 +85,15 @@ To back up the whole instance, copy `DATA_DIR` while Snug is stopped. Each user 
 > [!TIP]
 > The URL must be reachable **from Jellyfin's container**: use Snug's LAN address or `host.docker.internal`, not `localhost`.
 
+## 📣 ntfy
+
+The admin sets it once for the instance in Settings → Integrations → ntfy: server URL (empty for ntfy.sh), an optional access token, topics and tags, like Sonarr's ntfy connection. **Send a test** checks the form before saving.
+
+The admin's notifications then also go to those topics; the other users keep Web Push. A tap opens the series in Snug, at the first `https://` origin of `SNUG_ORIGINS` (or the first one).
+
+> [!TIP]
+> With ntfy in the same Docker network, use its container name, e.g. `http://ntfy:80`.
+
 ## 🛠️ Develop
 
 ```sh
@@ -105,7 +115,7 @@ apps/server      Bun · Hono · Drizzle (SQLite) · better-auth
     mcp          AI assistant (MCP server): tools and prompts over the other modules
     jellyfin     webhook → Watches, history
     feeds        read-only lists for other apps (Sonarr, iCal calendar)
-    notifications  Web Push to the User's devices
+    notifications  Web Push to the User's devices, ntfy for the admin
     import       CSV / JSON export ⇄ TrackedSeries
     watchlist    add to the Watchlist from other apps (Spotarr)
 apps/web         React 19 · Vite · Tailwind 4 · Radix UI · TanStack Query, PWA
