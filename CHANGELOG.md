@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/mathieuletyrant/snug/compare/v0.16.0...v0.17.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **home:** pick what fits a time budget ([#87](https://github.com/mathieuletyrant/snug/issues/87)) ([7ff57a2](https://github.com/mathieuletyrant/snug/commit/7ff57a22a5ebea238f448f170891440e156688da)), closes [#85](https://github.com/mathieuletyrant/snug/issues/85)
+
 ## [0.16.0](https://github.com/mathieuletyrant/snug/compare/v0.15.0...v0.16.0) (2026-10-26)
 
 
