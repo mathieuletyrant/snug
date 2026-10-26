@@ -208,6 +208,21 @@ export interface PushSettings {
   devices: number;
 }
 
+/** ntfy, set by the admin for the whole instance: the admin's notifications also go to these topics. */
+export interface NtfySettings {
+  /** Empty for the public server, https://ntfy.sh. */
+  server: string;
+  /** None: ntfy is off. */
+  topics: string[];
+  /** ntfy tags or emoji short codes, shown before the title. */
+  tags: string[];
+  /** The access token is never sent back, only whether one is saved. */
+  hasToken: boolean;
+}
+
+/** What the admin saves or tests; an empty token keeps the saved one. */
+export type NtfyInput = Omit<NtfySettings, "hasToken"> & { token: string };
+
 export interface ImportResult {
   series: number;
   watches: number;

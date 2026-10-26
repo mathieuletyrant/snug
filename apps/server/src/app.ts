@@ -10,6 +10,7 @@ import {
   importer,
   jellyfin,
   notifications,
+  ntfy,
   refreshCatalog,
   tracking,
 } from "./container";
@@ -19,7 +20,7 @@ import { authHandler, identityRoutes, requireAdmin, requireSession } from "@/mod
 import { exportRoutes, importRoutes } from "@/modules/import/http/routes";
 import { jellyfinRoutes, jellyfinWebhook } from "@/modules/jellyfin/http/routes";
 import { mcpRoutes, mcpServer } from "@/modules/mcp/http/routes";
-import { notificationRoutes } from "@/modules/notifications/http/routes";
+import { notificationRoutes, ntfyRoutes } from "@/modules/notifications/http/routes";
 import { trackingRoutes } from "@/modules/tracking/http/routes";
 import { watchlistRoutes, watchlistWebhook } from "@/modules/watchlist/http/routes";
 import { type AuthEnv, onError } from "@/shared/http";
@@ -53,6 +54,7 @@ const api = new Hono<AuthEnv>()
   .route("/integrations/feeds", feedSettingsRoutes(identity))
   .route("/integrations/watchlist", watchlistRoutes(identity))
   .route("/integrations/mcp", mcpRoutes(identity))
+  .route("/integrations/ntfy", ntfyRoutes(ntfy, requireAdmin(identity)))
   .route("/push", notificationRoutes(notifications))
   .all("/*", (c) => c.json({ error: "Not found" }, 404));
 

@@ -26,6 +26,8 @@ const en = {
     notTracked: "This series is not in your library",
     invalidExport: "This file is not a valid export",
     importRunning: "An import is still running, wait for it to finish",
+    ntfyServer: "Use a URL like https://ntfy.example.com, or leave it empty for ntfy.sh",
+    ntfyTopic: "Add a topic: letters, digits, - and _",
   },
   csv: {
     empty: "The file is empty",
@@ -46,6 +48,7 @@ const en = {
   push: {
     testTitle: "Snug 🛋️",
     testBody: "Notifications work on this device.",
+    ntfyTestBody: "Notifications work with ntfy.",
     caughtUp: "You're all caught up.",
     next: (code: string, name: string | null) => `Next: ${code}${name ? ` · ${name}` : ""}`,
     nextOn: (code: string, date: string) => `Next: ${code} on ${date}`,
@@ -85,6 +88,8 @@ const fr: Messages = {
     notTracked: "Cette série n'est pas dans votre bibliothèque",
     invalidExport: "Ce fichier n'est pas un export valide",
     importRunning: "Un import est en cours, attendez qu'il se termine",
+    ntfyServer: "Indiquez une URL comme https://ntfy.example.com, ou laissez vide pour ntfy.sh",
+    ntfyTopic: "Ajoutez un topic : lettres, chiffres, - et _",
   },
   csv: {
     empty: "Le fichier est vide",
@@ -104,6 +109,7 @@ const fr: Messages = {
   push: {
     testTitle: "Snug 🛋️",
     testBody: "Les notifications marchent sur cet appareil.",
+    ntfyTestBody: "Les notifications marchent avec ntfy.",
     caughtUp: "Vous êtes à jour.",
     next: (code, name) => `Ensuite : ${code}${name ? ` · ${name}` : ""}`,
     nextOn: (code, date) => `Ensuite : ${code} le ${date}`,
