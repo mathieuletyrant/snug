@@ -14,13 +14,13 @@ import {
   CalendarDays,
   Clapperboard,
   Download,
-  type LucideIcon,
   Tv,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { CopyField } from "@/components/copy-field";
 import { Badge, MultiChips } from "@/components/ui";
 import { useT } from "@/i18n";
+import { Group } from "./group";
 import { IntegrationCard, SetupSteps, steps, useIntegration } from "./integration-card";
 import { WebhookHistory } from "./webhook-history";
 
@@ -38,34 +38,6 @@ export function IntegrationsSection() {
         <Calendar />
       </Group>
     </>
-  );
-}
-
-/** Which way the data goes: apps feeding Snug, or apps reading from it. */
-function Group({
-  icon: Icon,
-  title,
-  help,
-  children,
-}: {
-  icon: LucideIcon;
-  title: string;
-  help: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="space-y-3 pt-4">
-      <div className="flex items-center gap-3 border-b border-line/60 pb-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
-          <Icon className="size-5" />
-        </span>
-        <div>
-          <h2 className="text-2xl font-semibold">{title}</h2>
-          <p className="text-sm text-muted">{help}</p>
-        </div>
-      </div>
-      {children}
-    </section>
   );
 }
 

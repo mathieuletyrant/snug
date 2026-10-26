@@ -3,6 +3,7 @@ import type { CatalogService } from "@/modules/catalog/application/catalog-servi
 import type { Series } from "@/modules/catalog/domain/series";
 import { TrackingService } from "@/modules/tracking/application/tracking-service";
 import { DrizzleTrackedSeriesRepository } from "@/modules/tracking/infrastructure/drizzle-tracked-series-repository";
+import { startOf } from "@/shared/day";
 import { testDb } from "@/shared/testing";
 import { ImportService } from "./import-service";
 
@@ -56,4 +57,38 @@ test("imports right away, then fetches the Series and applies the Completed rule
     [2, "watching"],
     [3, "watching"],
   ]);
+});
+
+test("an Export imported into an empty account exports the same", async () => {
+  const { db } = testDb();
+  const names: Record<number, string> = { 1: 'Love, Death & "Robots"', 2: "Dark", 3: "Severance" };
+  const named = (id: number) => ({ ...series(id, false), name: names[id] ?? "" });
+  const catalog = {
+    ensure: async (id: number) => named(id),
+    getMany: async (ids: readonly number[]) => new Map(ids.map((id) => [id, named(id)])),
+  } as unknown as CatalogService;
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog);
+  const importer = new ImportService(tracking, catalog);
+  const watch = (number: number, day: string) => ({ season: 1, number, watchedAt: startOf(day) });
+  await tracking.import("a", [
+    { seriesId: 1, status: "watching", watches: [watch(1, "2024-02-18")], ratings: [{ season: 0, rating: 9 }, { season: 2, rating: 7 }] },
+    { seriesId: 2, status: "saving", watches: [watch(2, "2024-03-01"), watch(1, "2024-02-28")], savingTarget: 5, absoluteNumbering: true },
+    { seriesId: 3, status: "watchlist", watches: [] },
+  ]);
+
+  const csv = await importer.exportCsv("a");
+  expect(csv).toBe(
+    [
+      "title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering",
+      "Dark,2,1,1,2024-02-28,saving,,,5,true",
+      "Dark,2,1,2,2024-03-01,saving,,,5,true",
+      '"Love, Death & ""Robots""",1,1,1,2024-02-18,watching,9,,0,false',
+      '"Love, Death & ""Robots""",1,2,,,watching,9,7,0,false',
+      "Severance,3,,,,watchlist,,,0,false",
+      "",
+    ].join("\n"),
+  );
+  await importer.importCsv("b", csv);
+  while (importer.progressOf("b").running) await Bun.sleep(1);
+  expect(await importer.exportCsv("b")).toBe(csv);
 });

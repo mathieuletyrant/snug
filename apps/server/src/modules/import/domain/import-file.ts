@@ -24,6 +24,7 @@ export const STATUS_ALIASES: Record<string, Status> = {
   plan_to_watch: "watchlist",
   in_progress: "watching",
   watching: "watching",
+  saving: "saving",
   paused: "paused",
   on_hold: "paused",
   completed: "completed",

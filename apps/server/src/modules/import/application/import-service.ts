@@ -5,6 +5,7 @@ import { InvalidInputError } from "@/shared/errors";
 import { moduleLogger, reason } from "@/shared/logger";
 import type { ImportEntry, TrackingService } from "@/modules/tracking/application/tracking-service";
 import { CsvImportError, type CsvRow, csvRowsToEntries, parseCsvImport } from "@/modules/import/domain/csv-import";
+import { writeCsvExport } from "@/modules/import/domain/csv-export";
 import { parseImportFile } from "@/modules/import/domain/import-file";
 import { t } from "@/shared/i18n";
 
@@ -48,6 +49,13 @@ export class ImportService {
     await forEachLimit(titles, 6, async (title) => ids.set(title, await this.catalog.resolve({ title })));
     const entries = csvRowsToEntries(rows, (title) => ids.get(title) ?? null, new Date());
     return this.run(userId, entries, titles.filter((title) => !ids.get(title)));
+  }
+
+  /** The Export: the User's Series as the CSV the Import reads (see csv-export.ts). */
+  async exportCsv(userId: string): Promise<string> {
+    const list = await this.tracking.all(userId);
+    const catalog = await this.catalog.getMany(list.map((tracked) => tracked.seriesId));
+    return writeCsvExport(list, (seriesId) => catalog.get(seriesId)?.name ?? "");
   }
 
   /**

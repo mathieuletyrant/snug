@@ -1,4 +1,4 @@
-import type { Status } from "@snug/shared";
+import { SAVING_TARGETS, type SavingTarget, type Status } from "@snug/shared";
 import type { ImportEntry } from "@/modules/tracking/application/tracking-service";
 import { WHOLE_SERIES } from "@/modules/tracking/domain/tracked-series";
 import { STATUS_ALIASES } from "./import-file";
@@ -7,9 +7,11 @@ import { t } from "@/shared/i18n";
 
 /**
  * CSV import, one row per watched Episode (or per Series to just add it):
- *   title,tmdb_id,season,episode,watched_at,status,rating,season_rating
+ *   title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering
  * Either `title` or `tmdb_id` is required; everything else is optional. `rating` rates the Series and
  * `season_rating` the row's season, out of 10; a row may give a season and its rating without an episode.
+ * `saving_target` (0 for a full season, or 3, 5, 10 Episodes) and `absolute_numbering` (true/false) are the
+ * Series' own, like `status`. It is also the Export's format (see csv-export.ts).
  */
 
 export interface CsvRow {
@@ -22,6 +24,8 @@ export interface CsvRow {
   status?: Status;
   rating?: number;
   seasonRating?: number;
+  savingTarget?: SavingTarget;
+  absoluteNumbering?: boolean;
 }
 
 export class CsvImportError extends Error {
@@ -61,7 +65,18 @@ export function readCsv(text: string): string[][] {
   return rows.filter((row) => row.some((cell) => cell.trim()));
 }
 
-const COLUMNS = ["title", "tmdb_id", "season", "episode", "watched_at", "status", "rating", "season_rating"] as const;
+export const COLUMNS = [
+  "title",
+  "tmdb_id",
+  "season",
+  "episode",
+  "watched_at",
+  "status",
+  "rating",
+  "season_rating",
+  "saving_target",
+  "absolute_numbering",
+] as const;
 
 export function parseCsvImport(text: string): CsvRow[] {
   const [header, ...lines] = readCsv(text);
@@ -111,6 +126,17 @@ export function parseCsvImport(text: string): CsvRow[] {
       if (Number.isNaN(row.watchedAt.getTime())) problems.push(t().csv.notADate(line));
     }
 
+    const savingTarget = get("saving_target");
+    if (savingTarget) {
+      row.savingTarget = SAVING_TARGETS.find((target) => String(target) === savingTarget);
+      if (row.savingTarget === undefined) problems.push(t().csv.notASavingTarget(line, SAVING_TARGETS.join(", ")));
+    }
+    const absoluteNumbering = get("absolute_numbering").toLowerCase();
+    if (absoluteNumbering) {
+      row.absoluteNumbering = absoluteNumbering === "true" ? true : absoluteNumbering === "false" ? false : undefined;
+      if (row.absoluteNumbering === undefined) problems.push(t().csv.notABoolean(line, "absolute_numbering"));
+    }
+
     const status = get("status").toLowerCase();
     if (status) {
       row.status = STATUS_ALIASES[status];
@@ -127,7 +153,7 @@ export function parseCsvImport(text: string): CsvRow[] {
 /**
  * Groups rows into one entry per Series. `seriesIdOf` turns a title into a TMDB id (null when not found).
  * Status: the last explicit one wins; otherwise Watching when something was watched, Watchlist when not.
- * Ratings: the last one given for the Series or a season wins.
+ * Ratings, saving_target and absolute_numbering: the last one given wins.
  */
 export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => number | null, now: Date): ImportEntry[] {
   const entries = new Map<number, ImportEntry & { explicit: boolean }>();
@@ -140,6 +166,8 @@ export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => 
       if (!entry.explicit) entry.status = "watching";
     }
     if (row.status) Object.assign(entry, { status: row.status, explicit: true });
+    if (row.savingTarget !== undefined) entry.savingTarget = row.savingTarget;
+    if (row.absoluteNumbering !== undefined) entry.absoluteNumbering = row.absoluteNumbering;
     const ratings = new Map((entry.ratings ?? []).map((rating) => [rating.season, rating.rating]));
     if (row.rating) ratings.set(WHOLE_SERIES, row.rating);
     if (row.seasonRating && row.season) ratings.set(row.season, row.seasonRating);

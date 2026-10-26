@@ -44,7 +44,8 @@ self.addEventListener("fetch", (event) => {
     return event.respondWith(cacheFirst(request));
   }
   if (READ_API.test(url.pathname)) return event.respondWith(networkFirst(request));
-  if (request.mode === "navigate") return event.respondWith(networkFirst(new Request("/")));
+  // A navigation to the API (the Export's download, a feed opened in a tab) reaches the server, not the app shell.
+  if (request.mode === "navigate" && !url.pathname.startsWith("/api/")) return event.respondWith(networkFirst(new Request("/")));
 });
 
 // Web Push: { title, body, url, tag } sent by the server.

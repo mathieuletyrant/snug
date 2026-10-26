@@ -157,7 +157,7 @@ export const fr: Messages = {
 
   settings: {
     title: "Réglages",
-    sections: { general: "Général", integrations: "Intégrations", import: "Import", admin: "Admin" },
+    sections: { general: "Général", integrations: "Intégrations", import: "Import et export", admin: "Admin" },
     sectionLabel: "Section des réglages",
     admin: "Admin",
     signOut: "Se déconnecter",
@@ -284,16 +284,17 @@ export const fr: Messages = {
     withAssistant: "Depuis TV Time, Trakt… ?",
     withAssistantHelp: "Un assistant IA peut lire votre export et l'importer. À configurer dans Intégrations →",
     title: "Import",
+    help: "Des séries et un historique ajoutés à Snug. Rien n'est effacé.",
+    fileTitle: "Depuis un fichier",
     intro: (csv, template) => (
       <>
-        Chargez des séries et un historique depuis un {csv} (une ligne par épisode) ou un export JSON. Rien n'est
-        effacé. {template}
+        Chargez des séries et un historique depuis un {csv} (une ligne par épisode) ou un export JSON. {template}
       </>
     ),
     template: "Télécharger le modèle CSV",
     columnsHelp: (title, tmdbId) => (
       <>
-        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série. Les notes sont sur 10 ; un season_rating peut aller avec une season sans episode.
+        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série. Les notes sont sur 10 ; un season_rating peut aller avec une season sans episode. saving_target vaut 0 (une saison complète), 3, 5 ou 10 ; absolute_numbering vaut true ou false.
       </>
     ),
     done: (series, watches) => `${series} séries et ${watches} épisodes vus importés.`,
@@ -306,6 +307,13 @@ export const fr: Messages = {
     progressMissing: "Il manque des détails de séries",
     progressDone: "Détails des séries récupérés",
     progressFailed: (n) => `${n} séries n'ont pas pu être récupérées ; nouvel essai automatique plus tard.`,
+  },
+  export: {
+    title: "Export",
+    help: "Vos données, à garder ou emporter ailleurs.",
+    fileTitle: "Fichier CSV",
+    intro: "Toutes vos séries, épisodes vus et notes, dans le CSV de l'Import : à ouvrir dans un tableur, ou à réimporter dans un compte Snug vide.",
+    download: "Télécharger le CSV",
   },
   admin: {
     people: "Personnes",

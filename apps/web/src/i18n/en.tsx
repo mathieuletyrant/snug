@@ -163,7 +163,7 @@ export const en = {
 
   settings: {
     title: "Settings",
-    sections: { general: "General", integrations: "Integrations", import: "Import", admin: "Admin" },
+    sections: { general: "General", integrations: "Integrations", import: "Import & export", admin: "Admin" },
     sectionLabel: "Settings section",
     admin: "Admin",
     signOut: "Sign out",
@@ -291,15 +291,17 @@ export const en = {
     withAssistant: "From TV Time, Trakt…?",
     withAssistantHelp: "An AI assistant can read your export and import it. Set it up in Integrations →",
     title: "Import",
+    help: "Series and history brought into Snug. Nothing is erased.",
+    fileTitle: "From a file",
     intro: (csv: ReactNode, template: ReactNode) => (
       <>
-        Load series and history from a {csv} (one row per episode) or a JSON export. Nothing is erased. {template}
+        Load series and history from a {csv} (one row per episode) or a JSON export. {template}
       </>
     ),
     template: "Download the CSV template",
     columnsHelp: (title: ReactNode, tmdbId: ReactNode) => (
       <>
-        Only {title} or {tmdbId} is required. No season/episode: just adds the series. Ratings are out of 10; a season_rating may go with a season and no episode.
+        Only {title} or {tmdbId} is required. No season/episode: just adds the series. Ratings are out of 10; a season_rating may go with a season and no episode. saving_target is 0 (a full season), 3, 5 or 10; absolute_numbering is true or false.
       </>
     ),
     done: (series: number, watches: number) => `Imported ${series} series and ${watches} watches.`,
@@ -312,6 +314,13 @@ export const en = {
     progressMissing: "Some series details are missing",
     progressDone: "Series details fetched",
     progressFailed: (n: number) => `${n} series couldn't be fetched; they'll be retried automatically.`,
+  },
+  export: {
+    title: "Export",
+    help: "Your data, to keep or take elsewhere.",
+    fileTitle: "CSV file",
+    intro: "All your series, watched episodes and ratings, in the Import's CSV: open it in a spreadsheet, or import it back into an empty Snug account.",
+    download: "Download CSV",
   },
   admin: {
     people: "People",

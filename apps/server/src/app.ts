@@ -16,7 +16,7 @@ import {
 import { feedRoutes, feedSettingsRoutes } from "@/modules/feeds/http/routes";
 import { catalogRoutes, imageRoutes } from "@/modules/catalog/http/routes";
 import { authHandler, identityRoutes, requireAdmin, requireSession } from "@/modules/identity/http/routes";
-import { importRoutes } from "@/modules/import/http/routes";
+import { exportRoutes, importRoutes } from "@/modules/import/http/routes";
 import { jellyfinRoutes, jellyfinWebhook } from "@/modules/jellyfin/http/routes";
 import { mcpRoutes, mcpServer } from "@/modules/mcp/http/routes";
 import { notificationRoutes } from "@/modules/notifications/http/routes";
@@ -48,6 +48,7 @@ const api = new Hono<AuthEnv>()
   .route("/", catalogRoutes(catalog, catalogSettings, requireAdmin(identity), () => void refreshCatalog(0)))
   .route("/", trackingRoutes(tracking))
   .route("/import", importRoutes(importer))
+  .route("/export", exportRoutes(importer))
   .route("/integrations/jellyfin", jellyfinRoutes(jellyfin, identity))
   .route("/integrations/feeds", feedSettingsRoutes(identity))
   .route("/integrations/watchlist", watchlistRoutes(identity))
