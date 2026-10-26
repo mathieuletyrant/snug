@@ -189,10 +189,7 @@ export const fr: Messages = {
     testSent: "Test envoyé",
   },
   integrations: {
-    toSnug: "Vers Snug",
-    toSnugHelp: "Les apps qui marquent des épisodes vus ou ajoutent des séries.",
-    fromSnug: "Depuis Snug",
-    fromSnugHelp: "Les apps qui lisent vos séries.",
+    groups: { media: "Médias", arr: "*arr", notifications: "Notifications", other: "Autres" },
     howToConnect: "Comment connecter",
     copyUrl: "Copier l'URL",
     copy: (what) => `Copier ${what}`,
@@ -202,7 +199,10 @@ export const fr: Messages = {
     newUrl: (what) => `Nouvelle ${what}`,
     newUrlHelp: "Nouvelle URL (l'ancienne cesse de marcher)",
     jellyfin: {
-      description: "Les épisodes finis dans Jellyfin sont marqués comme vus ici.",
+      title: "Jellyfin",
+      term: "Webhook",
+      description: "Les épisodes finis dans Jellyfin sont marqués vus dans Snug.",
+      neverCalled: "Jamais appelé",
       url: "l'URL du webhook",
       steps: [
         (b) => <>Installez le plugin {b("Webhook")} (Tableau de bord → Plugins → Catalogue) et redémarrez.</>,
@@ -222,7 +222,9 @@ export const fr: Messages = {
       showMore: (n) => `Afficher ${n} de plus`,
     },
     sonarr: {
-      description: "Sonarr télécharge les séries choisies ci-dessous.",
+      title: "Sonarr",
+      term: "Import List",
+      description: "Sonarr télécharge les séries que vous choisissez, « À voir » par défaut.",
       url: "l'URL de la liste Sonarr",
       steps: [
         (b) => <>Dans Sonarr : Settings → Import Lists → + → {b("Custom Lists")}, collez l'URL ci-dessous.</>,
@@ -234,7 +236,8 @@ export const fr: Messages = {
     },
     calendar: {
       title: "Calendrier",
-      description: "Les épisodes des séries que vous regardez ou mettez de côté, dans votre agenda.",
+      term: "iCal",
+      description: "Les prochains épisodes des séries que vous regardez ou mettez de côté, dans votre agenda.",
       url: "l'URL du calendrier",
       steps: [
         (b) => <>Dans votre agenda, {b("abonnez-vous")} à un calendrier par URL (Google Agenda : Autres agendas → À partir de l'URL).</>,
@@ -243,16 +246,25 @@ export const fr: Messages = {
       sharedUrl: "Remplacer cette URL remplace aussi celle de Sonarr.",
     },
     spotarr: {
-      description: "Les séries envoyées depuis Spotarr arrivent dans « À voir ».",
+      title: "Spotarr",
+      term: "Connexion",
+      description: "Les séries ajoutées dans Spotarr arrivent dans « À voir ».",
       url: "l'URL Spotarr",
       steps: [
         (b) => <>Dans Spotarr : Settings → Connections → {b("Snug")}, collez l'URL ci-dessous, enregistrez.</>,
         (b) => <>Ajoutez une règle avec l'action {b("Add to Snug's Watchlist")}, ou utilisez le bouton d'une série.</>,
       ],
     },
+    push: {
+      title: "Web Push",
+      term: "Navigateur",
+      description: "Les notifications sur ce téléphone ou cet ordinateur.",
+      on: (n) => (n === 1 ? "Activé · 1 appareil" : `Activé · ${n} appareils`),
+    },
     mcp: {
       title: "Assistant IA",
-      description: "Laissez Claude ou tout assistant MCP gérer vos séries : marquer des épisodes, changer les statuts, noter, et importer votre historique d'une autre app (TV Time, Trakt…).",
+      term: "MCP",
+      description: "Claude ou tout assistant MCP gère vos séries et importe votre historique (TV Time, Trakt…).",
       url: "l'URL MCP",
       steps: [
         (b) => <>Dans votre assistant, ajoutez un serveur MCP ({b("Streamable HTTP")}) avec l'URL ci-dessous.</>,

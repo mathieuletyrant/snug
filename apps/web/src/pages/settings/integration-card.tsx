@@ -1,37 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ChevronDown, type LucideIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { api, queryClient } from "@/api";
-import { Card } from "@/components/ui";
 import { useT } from "@/i18n";
-
-/** An app Snug talks to: its icon and name, what it does, then how to connect it. */
-export function IntegrationCard({
-  icon: Icon,
-  title,
-  description,
-  children,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Card>
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent">
-          <Icon className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-xl leading-tight">{title}</h2>
-          <p className="mt-1 text-sm text-muted">{description}</p>
-        </div>
-      </div>
-      {children}
-    </Card>
-  );
-}
 
 /** Numbered instructions, folded once set up so the page stays short on a phone. */
 export function SetupSteps({ open = false, children }: { open?: boolean; children: ReactNode }) {

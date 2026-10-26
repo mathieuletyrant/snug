@@ -1,10 +1,7 @@
 import { EPISODE_TITLES, SEASON_PROGRESS, type Me, NEW_FOR_DAYS } from "@snug/shared";
 import { LogOut } from "lucide-react";
-import { useState } from "react";
-import { api, authClient } from "@/api";
+import { authClient } from "@/api";
 import { usePreferences, useUpdatePreferences } from "@/components/preferences";
-import { usePush } from "@/components/push";
-import { useToast } from "@/components/toast";
 import { Badge, Button, Card, CardHeader, Chips, SettingRow, Toggle } from "@/components/ui";
 import { useT } from "@/i18n";
 
@@ -100,55 +97,21 @@ function Display() {
   );
 }
 
+/** Which events are sent; where they go (Web Push, …) is set in Integrations. */
 function Notifications() {
-  const toast = useToast();
   const t = useT();
-  const push = usePush();
   const preferences = usePreferences();
   const update = useUpdatePreferences();
-  const [busy, setBusy] = useState(false);
-  const run = (action: () => Promise<unknown>) => {
-    setBusy(true);
-    action()
-      .catch((e: Error) => toast({ message: e.message }))
-      .finally(() => setBusy(false));
-  };
 
   return (
     <Card>
       <CardHeader title={t.settings.notifications} />
       <Toggle
-        label={t.settings.onThisDevice}
-        description={t.settings.onThisDeviceHelp}
-        checked={push.state === "on"}
-        onChange={(on) => !busy && push.state !== "unsupported" && run(on ? push.enable : push.disable)}
+        label={t.settings.newEpisodes}
+        description={t.settings.newEpisodesHelp}
+        checked={preferences.notifyNewEpisodes}
+        onChange={(notifyNewEpisodes) => update.mutate({ notifyNewEpisodes })}
       />
-      {push.state === "unsupported" && (
-        <p className="mt-2 text-sm text-muted">{t.settings.pushUnsupported}</p>
-      )}
-      {push.state === "denied" && (
-        <p className="mt-2 text-sm text-rose">{t.settings.pushDenied}</p>
-      )}
-      {push.state === "on" && (
-        <Toggle
-          label={t.settings.newEpisodes}
-          description={t.settings.newEpisodesHelp}
-          checked={preferences.notifyNewEpisodes}
-          onChange={(notifyNewEpisodes) => update.mutate({ notifyNewEpisodes })}
-        />
-      )}
-      {push.state === "on" && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
-          <p className="text-sm text-muted">{t.settings.devices(push.devices)}</p>
-          <Button
-            variant="ghost"
-            disabled={busy}
-            onClick={() => run(() => api("/push/test", { method: "POST" }).then(() => toast({ message: t.settings.testSent })))}
-          >
-            {t.settings.sendTest}
-          </Button>
-        </div>
-      )}
     </Card>
   );
 }
