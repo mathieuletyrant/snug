@@ -78,7 +78,7 @@ To back up the whole instance, copy `DATA_DIR` while Snug is stopped. Each user 
 ## 🪼 Jellyfin
 
 1. Install the **Webhook** plugin (Dashboard → Plugins → Catalog) and restart Jellyfin.
-2. Add a **Generic Destination** with your webhook URL from Snug → Settings → Jellyfin.
+2. Add a **Generic Destination** with your webhook URL from Snug → Settings → Integrations → Jellyfin.
 3. Tick **Playback Stop** and **User Data Saved**, select your user, tick **Send All Properties**.
 
 > [!TIP]

@@ -16,6 +16,16 @@ export function Card({ className, children }: { className?: string; children: Re
   return <div className={cx("rounded-3xl border border-line/60 bg-surface p-5", className)}>{children}</div>;
 }
 
+/** Rows in one rounded list under a small title, as in iOS Settings. */
+export function ListGroup({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <section>
+      {title && <h2 className="mb-2 px-1 font-sans text-xs font-bold tracking-wider text-muted uppercase">{title}</h2>}
+      <ul className="divide-y divide-line/60 overflow-hidden rounded-3xl border border-line/60 bg-surface">{children}</ul>
+    </section>
+  );
+}
+
 /** A card's title, and what the card is for. */
 export function CardHeader({ title, children }: { title: ReactNode; children?: ReactNode }) {
   return (

@@ -46,7 +46,7 @@ function Screens() {
   if (!setup.data.hasTmdbKey) return <SetupPage me={me.data} />;
 
   return (
-    <Layout>
+    <Layout me={me.data}>
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/library" component={LibraryPage} />

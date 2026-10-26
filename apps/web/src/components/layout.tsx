@@ -1,7 +1,9 @@
+import type { Me } from "@snug/shared";
 import { House, Library, Search, Settings } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { queryClient } from "@/api";
+import { AccountMenu, Avatar } from "./account-menu";
 import { homeQuery, libraryQuery } from "@/queries";
 import { ImportBanner } from "./import-progress";
 import { PullToRefresh } from "./pull-to-refresh";
@@ -22,8 +24,8 @@ const prefetch = (href: string) => {
   if (href === "/library") queryClient.prefetchQuery(libraryQuery);
 };
 
-/** Top bar on desktop, bottom tab bar on mobile. */
-export function Layout({ children }: { children: ReactNode }) {
+/** Top bar on desktop, ending with the account's menu; bottom tab bar on mobile, where Settings shows the avatar. */
+export function Layout({ me, children }: { me: Me; children: ReactNode }) {
   const t = useT();
   const [location] = useLocation();
   const active = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
@@ -60,6 +62,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
+          <AccountMenu me={me} />
         </div>
       </header>
 
@@ -93,7 +96,13 @@ export function Layout({ children }: { children: ReactNode }) {
                   on ? "text-accent" : "text-muted",
                 )}
               >
-                <Icon className="size-6 transition-transform duration-75 group-active:scale-90" strokeWidth={on ? 2.4 : 1.8} />
+                {href === "/settings" ? (
+                  <span className={cx("rounded-full transition-transform duration-75 group-active:scale-90", on && "ring-2 ring-accent")}>
+                    <Avatar me={me} small />
+                  </span>
+                ) : (
+                  <Icon className="size-6 transition-transform duration-75 group-active:scale-90" strokeWidth={on ? 2.4 : 1.8} />
+                )}
                 {t.nav[label]}
               </Link>
             );

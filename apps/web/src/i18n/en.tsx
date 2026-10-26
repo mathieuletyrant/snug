@@ -163,29 +163,29 @@ export const en = {
 
   settings: {
     title: "Settings",
-    sections: { general: "General", integrations: "Integrations", import: "Import & export", admin: "Admin" },
+    sections: { preferences: "Preferences", integrations: "Integrations", import: "Import & export", admin: "Admin" },
     sectionLabel: "Settings section",
     admin: "Admin",
+    account: "Account",
     signOut: "Sign out",
-    display: "Display",
+    groups: { home: "Home", seriesPage: "Series page", spoilers: "Spoilers", notifications: "Notifications" },
     hideUndated: "Hide undated series",
-    hideUndatedHelp: "Hide series with no air date yet (TBA) from Upcoming.",
+    hideUndatedHelp: "In Upcoming, while the next episode has no date",
     episodeTitles: "Episode titles",
-    episodeTitlesHelp: "Blur titles of episodes you haven't watched, against spoilers. Tap one to show it.",
-    titleChoices: { show: "Show all", hideUnwatched: "Hide unwatched", hideAll: "Hide all" } satisfies Record<
+    episodeTitlesHelp: "Blurred against spoilers; tap one to read it",
+    titleChoices: { show: "Shown", hideUnwatched: "Unwatched hidden", hideAll: "All hidden" } satisfies Record<
       EpisodeTitles,
       string
     >,
     newFirst: "New episodes first",
-    newFirstHelp: "A new episode of a series you were caught up on goes first on Home, with a New badge.",
+    newFirstHelp: "First, with a New badge",
     showRatings: "Ratings",
-    showRatingsHelp: "Rate series and seasons out of 10.",
+    showRatingsHelp: "Out of 10, per series and season",
     seasonProgress: "Season progress",
-    seasonProgressHelp: "On a series page, one segment per episode: watched, out, coming.",
-    seasonProgressChoices: { all: "Every season", current: "Current season only" } satisfies Record<SeasonProgress, string>,
+    seasonProgressHelp: "One segment per episode: watched, out, coming",
+    seasonProgressChoices: { all: "All seasons", current: "Current season" } satisfies Record<SeasonProgress, string>,
     off: "Off",
     days: (n: number) => `${n} days`,
-    notifications: "Notifications",
     onThisDevice: "On this device",
     onThisDeviceHelp: "When Jellyfin marks an episode watched, with what's next.",
     newEpisodes: "New episodes",
@@ -197,10 +197,7 @@ export const en = {
     testSent: "Test sent",
   },
   integrations: {
-    toSnug: "Sent to Snug",
-    toSnugHelp: "Apps that mark episodes watched or add series.",
-    fromSnug: "Sent from Snug",
-    fromSnugHelp: "Apps that read your series.",
+    groups: { media: "Media", arr: "*arr", notifications: "Notifications", other: "Other" },
     howToConnect: "How to connect",
     copyUrl: "Copy URL",
     copy: (what: string) => `Copy ${what}`,
@@ -210,7 +207,10 @@ export const en = {
     newUrl: (what: string) => `New ${what}`,
     newUrlHelp: "New URL (the old one stops working)",
     jellyfin: {
-      description: "Episodes you finish in Jellyfin are marked watched here.",
+      title: "Jellyfin",
+      term: "Webhook",
+      description: "Episodes you finish in Jellyfin are marked watched in Snug.",
+      neverCalled: "Never called",
       url: "webhook URL",
       steps: [
         (b: Bold) => <>Install the {b("Webhook")} plugin (Dashboard → Plugins → Catalog) and restart.</>,
@@ -229,7 +229,9 @@ export const en = {
       showMore: (n: number) => `Show ${n} more`,
     },
     sonarr: {
-      description: "Sonarr downloads the series you pick below.",
+      title: "Sonarr",
+      term: "Import List",
+      description: "Sonarr downloads the series you pick, your Watchlist by default.",
       url: "Sonarr list URL",
       steps: [
         (b: Bold) => <>In Sonarr: Settings → Import Lists → + → {b("Custom Lists")}, paste the URL below.</>,
@@ -241,7 +243,8 @@ export const en = {
     },
     calendar: {
       title: "Calendar",
-      description: "Episodes of the series you watch or save up, in your calendar app.",
+      term: "iCal",
+      description: "Upcoming episodes of the series you watch or save up, in your calendar app.",
       url: "calendar URL",
       steps: [
         (b: Bold) => <>In your calendar app, {b("subscribe")} to a calendar by URL (Google Calendar: Other calendars → From URL).</>,
@@ -250,16 +253,25 @@ export const en = {
       sharedUrl: "Replacing this URL also replaces Sonarr's.",
     },
     spotarr: {
-      description: "TV shows sent from Spotarr land on your Watchlist.",
+      title: "Spotarr",
+      term: "Connection",
+      description: "TV shows added in Spotarr land on your Watchlist.",
       url: "Spotarr URL",
       steps: [
         (b: Bold) => <>In Spotarr: Settings → Connections → {b("Snug")}, paste the URL below, save.</>,
         (b: Bold) => <>Add a rule with the action {b("Add to Snug's Watchlist")}, or use the button on a TV show.</>,
       ],
     },
+    push: {
+      title: "Web Push",
+      term: "Browser",
+      description: "Notifications on this phone or computer.",
+      on: (n: number) => (n === 1 ? "On · 1 device" : `On · ${n} devices`),
+    },
     mcp: {
       title: "AI assistant",
-      description: "Let Claude or any MCP assistant manage your series: mark episodes, change statuses, rate, and import your history from another tracker (TV Time, Trakt…).",
+      term: "MCP",
+      description: "Claude or any MCP assistant manages your series and imports your history (TV Time, Trakt…).",
       url: "MCP URL",
       steps: [
         (b: Bold) => <>In your assistant, add an MCP server ({b("Streamable HTTP")}) with the URL below.</>,
