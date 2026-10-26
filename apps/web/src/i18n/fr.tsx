@@ -284,10 +284,11 @@ export const fr: Messages = {
     withAssistant: "Depuis TV Time, Trakt… ?",
     withAssistantHelp: "Un assistant IA peut lire votre export et l'importer. À configurer dans Intégrations →",
     title: "Import",
+    help: "Des séries et un historique ajoutés à Snug. Rien n'est effacé.",
+    fileTitle: "Depuis un fichier",
     intro: (csv, template) => (
       <>
-        Chargez des séries et un historique depuis un {csv} (une ligne par épisode) ou un export JSON. Rien n'est
-        effacé. {template}
+        Chargez des séries et un historique depuis un {csv} (une ligne par épisode) ou un export JSON. {template}
       </>
     ),
     template: "Télécharger le modèle CSV",
@@ -309,7 +310,9 @@ export const fr: Messages = {
   },
   export: {
     title: "Export",
-    intro: "Toutes vos séries, épisodes vus et notes, dans le CSV ci-dessus : à ouvrir dans un tableur, ou à réimporter dans un compte Snug vide.",
+    help: "Vos données, à garder ou emporter ailleurs.",
+    fileTitle: "Fichier CSV",
+    intro: "Toutes vos séries, épisodes vus et notes, dans le CSV de l'Import : à ouvrir dans un tableur, ou à réimporter dans un compte Snug vide.",
     download: "Télécharger le CSV",
   },
   admin: {

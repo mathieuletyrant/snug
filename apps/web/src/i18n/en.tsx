@@ -291,9 +291,11 @@ export const en = {
     withAssistant: "From TV Time, Trakt…?",
     withAssistantHelp: "An AI assistant can read your export and import it. Set it up in Integrations →",
     title: "Import",
+    help: "Series and history brought into Snug. Nothing is erased.",
+    fileTitle: "From a file",
     intro: (csv: ReactNode, template: ReactNode) => (
       <>
-        Load series and history from a {csv} (one row per episode) or a JSON export. Nothing is erased. {template}
+        Load series and history from a {csv} (one row per episode) or a JSON export. {template}
       </>
     ),
     template: "Download the CSV template",
@@ -315,7 +317,9 @@ export const en = {
   },
   export: {
     title: "Export",
-    intro: "All your series, watched episodes and ratings, in the CSV above: open it in a spreadsheet, or import it back into an empty Snug account.",
+    help: "Your data, to keep or take elsewhere.",
+    fileTitle: "CSV file",
+    intro: "All your series, watched episodes and ratings, in the Import's CSV: open it in a spreadsheet, or import it back into an empty Snug account.",
     download: "Download CSV",
   },
   admin: {
