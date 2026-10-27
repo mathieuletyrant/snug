@@ -15,3 +15,10 @@ export const addDays = (day: string, days: number) =>
 
 /** The instance's time zone (`TZ`), e.g. "Europe/Paris", for the app to count days the same way. */
 export const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+/** The moment a YYYY-MM-DD day reaches `hour` o'clock in another time zone, e.g. 18:00 in "America/Los_Angeles". */
+export function atHourIn(day: string, hour: number, timeZone: string) {
+  const guess = Date.parse(`${day}T${String(hour).padStart(2, "0")}:00:00Z`);
+  const wallClock = Date.parse(`${new Date(guess).toLocaleString("sv-SE", { timeZone }).replace(" ", "T")}Z`);
+  return new Date(2 * guess - wallClock);
+}

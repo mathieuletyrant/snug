@@ -9,7 +9,7 @@ A TV show identified by its TMDB id. Movies are out of scope.
 _Avoid_: Show, TV, title
 
 **Catalog**:
-Shared, read-only metadata about Series and their Episodes (titles, posters, air dates), sourced from TMDB.
+Shared, read-only metadata about Series and their Episodes (titles, posters, Air dates), sourced from TMDB.
 
 **TrackedSeries**:
 A User's relationship to one Series: its Status and the Episodes they Watched.
@@ -30,8 +30,12 @@ _Avoid_: Anime mode
 A calendar day in the instance's time zone, wherever the User is. Aired, Next Episode, Ready, Upcoming and New are judged on a Day and can change overnight with nothing done; a Status is kept until something changes it.
 _Avoid_: Standing, local date
 
+**Air date**:
+The Day an Episode first airs, in the instance's time zone: an evening premiere in New York is the next Day in Paris.
+_Avoid_: Release date
+
 **Aired**:
-An Episode whose air date is the Day or earlier.
+An Episode whose Air date is the Day or earlier.
 _Avoid_: Out, released, available
 
 **Watch**:

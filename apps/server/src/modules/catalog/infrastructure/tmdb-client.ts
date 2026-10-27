@@ -1,4 +1,5 @@
 import { moduleLogger } from "@/shared/logger";
+import { airDateHere, releaseOf } from "@/modules/catalog/domain/air-date";
 import type { Episode, Series, SeriesSource, SeriesSummary } from "@/modules/catalog/domain/series";
 
 const log = moduleLogger("tmdb");
@@ -21,6 +22,8 @@ interface TmdbShow {
   poster_path: string | null;
   backdrop_path: string | null;
   status: string;
+  networks: { name: string }[];
+  origin_country: string[];
   seasons: { season_number: number }[];
   external_ids?: { tvdb_id: number | null };
   [appended: `season/${number}`]: { episodes: TmdbEpisode[] } | undefined;
@@ -106,6 +109,10 @@ export class TmdbClient implements SeriesSource {
   private async fetchIn(tmdbId: number, language: string): Promise<Series> {
     const show = await this.get<TmdbShow>(`/tv/${tmdbId}`, { language, append_to_response: "external_ids" });
     const seasons = show.seasons.map((season) => season.season_number).filter((number) => number > 0);
+    const release = releaseOf(
+      show.networks.map((network) => network.name),
+      show.origin_country,
+    );
     const episodes: Episode[] = [];
     for (let i = 0; i < seasons.length; i += SEASONS_PER_CALL) {
       const chunk = seasons.slice(i, i + SEASONS_PER_CALL);
@@ -115,7 +122,7 @@ export class TmdbClient implements SeriesSource {
       });
       for (const seasonNumber of chunk) {
         for (const episode of data[`season/${seasonNumber}`]?.episodes ?? []) {
-          episodes.push({ season: episode.season_number, number: episode.episode_number, name: episode.name, airDate: episode.air_date || null, runtime: episode.runtime || null });
+          episodes.push({ season: episode.season_number, number: episode.episode_number, name: episode.name, airDate: episode.air_date ? airDateHere(episode.air_date, release) : null, runtime: episode.runtime || null });
         }
       }
     }
