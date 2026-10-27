@@ -373,6 +373,9 @@ export const en = {
     accountCreated: "Account created",
     seriesDetails: "Series details",
     seriesDetailsHelp: "From TMDB, for everyone on this Snug.",
+    refresh: "Refresh every series",
+    refreshHelp: "Fetches every series from TMDB again, in the background (about a minute). Snug also does it every day.",
+    refreshing: "Refreshing every series…",
   },
 };
 

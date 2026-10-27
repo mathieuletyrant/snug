@@ -366,5 +366,8 @@ export const fr: Messages = {
     accountCreated: "Compte créé",
     seriesDetails: "Détails des séries",
     seriesDetailsHelp: "Depuis TMDB, pour tout le monde sur ce Snug.",
+    refresh: "Rafraîchir toutes les séries",
+    refreshHelp: "Récupère à nouveau toutes les séries depuis TMDB, en arrière-plan (environ une minute). Snug le fait aussi chaque jour.",
+    refreshing: "Rafraîchissement de toutes les séries…",
   },
 };

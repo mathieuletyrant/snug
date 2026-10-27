@@ -12,8 +12,8 @@ export const catalogRoutes = (
   catalog: CatalogService,
   settings: CatalogSettings,
   adminOnly: MiddlewareHandler<AuthEnv>,
-  /** Called after a language change: every cached Series must be fetched again. */
-  onLanguageChanged: () => void,
+  /** Fetches every cached Series again, in the background: after a language change, or when the admin asks. */
+  refreshAll: () => void,
 ) =>
   new Hono<AuthEnv>()
     .get("/search", async (c) => {
@@ -33,8 +33,12 @@ export const catalogRoutes = (
       );
       if (language !== settings.language()) {
         settings.setLanguage(language);
-        onLanguageChanged();
+        refreshAll();
       }
+      return c.body(null, 204);
+    })
+    .post("/catalog/refresh", adminOnly, (c) => {
+      refreshAll();
       return c.body(null, 204);
     });
 

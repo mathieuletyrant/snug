@@ -15,9 +15,30 @@ export function AdminSection() {
       <Card className="space-y-5">
         <CardHeader title={t.admin.seriesDetails}>{t.admin.seriesDetailsHelp}</CardHeader>
         <LanguageSelect />
+        <RefreshCatalog />
         <TmdbKeyForm />
       </Card>
     </>
+  );
+}
+
+/** Fetches every series from TMDB again, in the background: after a fix, without changing the language. */
+function RefreshCatalog() {
+  const toast = useToast();
+  const t = useT();
+  const refresh = useMutation({
+    mutationFn: () => api("/catalog/refresh", { method: "POST" }),
+    onSuccess: () => toast({ message: t.admin.refreshing }),
+    onError: (e) => toast({ message: e.message }),
+  });
+
+  return (
+    <div className="space-y-2">
+      <Button variant="ghost" disabled={refresh.isPending} onClick={() => refresh.mutate()}>
+        {t.admin.refresh}
+      </Button>
+      <p className="text-sm text-muted">{t.admin.refreshHelp}</p>
+    </div>
   );
 }
 
