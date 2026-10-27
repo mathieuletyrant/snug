@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.0](https://github.com/mathieuletyrant/snug/compare/v0.17.0...v0.18.0) (2026-10-27)
+
+
+### ✨ Features
+
+* **settings:** refresh every series from the Admin section ([#91](https://github.com/mathieuletyrant/snug/issues/91)) ([c245691](https://github.com/mathieuletyrant/snug/commit/c245691fb6110354a95cd70d9aa652e6d701255b))
+
+
+### 🐛 Fixes
+
+* **catalog:** air dates on the instance's day, not the country of origin's ([#89](https://github.com/mathieuletyrant/snug/issues/89)) ([ad933c6](https://github.com/mathieuletyrant/snug/commit/ad933c6ed48934cc10415e5fcd35e7d2193151c6))
+
 ## [0.17.0](https://github.com/mathieuletyrant/snug/compare/v0.16.0...v0.17.0) (2026-10-26)
 
 
