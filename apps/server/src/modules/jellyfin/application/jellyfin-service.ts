@@ -1,4 +1,4 @@
-import { desc, eq, and, ne, notInArray } from "drizzle-orm";
+import { desc, eq, and, gte, ne, notInArray } from "drizzle-orm";
 import { type Episode, type EpisodeRef, episodeCode, isTitleHidden, type JellyfinEventLog } from "@snug/shared";
 import { numberAbsolutely } from "@/modules/catalog/domain/series";
 import type { CatalogService } from "@/modules/catalog/application/catalog-service";
@@ -16,6 +16,11 @@ import { today } from "@/shared/day";
 /** Ignored and failed calls kept; Watched ones are all kept, only the payloads of older ones are dropped. */
 const KEEP_EVENTS = 100;
 const MAX_PAYLOAD = 20_000;
+/**
+ * Finishing an Episode often fires two calls: PlaybackStop, then UserDataSaved when the client also marks it
+ * played (JellyTV does). A second Watch of the same Episode this soon is that echo, not a rewatch.
+ */
+const DUPLICATE_WINDOW_MS = 10 * 60_000;
 
 const log = moduleLogger("jellyfin");
 
@@ -28,6 +33,7 @@ export class JellyfinService {
     private readonly catalog: CatalogService,
     private readonly tracking: TrackingService,
     private readonly notifier: Notifier,
+    private readonly now: () => Date = () => new Date(),
   ) {}
 
   private queue: Promise<unknown> = Promise.resolve();
@@ -58,7 +64,9 @@ export class JellyfinService {
 
     let result: Outcome;
     try {
-      result = event.kind === "ignored" ? { outcome: "ignored", message: event.reason } : await this.watch(userId, event);
+      if (event.kind === "ignored") result = { outcome: "ignored", message: event.reason };
+      else if (this.justWatched(userId, summary)) result = { outcome: "ignored", message: t().webhook.duplicate };
+      else result = await this.watch(userId, event);
     } catch (error) {
       result = { outcome: "error", message: error instanceof Error ? error.message : String(error) };
     }
@@ -86,6 +94,23 @@ export class JellyfinService {
         seriesId: row.seriesId,
         payload: row.payload,
       }));
+  }
+
+  /** Whether the same Episode was marked watched by a call a few minutes ago (summaries name the Episode). */
+  private justWatched(userId: string, summary: string) {
+    const since = new Date(this.now().getTime() - DUPLICATE_WINDOW_MS);
+    return !!this.db
+      .select({ id: jellyfinEvents.id })
+      .from(jellyfinEvents)
+      .where(
+        and(
+          eq(jellyfinEvents.userId, userId),
+          eq(jellyfinEvents.outcome, "watched"),
+          eq(jellyfinEvents.summary, summary),
+          gte(jellyfinEvents.receivedAt, since),
+        ),
+      )
+      .get();
   }
 
   private async watch(userId: string, event: Extract<JellyfinEvent, { kind: "episode-watched" }>): Promise<Outcome> {
@@ -156,7 +181,7 @@ export class JellyfinService {
 
   private log(userId: string, summary: string, result: Outcome, body: unknown) {
     const payload = JSON.stringify(body, null, 2).slice(0, MAX_PAYLOAD);
-    this.db.insert(jellyfinEvents).values({ userId, summary, receivedAt: new Date(), payload, ...result }).run();
+    this.db.insert(jellyfinEvents).values({ userId, summary, receivedAt: this.now(), payload, ...result }).run();
 
     // Ignored calls come in bursts (UserDataSaved on every pause): capping them all together pushed Watched ones out.
     const notWatched = and(eq(jellyfinEvents.userId, userId), ne(jellyfinEvents.outcome, "watched"));
