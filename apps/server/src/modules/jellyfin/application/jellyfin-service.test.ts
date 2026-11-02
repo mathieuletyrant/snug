@@ -84,3 +84,47 @@ test("a Watch of an Episode newer than the Catalog refreshes the Series, marks i
   expect((await tracking.detail("u", 1)).progress).toEqual({ season: 1, number: 3, absolute: 3 });
   expect(await sent.promise).toMatchObject({ title: "✓ Severance S01E03", body: "Next: S01E04 on 2999-01-01" });
 });
+
+test("the UserDataSaved call that follows a finished Episode is ignored, but a later rewatch is not", async () => {
+  const { db } = testDb();
+  const series: Series = {
+    tmdbId: 1,
+    tvdbId: null,
+    name: "Vampire Diaries",
+    year: 2009,
+    overview: "",
+    posterPath: null,
+    backdropPath: null,
+    ended: true,
+    episodes: [{ season: 7, number: 21, name: "E21", airDate: "2016-05-06" }],
+    fetchedAt: new Date(),
+  };
+  const catalog = {
+    resolve: async (hint: { tmdbId?: number }) => hint.tmdbId ?? null,
+    ensure: async () => series,
+    refresh: async () => series,
+  } as unknown as CatalogService;
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog);
+  const identity = {
+    webhookTokens: { userIdOf: () => "u" },
+    nameOf: () => "U",
+    preferences: () => DEFAULT_PREFERENCES,
+  } as unknown as IdentityService;
+  const notifications: Notification[] = [];
+  const notifier: Notifier = { notify: async (_, notification) => void notifications.push(notification) };
+  let now = new Date("2026-11-01T20:59:28Z");
+  const service = new JellyfinService(db, identity, catalog, tracking, notifier, () => now);
+
+  const episode = { ItemType: "Episode", SeriesName: "Vampire Diaries", SeriesProvider_tmdb: "1", SeasonNumber: 7, EpisodeNumber: 21 };
+  const stop = { ...episode, NotificationType: "PlaybackStop", PlayedToCompletion: true };
+  const markedPlayed = { ...episode, NotificationType: "UserDataSaved", Played: true, SaveReason: "TogglePlayed" };
+
+  expect((await service.handle("token", stop)).outcome).toBe("watched");
+  now = new Date(now.getTime() + 1000);
+  expect(await service.handle("token", markedPlayed)).toEqual({ outcome: "ignored", message: "Already marked as watched a moment ago" });
+  await Bun.sleep(0);
+  expect(notifications).toHaveLength(1);
+
+  now = new Date(now.getTime() + 2 * 60 * 60_000);
+  expect((await service.handle("token", stop)).outcome).toBe("watched");
+});

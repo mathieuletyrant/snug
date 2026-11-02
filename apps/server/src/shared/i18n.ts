@@ -61,6 +61,7 @@ const en = {
     notFound: "Could not find this series on TMDB",
     marked: (series: string, code: string) => `Marked ${series} ${code} as watched`,
     incomplete: "Missing series name, season or episode number",
+    duplicate: "Already marked as watched a moment ago",
   },
 };
 
@@ -122,6 +123,7 @@ const fr: Messages = {
     notFound: "Série introuvable sur TMDB",
     marked: (series, code) => `${series} ${code} marqué vu`,
     incomplete: "Nom de la série, saison ou numéro d'épisode manquant",
+    duplicate: "Déjà marqué vu à l'instant",
   },
 };
 
