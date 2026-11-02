@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/mathieuletyrant/snug/compare/v0.18.0...v0.18.1) (2026-11-02)
+
+
+### 🐛 Fixes
+
+* **jellyfin:** ignore the duplicate call that follows a finished episode ([#92](https://github.com/mathieuletyrant/snug/issues/92)) ([13b2df7](https://github.com/mathieuletyrant/snug/commit/13b2df7c286cbe46fa4a58694bf79ea6d29e270b))
+
 ## [0.18.0](https://github.com/mathieuletyrant/snug/compare/v0.17.0...v0.18.0) (2026-10-27)
 
 
