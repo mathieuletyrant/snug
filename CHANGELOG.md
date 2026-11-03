@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.0](https://github.com/mathieuletyrant/snug/compare/v0.19.0...v0.20.0) (2026-11-03)
+
+
+### ✨ Features
+
+* **jellyfin:** a series started in Jellyfin shows up in Snug right away ([#96](https://github.com/mathieuletyrant/snug/issues/96)) ([b8e5e7f](https://github.com/mathieuletyrant/snug/commit/b8e5e7ff10fdfce1890808fcd27fa373745ad913))
+* **settings:** the Jellyfin server in the Jellyfin integration ([#95](https://github.com/mathieuletyrant/snug/issues/95)) ([be552b0](https://github.com/mathieuletyrant/snug/commit/be552b093a4f41eec81f3c21621e2f931d592a32))
+
 ## [0.19.0](https://github.com/mathieuletyrant/snug/compare/v0.18.1...v0.19.0) (2026-11-03)
 
 
