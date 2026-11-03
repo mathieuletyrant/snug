@@ -33,7 +33,7 @@ import { Badge, Button, Card, cx, ErrorText, Input, ListGroup, MultiChips, Toggl
 import { useT } from "@/i18n";
 import { ago } from "@/lib/format";
 import { SetupSteps, steps, useIntegration } from "./integration-card";
-import { JellyfinUserSelect, WatchAppChoice } from "./playback";
+import { JellyfinServerSettings, JellyfinUserSelect, WatchAppChoice } from "./playback";
 import { WebhookHistory } from "./webhook-history";
 
 type AppId = "jellyfin" | "sonarr" | "spotarr" | "push" | "ntfy" | "calendar" | "mcp";
@@ -42,8 +42,8 @@ interface App {
   id: AppId;
   group: "media" | "arr" | "notifications" | "other";
   icon: LucideIcon;
-  /** What its row opens. */
-  Content: () => ReactNode;
+  /** What its row opens; admin-only parts of it show to the admin. */
+  Content: (props: { isAdmin: boolean }) => ReactNode;
   /** Set for the whole instance: only the admin sees it. */
   instance?: boolean;
 }
@@ -89,7 +89,7 @@ export function IntegrationsSection({ isAdmin }: { isAdmin: boolean }) {
             <Badge tone="plain">{text.term}</Badge>
             {app.instance && <Badge>{t.integrations.instance}</Badge>}
           </div>
-          <app.Content />
+          <app.Content isAdmin={isAdmin} />
         </Card>
       </>
     );
@@ -164,18 +164,22 @@ function useStatus(isAdmin: boolean): Partial<Record<AppId, ConnectionState>> {
   };
 }
 
-function Jellyfin() {
+/** The admin's server first (it powers ▶︎), then each person's Jellyfin user and app, then the webhook. */
+function Jellyfin({ isAdmin }: { isAdmin: boolean }) {
   const t = useT();
   const { data, rotate } = useIntegration<JellyfinIntegration>("/integrations/jellyfin", 15_000);
   const url = data ? location.origin + data.webhookPath : "…";
 
   return (
     <>
-      <SetupSteps open={data ? data.events.length === 0 : false}>{steps(t.integrations.jellyfin.steps)}</SetupSteps>
-      <CopyField label={t.integrations.jellyfin.url} value={url} onRotate={rotate} />
-      <WatchAppChoice />
+      {isAdmin && <JellyfinServerSettings />}
       {data?.playback.server && <JellyfinUserSelect current={data.playback.jellyfinUserId} />}
-      <WebhookHistory events={data?.events} />
+      <WatchAppChoice />
+      <div className="mt-6 border-t border-line/60 pt-6">
+        <SetupSteps open={data ? data.events.length === 0 : false}>{steps(t.integrations.jellyfin.steps)}</SetupSteps>
+        <CopyField label={t.integrations.jellyfin.url} value={url} onRotate={rotate} />
+        <WebhookHistory events={data?.events} />
+      </div>
     </>
   );
 }
