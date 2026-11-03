@@ -214,7 +214,7 @@ export const fr: Messages = {
     jellyfin: {
       title: "Jellyfin",
       term: "Webhook",
-      description: "Les épisodes finis dans Jellyfin sont marqués vus dans Snug.",
+      description: "Les épisodes finis dans Jellyfin sont marqués vus dans Snug, et une série lancée y apparaît tout de suite.",
       neverCalled: "Jamais appelé",
       url: "l'URL du webhook",
       steps: [
@@ -222,14 +222,15 @@ export const fr: Messages = {
         (b) => <>Plugins → Webhook → {b("Add Generic Destination")}, collez l'URL ci-dessous.</>,
         (b) => (
           <>
-            Cochez {b("Playback Stop")} et {b("User Data Saved")}, choisissez votre utilisateur, cochez{" "}
+            Cochez {b("Playback Start")}, {b("Playback Stop")} et {b("User Data Saved")}, choisissez votre utilisateur,
+            cochez{" "}
             {b("Send All Properties")}, enregistrez.
           </>
         ),
       ],
       history: "Historique du webhook",
       historyFilter: "Filtre de l'historique",
-      outcomes: { all: "Tout", watched: "Vus", ignored: "Ignorés", error: "Erreurs" },
+      outcomes: { all: "Tout", watched: "Vus", added: "Ajoutées", ignored: "Ignorés", error: "Erreurs" },
       noMatch: "Rien ne correspond à ce filtre.",
       noCalls: "Aucun appel pour l'instant. Finissez un épisode dans Jellyfin pour en voir un ici.",
       showMore: (n) => `Afficher ${n} de plus`,

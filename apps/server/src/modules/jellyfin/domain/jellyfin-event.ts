@@ -4,17 +4,21 @@
  */
 import { t } from "@/shared/i18n";
 
+/** The Episode a call is about, and what Jellyfin knows to find its Series. */
+export interface EpisodeEvent {
+  seriesName: string;
+  season: number;
+  number: number;
+  jellyfinSeriesId?: string;
+  seriesTmdbId?: number;
+  tvdbEpisodeId?: string;
+  imdbEpisodeId?: string;
+}
+
+/** Watched: finished or ticked played. Started: playback began (Playback Start), so the Series shows in Snug right away. */
 export type JellyfinEvent =
-  | {
-      kind: "episode-watched";
-      seriesName: string;
-      season: number;
-      number: number;
-      jellyfinSeriesId?: string;
-      seriesTmdbId?: number;
-      tvdbEpisodeId?: string;
-      imdbEpisodeId?: string;
-    }
+  | ({ kind: "episode-watched" } & EpisodeEvent)
+  | ({ kind: "episode-started" } & EpisodeEvent)
   | { kind: "ignored"; reason: string };
 
 const truthy = (v: unknown) => v === true || (typeof v === "string" && v.toLowerCase() === "true");
@@ -30,7 +34,8 @@ export function parseJellyfinEvent(body: Record<string, unknown>): JellyfinEvent
   const watched =
     (type === "PlaybackStop" && truthy(body.PlayedToCompletion)) ||
     (type === "UserDataSaved" && truthy(body.Played) && (!body.SaveReason || body.SaveReason === "TogglePlayed"));
-  if (!watched) return { kind: "ignored", reason: `${type ?? "Unknown"} event without a completed watch` };
+  const started = type === "PlaybackStart";
+  if (!watched && !started) return { kind: "ignored", reason: `${type ?? "Unknown"} event without a completed watch` };
   if (body.ItemType !== "Episode") return { kind: "ignored", reason: `${str(body.ItemType) ?? "Item"} is not an episode` };
 
   const season = int(body.SeasonNumber);
@@ -40,7 +45,7 @@ export function parseJellyfinEvent(body: Record<string, unknown>): JellyfinEvent
     return { kind: "ignored", reason: t().webhook.incomplete };
   }
   return {
-    kind: "episode-watched",
+    kind: watched ? "episode-watched" : "episode-started",
     seriesName,
     season,
     number,

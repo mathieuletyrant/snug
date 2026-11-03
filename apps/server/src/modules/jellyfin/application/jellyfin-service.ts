@@ -8,7 +8,7 @@ import { ForbiddenError } from "@/shared/errors";
 import { moduleLogger, reason } from "@/shared/logger";
 import type { Notifier } from "@/modules/notifications/application/notification-service";
 import type { TrackingService } from "@/modules/tracking/application/tracking-service";
-import { type JellyfinEvent, parseJellyfinEvent } from "@/modules/jellyfin/domain/jellyfin-event";
+import { type EpisodeEvent, type JellyfinEvent, parseJellyfinEvent } from "@/modules/jellyfin/domain/jellyfin-event";
 import { jellyfinEvents, jellyfinSeries } from "@/modules/jellyfin/infrastructure/schema";
 import { episodeLabel, t } from "@/shared/i18n";
 import { today } from "@/shared/day";
@@ -60,11 +60,14 @@ export class JellyfinService {
     const summary =
       event.kind === "episode-watched"
         ? `${event.seriesName} ${episodeCode(event)}`
-        : `${String(body.NotificationType ?? "?")} · ${String(body.Name ?? body.ItemType ?? "")}`;
+        : event.kind === "episode-started"
+          ? `▶ ${event.seriesName} ${episodeCode(event)}`
+          : `${String(body.NotificationType ?? "?")} · ${String(body.Name ?? body.ItemType ?? "")}`;
 
     let result: Outcome;
     try {
       if (event.kind === "ignored") result = { outcome: "ignored", message: event.reason };
+      else if (event.kind === "episode-started") result = await this.start(userId, event);
       else if (this.justWatched(userId, summary)) result = { outcome: "ignored", message: t().webhook.duplicate };
       else result = await this.watch(userId, event);
     } catch (error) {
@@ -73,7 +76,7 @@ export class JellyfinService {
     this.log(userId, summary, result, body);
     // Ignored calls come in bursts (UserDataSaved on every pause), so they only show at debug.
     const line = `${this.identity.nameOf(userId)} · ${summary} → ${result.outcome}: ${result.message}`;
-    if (result.outcome === "watched") log.info(line);
+    if (result.outcome === "watched" || result.outcome === "added") log.info(line);
     else if (result.outcome === "ignored") log.debug(line);
     else log.warn(line);
     return { outcome: result.outcome, message: result.message };
@@ -132,6 +135,17 @@ export class JellyfinService {
     return { outcome: "watched", message: t().webhook.marked(series.name, label(event)), seriesId };
   }
 
+  /** Playback began: the Series shows in Snug from the first minute, not once the Episode is over. */
+  private async start(userId: string, event: Extract<JellyfinEvent, { kind: "episode-started" }>): Promise<Outcome> {
+    if (event.season === 0) return { outcome: "ignored", message: t().webhook.specials };
+    const seriesId = await this.resolveSeries(event);
+    if (!seriesId) return { outcome: "error", message: t().webhook.notFound };
+    const { name } = await this.catalog.ensure(seriesId);
+    return (await this.tracking.startWatching(userId, seriesId))
+      ? { outcome: "added", message: t().webhook.added(name), seriesId }
+      : { outcome: "ignored", message: t().webhook.alreadyTracked, seriesId };
+  }
+
   /** "✓ Severance S02E05", with what comes next; a season marked at once collapses into one notification. */
   private async announce(
     userId: string,
@@ -161,7 +175,7 @@ export class JellyfinService {
     }
   }
 
-  private async resolveSeries(event: Extract<JellyfinEvent, { kind: "episode-watched" }>) {
+  private async resolveSeries(event: EpisodeEvent) {
     const known = event.jellyfinSeriesId
       ? this.db.select().from(jellyfinSeries).where(eq(jellyfinSeries.jellyfinSeriesId, event.jellyfinSeriesId)).get()
       : undefined;

@@ -75,6 +75,8 @@ const en = {
     marked: (series: string, code: string) => `Marked ${series} ${code} as watched`,
     incomplete: "Missing series name, season or episode number",
     duplicate: "Already marked as watched a moment ago",
+    added: (series: string) => `${series} added to Watching`,
+    alreadyTracked: "Already followed",
   },
 };
 
@@ -150,6 +152,8 @@ const fr: Messages = {
     marked: (series, code) => `${series} ${code} marqué vu`,
     incomplete: "Nom de la série, saison ou numéro d'épisode manquant",
     duplicate: "Déjà marqué vu à l'instant",
+    added: (series) => `${series} ajoutée à En cours`,
+    alreadyTracked: "Déjà suivie",
   },
 };
 

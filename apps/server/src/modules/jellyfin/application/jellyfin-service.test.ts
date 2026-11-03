@@ -128,3 +128,64 @@ test("the UserDataSaved call that follows a finished Episode is ignored, but a l
   now = new Date(now.getTime() + 2 * 60 * 60_000);
   expect((await service.handle("token", stop)).outcome).toBe("watched");
 });
+
+test("starting a Series Snug doesn't follow adds it to Watching; one already followed keeps its Status", async () => {
+  const { db } = testDb();
+  const series = (tmdbId: number, name: string): Series => ({
+    tmdbId,
+    tvdbId: null,
+    name,
+    year: 2026,
+    overview: "",
+    posterPath: null,
+    backdropPath: null,
+    ended: false,
+    episodes: [
+      { season: 1, number: 1, name: "E1", airDate: "2026-01-01" },
+      { season: 1, number: 2, name: "E2", airDate: "2026-01-08" },
+    ],
+    fetchedAt: new Date(),
+  });
+  const catalog = {
+    resolve: async (hint: { tmdbId?: number }) => hint.tmdbId ?? null,
+    ensure: async (tmdbId: number) => series(tmdbId, `Series ${tmdbId}`),
+    refresh: async (tmdbId: number) => series(tmdbId, `Series ${tmdbId}`),
+  } as unknown as CatalogService;
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog);
+  const identity = {
+    webhookTokens: { userIdOf: () => "u" },
+    nameOf: () => "U",
+    preferences: () => DEFAULT_PREFERENCES,
+  } as unknown as IdentityService;
+  const notifications: Notification[] = [];
+  const notifier: Notifier = { notify: async (_, notification) => void notifications.push(notification) };
+  const service = new JellyfinService(db, identity, catalog, tracking, notifier);
+  const start = (tmdbId: number) =>
+    service.handle("token", {
+      NotificationType: "PlaybackStart",
+      ItemType: "Episode",
+      SeriesName: `Series ${tmdbId}`,
+      SeriesProvider_tmdb: String(tmdbId),
+      SeasonNumber: 1,
+      EpisodeNumber: 1,
+    });
+
+  // Untracked: Watching, nothing marked watched yet.
+  expect(await start(1)).toEqual({ outcome: "added", message: "Series 1 added to Watching" });
+  const added = await tracking.detail("u", 1);
+  expect(added.status).toBe("watching");
+  expect(added.progress).toBeNull();
+
+  // The Watchlist moves to Watching; a paused Series stays paused.
+  await tracking.track("u", 2, "watchlist");
+  expect((await start(2)).outcome).toBe("added");
+  expect((await tracking.detail("u", 2)).status).toBe("watching");
+  await tracking.track("u", 3, "paused");
+  expect(await start(3)).toEqual({ outcome: "ignored", message: "Already followed" });
+  expect((await tracking.detail("u", 3)).status).toBe("paused");
+
+  // Starting the next Episode of a Series already Watching changes nothing, and no notification is sent.
+  expect((await start(1)).outcome).toBe("ignored");
+  await Bun.sleep(0);
+  expect(notifications).toHaveLength(0);
+});

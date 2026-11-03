@@ -6,8 +6,8 @@ import { Chips, cx, Skeleton } from "@/components/ui";
 import { useT } from "@/i18n";
 import { ago } from "@/lib/format";
 
-const OUTCOMES = ["all", "watched", "ignored", "error"] as const;
-const DOT = { watched: "bg-sage", ignored: "bg-muted/50", error: "bg-rose" };
+const OUTCOMES = ["all", "watched", "added", "ignored", "error"] as const;
+const DOT = { watched: "bg-sage", added: "bg-accent", ignored: "bg-muted/50", error: "bg-rose" };
 
 /** Every call Jellyfin made to the webhook, newest first, with what Snug did and the raw payload. */
 export function WebhookHistory({ events }: { events: JellyfinEventLog[] | undefined }) {

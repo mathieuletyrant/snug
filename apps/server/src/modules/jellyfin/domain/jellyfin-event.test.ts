@@ -40,3 +40,13 @@ test("partial playback, unmarking and movies are ignored", () => {
     expect(parseJellyfinEvent(body).kind).toBe("ignored");
   }
 });
+
+test("starting an episode is a start, not a watch", () => {
+  expect(parseJellyfinEvent({ ...episode, NotificationType: "PlaybackStart" })).toMatchObject({
+    kind: "episode-started",
+    seriesName: "Severance",
+    season: 2,
+    number: 5,
+  });
+  expect(parseJellyfinEvent({ ...episode, NotificationType: "PlaybackStart", ItemType: "Movie" }).kind).toBe("ignored");
+});
