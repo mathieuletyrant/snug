@@ -1,4 +1,4 @@
-import type { JellyfinUser } from "@snug/shared";
+import type { JellyfinUser, Player } from "@snug/shared";
 import { InvalidInputError } from "@/shared/errors";
 import { t } from "@/shared/i18n";
 
@@ -42,9 +42,12 @@ export class JellyfinClient {
     return Items.find((e) => e.ParentIndexNumber === season && e.IndexNumber === number)?.Id ?? null;
   }
 
-  /** Players of this Jellyfin user, seen in the last 15 minutes, that accept remote control. */
-  async players(jellyfinUserId: string) {
-    const sessions = await this.get<Session[]>(`/Sessions?ControllableByUserId=${jellyfinUserId}&ActiveWithinSeconds=900`);
+  /**
+   * Players of this Jellyfin user that accept remote control, seen in the last 2 minutes: an open app checks in
+   * about every minute, so a closed one drops out quickly.
+   */
+  async players(jellyfinUserId: string): Promise<Player[]> {
+    const sessions = await this.get<Session[]>(`/Sessions?ControllableByUserId=${jellyfinUserId}&ActiveWithinSeconds=120`);
     return sessions
       .filter((session) => session.SupportsRemoteControl)
       .map((session) => ({ sessionId: session.Id, name: [session.DeviceName, session.Client].filter(Boolean).join(" · ") || "Jellyfin player" }));

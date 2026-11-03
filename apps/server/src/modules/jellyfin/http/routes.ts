@@ -64,6 +64,7 @@ export const playRoutes = (playback: PlaybackService) =>
       const server = playback.server();
       return c.json({ players: playback.enabled(c.var.user.id), jellyfinWeb: !!server.url && !!server.publicUrl });
     })
+    .get("/players", async (c) => c.json(await playback.openPlayers(c.var.user.id)))
     .get("/:id/:season/:number", async (c) => {
       const p = parse(episodeParams, c.req.param());
       return c.json(await playback.options(c.var.user.id, p.id, p));

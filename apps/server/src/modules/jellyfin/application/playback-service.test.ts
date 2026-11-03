@@ -45,6 +45,11 @@ test("plays an Episode on a player that accepts remote control, never on another
   // Not in Jellyfin: no players and no id, the app can still be opened by TMDB id.
   expect(await playback.options("u", 1, ep)).toEqual({ players: [], itemId: null, jellyfinUrl: "https://tv.example.com" });
 
+  expect(await playback.openPlayers("u")).toEqual([{ sessionId: "tv", name: "Living room · JellyTV" }]);
+  expect(calls).toContain("GET /Sessions?ControllableByUserId=jf-user&ActiveWithinSeconds=120");
+  // Someone without a Jellyfin user has no TV.
+  expect(await playback.openPlayers("other")).toEqual([]);
+
   await playback.play("u", 95396, ep, "tv");
   expect(calls).toContain("POST /Sessions/tv/Playing?playCommand=PlayNow&itemIds=e4");
   await expect(playback.play("u", 95396, ep, "phone")).rejects.toThrow("This player is gone");
@@ -57,5 +62,18 @@ test("a server that doesn't answer is not saved", async () => {
     "Jellyfin refused the API key",
   );
   expect(playback.server()).toEqual({ url: "", publicUrl: "", hasApiKey: false });
+  expect(await playback.openPlayers("u")).toEqual([]);
   expect(await playback.options("u", 95396, { season: 1, number: 4 })).toEqual({ players: [], itemId: null, jellyfinUrl: null });
+});
+
+test("open players are empty when Jellyfin stops answering", async () => {
+  fakeJellyfin();
+  const playback = setup();
+  await playback.saveServer({ url: "http://jellyfin:8096", apiKey: "key", publicUrl: "" });
+  playback.link("u", "jf-user");
+  mock.restore();
+  spyOn(globalThis, "fetch").mockImplementation((async () => {
+    throw new Error("ECONNREFUSED");
+  }) as unknown as typeof fetch);
+  expect(await playback.openPlayers("u")).toEqual([]);
 });

@@ -334,6 +334,7 @@ export const en = {
     openIn: (app: string) => `Open in ${app}`,
     notInJellyfin: "This episode isn't in Jellyfin.",
     playing: (code: string, player: string) => `Playing ${code} on ${player}`,
+    playOn: (code: string, player: string) => `Play ${code} on ${player}`,
     apps: { jellyfin: "Jellyfin", jellytv: "JellyTV", custom: "Other app" },
     myApp: "my app",
     openEpisodesIn: "Open episodes in",

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { type EpisodeRef, episodeCode, type PlayOptions, watchLink } from "@snug/shared";
-import { ExternalLink, Play, Tv } from "lucide-react";
+import { type EpisodeRef, episodeCode, type Player, type PlayOptions, watchLink } from "@snug/shared";
+import { ExternalLink, Loader, Play, Tv } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { type ReactNode, useState } from "react";
 import { api } from "@/api";
@@ -16,15 +16,35 @@ import { useT } from "@/i18n";
  */
 export function usePlayback() {
   const { watchApp, watchLink } = usePreferences();
-  const { data } = useQuery({
-    queryKey: ["play"],
-    queryFn: () => api<{ players: boolean; jellyfinWeb: boolean }>("/play"),
-    staleTime: 60_000,
-  });
+  const { data } = usePlaySetup();
   if (!data) return false;
   if (data.players) return true;
   if (watchApp === "jellyfin") return data.jellyfinWeb;
   return watchApp === "jellytv" || !!watchLink;
+}
+
+function usePlaySetup() {
+  return useQuery({
+    queryKey: ["play"],
+    queryFn: () => api<{ players: boolean; jellyfinWeb: boolean }>("/play"),
+    staleTime: 60_000,
+  });
+}
+
+/**
+ * The User's Jellyfin players open now (JellyTV on the TV…), asked every 30 seconds while the page is in front.
+ * Empty when the User has no Jellyfin user: Home's ▶︎ only shows while a TV is on.
+ */
+export function useOpenPlayers(): Player[] {
+  const setup = usePlaySetup();
+  const { data } = useQuery({
+    queryKey: ["play", "players"],
+    queryFn: () => api<Player[]>("/play/players"),
+    enabled: !!setup.data?.players,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+  return data ?? [];
 }
 
 /**
@@ -36,6 +56,7 @@ export function PlayButton({
   seriesId,
   episode,
   label,
+  player,
   className,
   children,
 }: {
@@ -43,6 +64,8 @@ export function PlayButton({
   episode: EpisodeRef;
   /** How the Episode is named, e.g. with absolute numbering; S03E07 by default. */
   label?: string;
+  /** The only TV open: a tap starts the Episode there, without the sheet. */
+  player?: Player;
   className?: string;
   children?: ReactNode;
 }) {
@@ -59,7 +82,7 @@ export function PlayButton({
       setOpen(false);
       toast({ message: t.play.playing(code, player.name) });
     },
-    onError: (e) => toast({ message: e.message }),
+    onError: (error) => toast({ message: error.message }),
   });
   const link =
     options.data &&
@@ -71,6 +94,22 @@ export function PlayButton({
       jellyfinUrl: options.data.jellyfinUrl,
     });
   const appName = preferences.watchApp === "custom" ? t.play.myApp : t.play.apps[preferences.watchApp];
+
+  if (player) {
+    return (
+      <button
+        aria-label={t.play.playOn(code, player.name)}
+        disabled={play.isPending}
+        onClick={(event) => {
+          event.stopPropagation();
+          play.mutate(player);
+        }}
+        className={className}
+      >
+        {play.isPending ? <Loader className="size-4 animate-spin" /> : (children ?? <Play className="size-4 fill-current" />)}
+      </button>
+    );
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>

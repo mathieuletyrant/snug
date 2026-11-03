@@ -327,6 +327,7 @@ export const fr: Messages = {
     openIn: (app) => `Ouvrir dans ${app}`,
     notInJellyfin: "Cet épisode n'est pas dans Jellyfin.",
     playing: (code, player) => `Lecture de ${code} sur ${player}`,
+    playOn: (code, player) => `Lire ${code} sur ${player}`,
     apps: { jellyfin: "Jellyfin", jellytv: "JellyTV", custom: "Autre app" },
     myApp: "mon app",
     openEpisodesIn: "Ouvrir les épisodes dans",

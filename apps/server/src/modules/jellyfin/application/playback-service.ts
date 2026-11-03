@@ -1,4 +1,4 @@
-import type { EpisodeRef, JellyfinServer, PlayOptions } from "@snug/shared";
+import type { EpisodeRef, JellyfinServer, Player, PlayOptions } from "@snug/shared";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/shared/db";
 import { InvalidInputError, NotFoundError } from "@/shared/errors";
@@ -77,6 +77,18 @@ export class PlaybackService {
     const jellyfinUser = this.linkedUser(userId);
     const players = itemId && jellyfinUser ? await client.players(jellyfinUser) : [];
     return { players, itemId, jellyfinUrl };
+  }
+
+  /**
+   * The User's players open now, for the ▶︎ on Home that only shows while a TV is on. Empty when playback isn't
+   * set up, or when Jellyfin doesn't answer: this is polled, so it never fails.
+   */
+  async openPlayers(userId: string): Promise<Player[]> {
+    const jellyfinUser = this.linkedUser(userId);
+    if (!jellyfinUser || !this.read("jellyfin_url") || !this.read("jellyfin_api_key")) return [];
+    return this.client()
+      .players(jellyfinUser)
+      .catch(() => []);
   }
 
   async play(userId: string, seriesId: number, ep: EpisodeRef, sessionId: string) {

@@ -320,9 +320,15 @@ export interface JellyfinUser {
 }
 
 /** Where an Episode can be played: Jellyfin players accepting remote control, and a link to its page. */
+/** A Jellyfin app open now that accepts remote control, e.g. JellyTV on the living room's Apple TV. */
+export interface Player {
+  sessionId: string;
+  name: string;
+}
+
 export interface PlayOptions {
   /** Empty until the admin sets up Jellyfin and the User picks their Jellyfin user. */
-  players: { sessionId: string; name: string }[];
+  players: Player[];
   /** The Episode's Jellyfin id; null without a Jellyfin server, or when Jellyfin doesn't have it. */
   itemId: string | null;
   /** The server's public URL, for links to its pages; null when not set. */
