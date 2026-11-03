@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/mathieuletyrant/snug/compare/v0.18.1...v0.19.0) (2026-11-03)
+
+
+### ✨ Features
+
+* Play button, on a Jellyfin TV or in your own app ([#42](https://github.com/mathieuletyrant/snug/issues/42)) ([b1fef90](https://github.com/mathieuletyrant/snug/commit/b1fef9059909b176d40093c7bb5cc096d2ca5ea0))
+
 ## [0.18.1](https://github.com/mathieuletyrant/snug/compare/v0.18.0...v0.18.1) (2026-11-02)
 
 
