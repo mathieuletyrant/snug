@@ -5,7 +5,7 @@ import { api, queryClient } from "@/api";
 import { useForm } from "@/components/form";
 import { usePreferences, useUpdatePreferences } from "@/components/preferences";
 import { useToast } from "@/components/toast";
-import { Button, Card, CardHeader, Chips, ErrorText, Input, Select } from "@/components/ui";
+import { Badge, Button, Chips, ErrorText, Input, Select } from "@/components/ui";
 import { useT } from "@/i18n";
 
 /** The app the ▶︎ sheet opens an episode in; any app with links through "Other app". */
@@ -83,8 +83,8 @@ export function JellyfinUserSelect({ current }: { current: string | null }) {
   );
 }
 
-/** Admin: the Jellyfin server behind the ▶︎ button. Saved only once Jellyfin answers. */
-export function JellyfinServerCard() {
+/** Admin, at the top of the Jellyfin integration: the server behind the ▶︎ button. Saved only once Jellyfin answers. */
+export function JellyfinServerSettings() {
   const t = useT();
   const toast = useToast();
   const { data } = useQuery({
@@ -113,8 +113,11 @@ function ServerForm({ saved, onSaved }: { saved: JellyfinServer; onSaved: (on: b
   });
 
   return (
-    <Card>
-      <CardHeader title={t.play.server}>{t.play.serverHelp}</CardHeader>
+    <section className="mb-6 border-b border-line/60 pb-6">
+      <p className="flex items-center gap-2 font-semibold">
+        {t.play.server} <Badge>{t.integrations.instance}</Badge>
+      </p>
+      <p className="mt-1 mb-4 text-sm text-muted">{t.play.serverHelp}</p>
       <form {...form.formProps} onSubmit={form.onSubmit(() => save.mutate())} className="space-y-4">
         <Input label={t.play.url} placeholder="http://jellyfin_server_1:8096" {...form.field("url")} />
         <Input
@@ -133,6 +136,6 @@ function ServerForm({ saved, onSaved }: { saved: JellyfinServer; onSaved: (on: b
         <ErrorText error={form.formError} />
         <Button disabled={save.isPending}>{save.isPending ? t.play.checking : t.play.save}</Button>
       </form>
-    </Card>
+    </section>
   );
 }
