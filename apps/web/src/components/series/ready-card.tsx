@@ -1,15 +1,21 @@
 import type { SeriesCard } from "@snug/shared";
-import { Check } from "lucide-react";
+import { Check, ListVideo } from "lucide-react";
 import { Link } from "wouter";
 import { useT } from "@/i18n";
 import { episodeLabel } from "@/lib/format";
+import { PlayButton, useOpenPlayers } from "@/components/play";
 import { useWatchNext } from "@/components/series-actions";
 import { EpisodeTitle } from "@/components/spoilers";
 import { Backdrop, Badge } from "@/components/ui";
 
-/** Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. */
+/**
+ * Landscape "continue watching" card: 2 per row on phones, 4 on desktop, with the one-tap ✓. While a TV is open
+ * (JellyTV…), a ▶︎ takes the top corner and the episodes-left badge shrinks to make room.
+ */
 export function ReadyCard({ card }: { card: SeriesCard }) {
   const watchNext = useWatchNext();
+  const players = useOpenPlayers();
+  const playable = players.length > 0 && !!card.next;
   const t = useT();
   const next = card.next;
   const code = next && episodeLabel(t, next, card.absoluteNumbering);
@@ -29,7 +35,17 @@ export function ReadyCard({ card }: { card: SeriesCard }) {
           <div className="absolute top-2 left-2 flex gap-1">
             {card.saving && <Badge tone="accent">{t.home.savedUp}</Badge>}
             {!card.saving && card.fresh && <Badge tone="accent">{t.home.new}</Badge>}
-            <Badge>{t.home.left(left)}</Badge>
+            <Badge>
+              {playable ? (
+                <span className="inline-flex items-center gap-0.5" title={t.home.left(left)}>
+                  <ListVideo className="size-3" aria-hidden />
+                  <span className="sr-only">{t.home.left(left)}</span>
+                  <span aria-hidden>{left}</span>
+                </span>
+              ) : (
+                t.home.left(left)
+              )}
+            </Badge>
           </div>
           <div className="absolute inset-x-0 bottom-0 p-2.5 pr-12 sm:p-3 sm:pr-14">
             <h3 className="truncate text-sm leading-tight sm:text-base">{card.name}</h3>
@@ -56,6 +72,16 @@ export function ReadyCard({ card }: { card: SeriesCard }) {
       >
         <Check className="size-5" strokeWidth={3} />
       </button>
+      {/* Same right edge as ✓, in the top corner. */}
+      {playable && next && (
+        <PlayButton
+          seriesId={card.seriesId}
+          episode={next}
+          label={code ?? undefined}
+          player={players.length === 1 ? players[0] : undefined}
+          className="absolute top-1.5 right-2.5 flex size-8 items-center justify-center rounded-full bg-bg/80 text-text transition hover:bg-bg sm:right-2.5 sm:size-10"
+        />
+      )}
     </article>
   );
 }

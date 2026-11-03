@@ -1,6 +1,6 @@
 import { Hono, type MiddlewareHandler } from "hono";
 import { z } from "zod";
-import { EPISODE_TITLES, SEASON_PROGRESS, NEW_FOR_DAYS } from "@snug/shared";
+import { EPISODE_TITLES, SEASON_PROGRESS, NEW_FOR_DAYS, WATCH_APPS } from "@snug/shared";
 import { ForbiddenError } from "@/shared/errors";
 import { type AuthEnv, jsonBody, parse } from "@/shared/http";
 import type { IdentityService } from "@/modules/identity/application/identity-service";
@@ -35,6 +35,16 @@ const preferencesPatch = z
     seasonProgress: z.enum(SEASON_PROGRESS),
     showPick: z.boolean(),
     showRatings: z.boolean(),
+    watchApp: z.enum(WATCH_APPS),
+    // An app's link (scheme://…) or a web page; never a script.
+    watchLink: z.union([
+      z.literal(""),
+      z
+        .string()
+        .trim()
+        .max(500)
+        .regex(/^(?!javascript:|data:)[a-z][a-z0-9+.-]*:\S+$/i, { error: () => t().playback.appLink }),
+    ]),
   })
   .partial()
   .strict();

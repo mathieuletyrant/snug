@@ -13,6 +13,7 @@ import { NotificationService } from "@/modules/notifications/application/notific
 import { Ntfy } from "@/modules/notifications/infrastructure/ntfy";
 import { WebPushSender } from "@/modules/notifications/infrastructure/web-push-sender";
 import { JellyfinService } from "@/modules/jellyfin/application/jellyfin-service";
+import { PlaybackService } from "@/modules/jellyfin/application/playback-service";
 import { db } from "@/shared/db";
 import { setLanguageSource } from "@/shared/i18n";
 import { moduleLogger } from "@/shared/logger";
@@ -34,6 +35,7 @@ export const jellyfin = new JellyfinService(db, identity, catalog, tracking, not
 export const importer = new ImportService(tracking, catalog);
 export const feeds = new FeedsService(tracking, catalog);
 export const newEpisodeAlerts = new NewEpisodeAlerts(db, tracking, notifications, (userId) => identity.preferences(userId));
+export const playback = new PlaybackService(db);
 
 /**
  * Refreshes Catalog data of every tracked Series older than `maxAgeDays` (0 = all, e.g. after a language change),
