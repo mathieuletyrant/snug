@@ -79,6 +79,22 @@ export class TrackingService {
     });
   }
 
+  /**
+   * A Series started on a media server: untracked or on the Watchlist, it becomes Watching; any other Status
+   * (paused, dropped, a rewatch of a completed one…) is left alone. Returns whether it changed.
+   */
+  async startWatching(userId: string, seriesId: number): Promise<boolean> {
+    const series = await this.catalog.ensure(seriesId);
+    return this.exclusive(userId, seriesId, async () => {
+      const existing = await this.repo.find(userId, seriesId);
+      if (existing && existing.status !== "watchlist") return false;
+      const tracked = existing ?? TrackedSeries.start(userId, seriesId, "watching", this.now());
+      tracked.choose("watching", series, today(this.now()));
+      await this.repo.save(tracked);
+      return true;
+    });
+  }
+
   untrack(userId: string, seriesId: number) {
     return this.exclusive(userId, seriesId, () => this.repo.delete(userId, seriesId));
   }

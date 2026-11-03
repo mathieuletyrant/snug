@@ -81,7 +81,9 @@ To back up the whole instance, copy `DATA_DIR` while Snug is stopped. Each user 
 
 1. Install the **Webhook** plugin (Dashboard → Plugins → Catalog) and restart Jellyfin.
 2. Add a **Generic Destination** with your webhook URL from Snug → Settings → Integrations → Jellyfin.
-3. Tick **Playback Stop** and **User Data Saved**, select your user, tick **Send All Properties**.
+3. Tick **Playback Start**, **Playback Stop** and **User Data Saved**, select your user, tick **Send All Properties**.
+
+Finished episodes are marked watched; a series you start that Snug doesn't follow yet (or only has on the Watchlist) moves to Watching as soon as playback begins.
 
 > [!TIP]
 > The URL must be reachable **from Jellyfin's container**: use Snug's LAN address or `host.docker.internal`, not `localhost`.

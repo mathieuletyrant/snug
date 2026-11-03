@@ -290,7 +290,8 @@ export interface ImportProgress {
 export interface JellyfinEventLog {
   receivedAt: string;
   summary: string;
-  outcome: "watched" | "ignored" | "error";
+  /** "added": a Series started in Jellyfin that Snug didn't follow (or only had on the Watchlist) is now Watching. */
+  outcome: "watched" | "added" | "ignored" | "error";
   message: string;
   /** Series the call was resolved to, when it was. */
   seriesId: number | null;
