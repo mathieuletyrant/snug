@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/mathieuletyrant/snug/compare/v0.20.0...v0.21.0) (2026-11-09)
+
+
+### ✨ Features
+
+* **series:** seasons by their TMDB name ("Arc East Blue"), a toggle per series ([9431de3](https://github.com/mathieuletyrant/snug/commit/9431de31de809c1cb035f1e86a5dc557badab67e))
+
 ## [0.20.0](https://github.com/mathieuletyrant/snug/compare/v0.19.0...v0.20.0) (2026-11-03)
 
 
