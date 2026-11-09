@@ -34,6 +34,10 @@ export function SeriesPage({ id }: { id: string }) {
     mutationFn: (on: boolean) => api(`/series/${id}/absolute-numbering`, { method: "PUT", body: { on } }),
     onSuccess: () => queryClient.invalidateQueries(),
   });
+  const naming = useMutation({
+    mutationFn: (on: boolean) => api(`/series/${id}/named-seasons`, { method: "PUT", body: { on } }),
+    onSuccess: () => queryClient.invalidateQueries(),
+  });
 
   if (isPending) return <SeriesSkeleton />;
   if (!data) return <ErrorText error={error} />;
@@ -73,6 +77,15 @@ export function SeriesPage({ id }: { id: string }) {
               checked={numbering.isPending ? numbering.variables : data.absoluteNumbering}
               onChange={(on) => numbering.mutate(on)}
             />
+            {/* Only when TMDB names at least one season: elsewhere the toggle would change nothing. */}
+            {data.seasons.some((season) => season.name) && (
+              <Toggle
+                label={t.series.namedSeasons}
+                description={t.series.namedSeasonsHint}
+                checked={naming.isPending ? naming.variables : data.namedSeasons}
+                onChange={(on) => naming.mutate(on)}
+              />
+            )}
           </div>
           <Confirm
             title={t.series.removeTitle(data.name)}

@@ -48,6 +48,11 @@ export const trackingRoutes = (tracking: TrackingService) =>
       await tracking.numberAbsolutely(c.var.user.id, parse(id, c.req.param("id")), on);
       return c.body(null, 204);
     })
+    .put("/series/:id/named-seasons", async (c) => {
+      const { on } = parse(z.object({ on: z.boolean() }), await jsonBody(c));
+      await tracking.nameSeasons(c.var.user.id, parse(id, c.req.param("id")), on);
+      return c.body(null, 204);
+    })
     .put("/series/:id/rating", async (c) => {
       await tracking.rate(c.var.user.id, parse(id, c.req.param("id")), parse(rating, await jsonBody(c)));
       return c.body(null, 204);

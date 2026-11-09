@@ -1,0 +1,1 @@
+ALTER TABLE `tracked_series` ADD `named_seasons` integer DEFAULT false NOT NULL;

@@ -157,6 +157,8 @@ export const en = {
     removed: "Removed from your library",
     absoluteNumbering: "Absolute numbering",
     absoluteNumberingHint: "Ep. 1156 rather than S23E1156, as for anime.",
+    namedSeasons: "Season names",
+    namedSeasonsHint: "The name TMDB gives each season rather than Season 1.",
     catchUpTitle: (n: number) => (n === 1 ? "1 earlier episode not watched" : `${n} earlier episodes not watched`),
     catchUpBody: "Mark them watched too?",
     onlyThisOne: "Only this one",
@@ -377,7 +379,7 @@ export const en = {
     template: "Download the CSV template",
     columnsHelp: (title: ReactNode, tmdbId: ReactNode) => (
       <>
-        Only {title} or {tmdbId} is required. No season/episode: just adds the series. Ratings are out of 10; a season_rating may go with a season and no episode. saving_target is 0 (a full season), 3, 5 or 10; absolute_numbering is true or false.
+        Only {title} or {tmdbId} is required. No season/episode: just adds the series. Ratings are out of 10; a season_rating may go with a season and no episode. saving_target is 0 (a full season), 3, 5 or 10; absolute_numbering and named_seasons are true or false.
       </>
     ),
     done: (series: number, watches: number) => `Imported ${series} series and ${watches} watches.`,

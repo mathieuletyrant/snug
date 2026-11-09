@@ -46,7 +46,7 @@ export function ImportSection() {
           </CardHeader>
           <p className="mb-4 rounded-2xl bg-raised/50 px-4 py-3 text-xs text-muted">
             <code className="mb-1 block font-mono break-all text-text">
-              title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering
+              title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering,named_seasons
             </code>
             <span>{t.import.columnsHelp(<b>title</b>, <b>tmdb_id</b>)}</span>
           </p>

@@ -222,3 +222,22 @@ test("Absolute numbering is kept per User and Series, and the Episodes carry the
   await tracking.numberAbsolutely("u", 1, false);
   expect((await tracking.library("u"))[0]?.absoluteNumbering).toBe(false);
 });
+
+test("Named seasons is kept per User and Series; the detail gives the names TMDB has", async () => {
+  const { db } = testDb(["u", "v"]);
+  const show = series(1, false, ["2026-10-01", "2026-10-08"]);
+  show.episodes = show.episodes.map((episode, index) => (index === 1 ? { ...episode, season: 2, number: 1 } : episode));
+  show.seasonNames = { 1: "Arc East Blue" };
+  const catalog: CatalogPort = { ensure: async () => show, getMany: async () => new Map([[1, show]]) };
+  const tracking = new TrackingService(new DrizzleTrackedSeriesRepository(db), catalog, undefined, () => now);
+  await tracking.track("u", 1);
+  await tracking.track("v", 1);
+
+  expect((await tracking.detail("u", 1)).namedSeasons).toBe(false);
+  await tracking.nameSeasons("u", 1, true);
+  const detail = await tracking.detail("u", 1);
+  expect(detail.namedSeasons).toBe(true);
+  expect(detail.absoluteNumbering).toBe(false);
+  expect(detail.seasons.map((season) => [season.number, season.name])).toEqual([[1, "Arc East Blue"], [2, null]]);
+  expect((await tracking.detail("v", 1)).namedSeasons).toBe(false);
+});

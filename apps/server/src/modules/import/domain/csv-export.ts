@@ -13,7 +13,7 @@ const cell = (value: Cell) => {
 /**
  * The Export: the Import's CSV (see csv-import.ts), so Snug reads it back without loss. One row per Watch,
  * watched_at as a Day; a rated season with no Watch gets a row of its own, a Series with neither gets one
- * row with no season. The Series' own fields (status, rating, saving_target, absolute_numbering) repeat on each row.
+ * row with no season. The Series' own fields (status, rating, saving_target, absolute_numbering, named_seasons) repeat on each row.
  */
 export function writeCsvExport(list: readonly TrackedSeries[], titleOf: (seriesId: number) => string): string {
   const sorted = [...list].sort((a, b) => titleOf(a.seriesId).localeCompare(titleOf(b.seriesId)) || a.seriesId - b.seriesId);
@@ -31,6 +31,7 @@ export function writeCsvExport(list: readonly TrackedSeries[], titleOf: (seriesI
         season === null ? null : tracked.ratingOf(season),
         tracked.savingTarget,
         tracked.absoluteNumbering,
+        tracked.namedSeasons,
       ]
         .map(cell)
         .join(",");

@@ -72,19 +72,19 @@ test("an Export imported into an empty account exports the same", async () => {
   const watch = (number: number, day: string) => ({ season: 1, number, watchedAt: startOf(day) });
   await tracking.import("a", [
     { seriesId: 1, status: "watching", watches: [watch(1, "2024-02-18")], ratings: [{ season: 0, rating: 9 }, { season: 2, rating: 7 }] },
-    { seriesId: 2, status: "saving", watches: [watch(2, "2024-03-01"), watch(1, "2024-02-28")], savingTarget: 5, absoluteNumbering: true },
+    { seriesId: 2, status: "saving", watches: [watch(2, "2024-03-01"), watch(1, "2024-02-28")], savingTarget: 5, absoluteNumbering: true, namedSeasons: true },
     { seriesId: 3, status: "watchlist", watches: [] },
   ]);
 
   const csv = await importer.exportCsv("a");
   expect(csv).toBe(
     [
-      "title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering",
-      "Dark,2,1,1,2024-02-28,saving,,,5,true",
-      "Dark,2,1,2,2024-03-01,saving,,,5,true",
-      '"Love, Death & ""Robots""",1,1,1,2024-02-18,watching,9,,0,false',
-      '"Love, Death & ""Robots""",1,2,,,watching,9,7,0,false',
-      "Severance,3,,,,watchlist,,,0,false",
+      "title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering,named_seasons",
+      "Dark,2,1,1,2024-02-28,saving,,,5,true,true",
+      "Dark,2,1,2,2024-03-01,saving,,,5,true,true",
+      '"Love, Death & ""Robots""",1,1,1,2024-02-18,watching,9,,0,false,false',
+      '"Love, Death & ""Robots""",1,2,,,watching,9,7,0,false,false',
+      "Severance,3,,,,watchlist,,,0,false,false",
       "",
     ].join("\n"),
   );

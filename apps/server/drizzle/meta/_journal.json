@@ -92,6 +92,20 @@
       "when": 1793647652521,
       "tag": "0012_jellyfin_users",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1794211910011,
+      "tag": "0013_season_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1794212193932,
+      "tag": "0014_named_seasons",
+      "breakpoints": true
     }
   ]
 }

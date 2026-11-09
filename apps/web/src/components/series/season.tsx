@@ -28,6 +28,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   const current = series.next?.season ?? series.seasons.at(-1)?.number;
   const showProgress = aired > 0 && (seasonProgress === "all" || season.number === current);
   const base = `/series/${series.seriesId}`;
+  const title = (series.namedSeasons && season.name) || t.series.season(season.number);
 
   const toggle = useMutation({
     mutationFn: (e: { number: number; watched: boolean }) =>
@@ -58,7 +59,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
           aria-expanded={open}
           className="flex min-w-0 flex-1 items-center gap-3 py-4 pl-5 text-left"
         >
-          <h2 className="flex-1 text-lg">{t.series.season(season.number)}</h2>
+          <h2 className="flex-1 text-lg">{title}</h2>
           <span className="text-sm text-muted">{t.series.episodesWatched(watched, season.episodes.length)}</span>
         </button>
         {series.tracked && showRatings && (
@@ -72,7 +73,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
         <button
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          aria-label={t.series.season(season.number)}
+          aria-label={title}
           className="p-1"
         >
           <ChevronDown className={cx("size-5 text-muted transition", open && "rotate-180")} />
