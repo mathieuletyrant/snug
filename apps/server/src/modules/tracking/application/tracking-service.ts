@@ -245,7 +245,12 @@ export class TrackingService {
     const numbered = numberAbsolutely(series.episodes);
     const seasons = new Map<number, SeriesDetail["seasons"][number]>();
     for (const episode of series.episodes) {
-      const season = seasons.get(episode.season) ?? { number: episode.season, rating: tracked.ratingOf(episode.season), episodes: [] };
+      const season = seasons.get(episode.season) ?? {
+        number: episode.season,
+        name: series.seasonNames?.[episode.season] ?? null,
+        rating: tracked.ratingOf(episode.season),
+        episodes: [],
+      };
       season.episodes.push({
         ...numbered(episode),
         watched: tracked.hasWatched(episode),

@@ -24,7 +24,7 @@ interface TmdbShow {
   status: string;
   networks: { name: string }[];
   origin_country: string[];
-  seasons: { season_number: number }[];
+  seasons: { season_number: number; name?: string | null }[];
   external_ids?: { tvdb_id: number | null };
   [appended: `season/${number}`]: { episodes: TmdbEpisode[] } | undefined;
 }
@@ -72,11 +72,24 @@ export async function isValidTmdbKey(key: string): Promise<boolean> {
 /** TMDB's placeholder when an episode has no translated title ("Épisode 5", "Folge 5"…). */
 const GENERIC_EPISODE_NAME = /^(episode|épisode|episodio|episódio|folge|aflevering|odcinek|エピソード)\s*\d+$/i;
 
-/** Fills what TMDB has not translated (empty overview, placeholder episode names) from English. */
+/** TMDB's default season name, "Season 2" in each language: it says nothing the number doesn't. */
+const GENERIC_SEASON_NAME = /^(season|saison|staffel|temporada|stagione|seizoen|sezon|series|シーズン)\s*\d+$/i;
+
+/**
+ * A season's own name, or null when TMDB only numbers it. Drops a leading "S01 - ", which repeats the number:
+ * "S01 - Arc East Blue" → "Arc East Blue".
+ */
+export function seasonName(name: string): string | null {
+  const own = name.trim().replace(/^S\d+\s*[-–—:]\s*/i, "");
+  return own && !GENERIC_SEASON_NAME.test(own) ? own : null;
+}
+
+/** Fills what TMDB has not translated (empty overview, placeholder episode and season names) from English. */
 export function withEnglishFallback(localized: Series, english: Series): Series {
   const englishNames = new Map(english.episodes.map((episode) => [`${episode.season}x${episode.number}`, episode.name]));
   return {
     ...localized,
+    seasonNames: { ...english.seasonNames, ...localized.seasonNames },
     overview: localized.overview || english.overview,
     posterPath: localized.posterPath ?? english.posterPath,
     backdropPath: localized.backdropPath ?? english.backdropPath,
@@ -109,6 +122,11 @@ export class TmdbClient implements SeriesSource {
   private async fetchIn(tmdbId: number, language: string): Promise<Series> {
     const show = await this.get<TmdbShow>(`/tv/${tmdbId}`, { language, append_to_response: "external_ids" });
     const seasons = show.seasons.map((season) => season.season_number).filter((number) => number > 0);
+    const seasonNames: Record<number, string> = {};
+    for (const season of show.seasons) {
+      const name = season.season_number > 0 ? seasonName(season.name ?? "") : null;
+      if (name) seasonNames[season.season_number] = name;
+    }
     const release = releaseOf(
       show.networks.map((network) => network.name),
       show.origin_country,
@@ -136,6 +154,7 @@ export class TmdbClient implements SeriesSource {
       backdropPath: show.backdrop_path,
       ended: show.status === "Ended" || show.status === "Canceled",
       episodes,
+      seasonNames,
       fetchedAt: new Date(),
     };
   }

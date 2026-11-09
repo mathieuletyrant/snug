@@ -206,7 +206,7 @@ export function registerTools(
     "series",
     {
       description:
-        "One series in detail, tracked or not: its seasons and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere. Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
+        "One series in detail, tracked or not: its seasons (with their own name when TMDB gives one, e.g. a story arc) and episodes, the day each one was first watched (watchedAt, null when not watched), the next one. An episode's name is null when the user's spoiler shield hides it: don't look the title up elsewhere. Episodes carry their absolute number across seasons; with absoluteNumbering, the user calls them by it (\"episode 1156\").",
       inputSchema: { tmdbId },
       annotations: { readOnlyHint: true },
     },
@@ -229,6 +229,7 @@ export function registerTools(
           rating: detail.rating,
           seasons: detail.seasons.map((season) => ({
             number: season.number,
+            name: season.name,
             rating: season.rating,
             episodes: season.episodes.map((episode) => ({
               number: episode.number,

@@ -23,7 +23,7 @@ An Episode's rank across the whole Series: the Episodes of every earlier season,
 _Avoid_: Global number, overall number
 
 **Absolute numbering**:
-A User's choice, Series by Series, to address its Episodes by their Absolute number ("Ep. 1100") rather than `SxxEyy`, wherever a person reads them. Meant for Anime.
+A User's choice, Series by Series, to address its Episodes by their Absolute number ("Ep. 1100") rather than `SxxEyy`, wherever a person reads them, and its seasons by their own name on TMDB ("Arc East Blue") when they have one. Meant for Anime.
 _Avoid_: Anime mode
 
 **Day**:

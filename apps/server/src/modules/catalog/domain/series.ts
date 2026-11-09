@@ -17,6 +17,8 @@ export interface Series {
   ended: boolean;
   /** Regular seasons only; specials (season 0) are not tracked. */
   episodes: Episode[];
+  /** Season number → its own name on TMDB ("Arc East Blue"), only for seasons named more than "Season 1". */
+  seasonNames?: Record<number, string>;
   fetchedAt: Date;
 }
 

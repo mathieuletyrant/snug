@@ -156,7 +156,7 @@ export const en = {
     removeConfirm: "Remove",
     removed: "Removed from your library",
     absoluteNumbering: "Absolute numbering",
-    absoluteNumberingHint: "Ep. 1156 rather than S23E1156, as for anime.",
+    absoluteNumberingHint: "Ep. 1156 rather than S23E1156, and seasons by their own name, as for anime.",
     catchUpTitle: (n: number) => (n === 1 ? "1 earlier episode not watched" : `${n} earlier episodes not watched`),
     catchUpBody: "Mark them watched too?",
     onlyThisOne: "Only this one",

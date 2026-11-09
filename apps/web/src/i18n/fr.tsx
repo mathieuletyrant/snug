@@ -150,7 +150,7 @@ export const fr: Messages = {
     removeConfirm: "Retirer",
     removed: "Retirée de votre bibliothèque",
     absoluteNumbering: "Numérotation absolue",
-    absoluteNumberingHint: "Ép. 1156 plutôt que S23E1156, comme pour les animés.",
+    absoluteNumberingHint: "Ép. 1156 plutôt que S23E1156, et les saisons à leur nom (Arc East Blue), comme pour les animés.",
     catchUpTitle: (n) => (n === 1 ? "1 épisode précédent non vu" : `${n} épisodes précédents non vus`),
     catchUpBody: "Les marquer comme vus aussi ?",
     onlyThisOne: "Seulement celui-ci",

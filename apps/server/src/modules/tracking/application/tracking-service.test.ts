@@ -222,3 +222,11 @@ test("Absolute numbering is kept per User and Series, and the Episodes carry the
   await tracking.numberAbsolutely("u", 1, false);
   expect((await tracking.library("u"))[0]?.absoluteNumbering).toBe(false);
 });
+
+test("the detail names the seasons TMDB names, and leaves the others to their number", async () => {
+  const show = series(1, false, ["2026-10-01", "2026-10-08"]);
+  show.episodes = show.episodes.map((episode, index) => (index === 1 ? { ...episode, season: 2, number: 1 } : episode));
+  show.seasonNames = { 1: "Arc East Blue" };
+  const detail = await setup([show]).detail("u", 1);
+  expect(detail.seasons.map((season) => [season.number, season.name])).toEqual([[1, "Arc East Blue"], [2, null]]);
+});

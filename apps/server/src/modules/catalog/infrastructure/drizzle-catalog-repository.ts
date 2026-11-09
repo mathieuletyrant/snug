@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, lt } from "drizzle-orm";
 import type { Db } from "@/shared/db";
 import type { CatalogRepository, Episode, Series } from "@/modules/catalog/domain/series";
-import { episodes, series } from "./schema";
+import { episodes, seasons, series } from "./schema";
 
 export class DrizzleCatalogRepository implements CatalogRepository {
   constructor(private readonly db: Db) {}
@@ -15,7 +15,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     if (!tmdbIds.length) return result;
     const ids = [...tmdbIds];
     const rows = this.db.select().from(series).where(inArray(series.tmdbId, ids)).all();
-    for (const row of rows) result.set(row.tmdbId, { ...row, episodes: [] });
+    for (const row of rows) result.set(row.tmdbId, { ...row, episodes: [], seasonNames: {} });
     const eps = this.db
       .select()
       .from(episodes)
@@ -23,14 +23,21 @@ export class DrizzleCatalogRepository implements CatalogRepository {
       .orderBy(asc(episodes.season), asc(episodes.number))
       .all();
     for (const { seriesId, ...ep } of eps) result.get(seriesId)?.episodes.push(ep satisfies Episode);
+    for (const season of this.db.select().from(seasons).where(inArray(seasons.seriesId, ids)).all()) {
+      const names = result.get(season.seriesId)?.seasonNames;
+      if (names) names[season.number] = season.name;
+    }
     return result;
   }
 
-  async save({ episodes: eps, ...row }: Series) {
+  async save({ episodes: eps, seasonNames = {}, ...row }: Series) {
     this.db.transaction((tx) => {
       tx.insert(series).values(row).onConflictDoUpdate({ target: series.tmdbId, set: row }).run();
       tx.delete(episodes).where(eq(episodes.seriesId, row.tmdbId)).run();
       if (eps.length) tx.insert(episodes).values(eps.map((episode) => ({ ...episode, seriesId: row.tmdbId }))).run();
+      tx.delete(seasons).where(eq(seasons.seriesId, row.tmdbId)).run();
+      const named = Object.entries(seasonNames).map(([number, name]) => ({ seriesId: row.tmdbId, number: Number(number), name }));
+      if (named.length) tx.insert(seasons).values(named).run();
     });
   }
 
