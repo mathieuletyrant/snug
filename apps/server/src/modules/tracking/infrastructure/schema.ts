@@ -15,6 +15,8 @@ export const trackedSeries = sqliteTable(
     savingTarget: integer("saving_target").$type<SavingTarget>().notNull().default(0),
     /** Absolute numbering: Episodes read as "Ep. 1156" rather than SxxEyy. */
     absoluteNumbering: integer("absolute_numbering", { mode: "boolean" }).notNull().default(false),
+    /** Named seasons: seasons titled by their own name on TMDB ("Arc East Blue") rather than "Season 1". */
+    namedSeasons: integer("named_seasons", { mode: "boolean" }).notNull().default(false),
     addedAt: integer("added_at", { mode: "timestamp" }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.seriesId] })],

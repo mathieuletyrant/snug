@@ -7,11 +7,11 @@ import { t } from "@/shared/i18n";
 
 /**
  * CSV import, one row per watched Episode (or per Series to just add it):
- *   title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering
+ *   title,tmdb_id,season,episode,watched_at,status,rating,season_rating,saving_target,absolute_numbering,named_seasons
  * Either `title` or `tmdb_id` is required; everything else is optional. `rating` rates the Series and
  * `season_rating` the row's season, out of 10; a row may give a season and its rating without an episode.
- * `saving_target` (0 for a full season, or 3, 5, 10 Episodes) and `absolute_numbering` (true/false) are the
- * Series' own, like `status`. It is also the Export's format (see csv-export.ts).
+ * `saving_target` (0 for a full season, or 3, 5, 10 Episodes), `absolute_numbering` and `named_seasons` (true/false)
+ * are the Series' own, like `status`. It is also the Export's format (see csv-export.ts).
  */
 
 export interface CsvRow {
@@ -26,6 +26,7 @@ export interface CsvRow {
   seasonRating?: number;
   savingTarget?: SavingTarget;
   absoluteNumbering?: boolean;
+  namedSeasons?: boolean;
 }
 
 export class CsvImportError extends Error {
@@ -76,6 +77,7 @@ export const COLUMNS = [
   "season_rating",
   "saving_target",
   "absolute_numbering",
+  "named_seasons",
 ] as const;
 
 export function parseCsvImport(text: string): CsvRow[] {
@@ -131,11 +133,15 @@ export function parseCsvImport(text: string): CsvRow[] {
       row.savingTarget = SAVING_TARGETS.find((target) => String(target) === savingTarget);
       if (row.savingTarget === undefined) problems.push(t().csv.notASavingTarget(line, SAVING_TARGETS.join(", ")));
     }
-    const absoluteNumbering = get("absolute_numbering").toLowerCase();
-    if (absoluteNumbering) {
-      row.absoluteNumbering = absoluteNumbering === "true" ? true : absoluteNumbering === "false" ? false : undefined;
-      if (row.absoluteNumbering === undefined) problems.push(t().csv.notABoolean(line, "absolute_numbering"));
-    }
+    const boolean = (column: "absolute_numbering" | "named_seasons") => {
+      const raw = get(column).toLowerCase();
+      if (!raw) return undefined;
+      if (raw === "true" || raw === "false") return raw === "true";
+      problems.push(t().csv.notABoolean(line, column));
+      return undefined;
+    };
+    row.absoluteNumbering = boolean("absolute_numbering");
+    row.namedSeasons = boolean("named_seasons");
 
     const status = get("status").toLowerCase();
     if (status) {
@@ -153,7 +159,7 @@ export function parseCsvImport(text: string): CsvRow[] {
 /**
  * Groups rows into one entry per Series. `seriesIdOf` turns a title into a TMDB id (null when not found).
  * Status: the last explicit one wins; otherwise Watching when something was watched, Watchlist when not.
- * Ratings, saving_target and absolute_numbering: the last one given wins.
+ * Ratings, saving_target, absolute_numbering and named_seasons: the last one given wins.
  */
 export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => number | null, now: Date): ImportEntry[] {
   const entries = new Map<number, ImportEntry & { explicit: boolean }>();
@@ -168,6 +174,7 @@ export function csvRowsToEntries(rows: CsvRow[], seriesIdOf: (title: string) => 
     if (row.status) Object.assign(entry, { status: row.status, explicit: true });
     if (row.savingTarget !== undefined) entry.savingTarget = row.savingTarget;
     if (row.absoluteNumbering !== undefined) entry.absoluteNumbering = row.absoluteNumbering;
+    if (row.namedSeasons !== undefined) entry.namedSeasons = row.namedSeasons;
     const ratings = new Map((entry.ratings ?? []).map((rating) => [rating.season, rating.rating]));
     if (row.rating) ratings.set(WHOLE_SERIES, row.rating);
     if (row.seasonRating && row.season) ratings.set(row.season, row.seasonRating);

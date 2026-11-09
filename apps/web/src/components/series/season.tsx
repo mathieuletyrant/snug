@@ -28,8 +28,7 @@ export function Season({ series, season }: { series: SeriesDetail; season: Seaso
   const current = series.next?.season ?? series.seasons.at(-1)?.number;
   const showProgress = aired > 0 && (seasonProgress === "all" || season.number === current);
   const base = `/series/${series.seriesId}`;
-  // With Absolute numbering, Episodes no longer say their season: its own name ("Arc East Blue") reads better.
-  const title = (series.absoluteNumbering && season.name) || t.series.season(season.number);
+  const title = (series.namedSeasons && season.name) || t.series.season(season.number);
 
   const toggle = useMutation({
     mutationFn: (e: { number: number; watched: boolean }) =>

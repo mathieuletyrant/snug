@@ -150,7 +150,9 @@ export const fr: Messages = {
     removeConfirm: "Retirer",
     removed: "Retirée de votre bibliothèque",
     absoluteNumbering: "Numérotation absolue",
-    absoluteNumberingHint: "Ép. 1156 plutôt que S23E1156, et les saisons à leur nom (Arc East Blue), comme pour les animés.",
+    absoluteNumberingHint: "Ép. 1156 plutôt que S23E1156, comme pour les animés.",
+    namedSeasons: "Noms des saisons",
+    namedSeasonsHint: "Le nom donné par TMDB (Arc East Blue) plutôt que Saison 1.",
     catchUpTitle: (n) => (n === 1 ? "1 épisode précédent non vu" : `${n} épisodes précédents non vus`),
     catchUpBody: "Les marquer comme vus aussi ?",
     onlyThisOne: "Seulement celui-ci",
@@ -370,7 +372,7 @@ export const fr: Messages = {
     template: "Télécharger le modèle CSV",
     columnsHelp: (title, tmdbId) => (
       <>
-        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série. Les notes sont sur 10 ; un season_rating peut aller avec une season sans episode. saving_target vaut 0 (une saison complète), 3, 5 ou 10 ; absolute_numbering vaut true ou false.
+        Seul {title} ou {tmdbId} est obligatoire. Sans season/episode : ajoute juste la série. Les notes sont sur 10 ; un season_rating peut aller avec une season sans episode. saving_target vaut 0 (une saison complète), 3, 5 ou 10 ; absolute_numbering et named_seasons valent true ou false.
       </>
     ),
     done: (series, watches) => `${series} séries et ${watches} épisodes vus importés.`,

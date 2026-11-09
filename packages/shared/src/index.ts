@@ -90,10 +90,12 @@ export interface SeriesDetail extends Omit<SeriesCard, "loaded"> {
   tracked: boolean;
   overview: string;
   ended: boolean;
+  /** Named seasons: seasons titled by their own `name` ("Arc East Blue") rather than "Season 1". */
+  namedSeasons: boolean;
   /** `watchedAt`: ISO datetime of the first Watch. */
   seasons: {
     number: number;
-    /** The season's own name on TMDB ("Arc East Blue"), null when it is only numbered; shown with `absoluteNumbering`. */
+    /** The season's own name on TMDB ("Arc East Blue"), null when it is only numbered; shown with `namedSeasons`. */
     name: string | null;
     rating: number | null;
     episodes: (Numbered<Episode> & { watched: boolean; watchedAt: string | null; aired: boolean })[];

@@ -49,13 +49,14 @@ export class DrizzleTrackedSeriesRepository implements TrackedSeriesRepository {
       addedAt: t.addedAt,
       savingTarget: t.savingTarget,
       absoluteNumbering: t.absoluteNumbering,
+      namedSeasons: t.namedSeasons,
     };
     this.db.transaction((tx) => {
       tx.insert(trackedSeries)
         .values(row)
         .onConflictDoUpdate({
           target: [trackedSeries.userId, trackedSeries.seriesId],
-          set: { status: t.status, savingTarget: t.savingTarget, absoluteNumbering: t.absoluteNumbering },
+          set: { status: t.status, savingTarget: t.savingTarget, absoluteNumbering: t.absoluteNumbering, namedSeasons: t.namedSeasons },
         })
         .run();
       tx.delete(watches).where(key).run();

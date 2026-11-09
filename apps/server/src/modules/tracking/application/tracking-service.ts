@@ -40,6 +40,7 @@ export interface ImportEntry {
   /** Like `status`, they only apply to a Series not tracked yet. */
   savingTarget?: SavingTarget;
   absoluteNumbering?: boolean;
+  namedSeasons?: boolean;
 }
 
 export class TrackingService {
@@ -169,6 +170,15 @@ export class TrackingService {
     });
   }
 
+  /** Named seasons on or off for a tracked Series. */
+  async nameSeasons(userId: string, seriesId: number, on: boolean) {
+    await this.exclusive(userId, seriesId, async () => {
+      const tracked = await this.get(userId, seriesId);
+      tracked.nameSeasons(on);
+      await this.repo.save(tracked);
+    });
+  }
+
   async watchSeason(userId: string, seriesId: number, season: number) {
     const series = await this.catalog.ensure(seriesId);
     await this.exclusive(userId, seriesId, async () => {
@@ -183,9 +193,10 @@ export class TrackingService {
   async import(userId: string, entries: ImportEntry[]): Promise<number[]> {
     for (const entry of entries) {
       await this.exclusive(userId, entry.seriesId, async () => {
+        const found = await this.repo.find(userId, entry.seriesId);
         const tracked =
-          (await this.repo.find(userId, entry.seriesId)) ??
-          TrackedSeries.start(userId, entry.seriesId, entry.status, this.now(), entry.savingTarget, entry.absoluteNumbering);
+          found ?? TrackedSeries.start(userId, entry.seriesId, entry.status, this.now(), entry.savingTarget, entry.absoluteNumbering);
+        if (!found && entry.namedSeasons !== undefined) tracked.nameSeasons(entry.namedSeasons);
         tracked.merge(entry.watches);
         tracked.mergeRatings(entry.ratings ?? []);
         await this.repo.save(tracked);
@@ -265,6 +276,7 @@ export class TrackingService {
       tracked: !!found,
       overview: series.overview,
       ended: series.ended,
+      namedSeasons: tracked.namedSeasons,
       seasons: [...seasons.values()],
     };
   }

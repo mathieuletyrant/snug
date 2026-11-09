@@ -59,6 +59,7 @@ export class TrackedSeries {
     private _savingTarget: SavingTarget = 0,
     private readonly _ratings = new Map<number, number>(),
     private _absoluteNumbering = false,
+    private _namedSeasons = false,
   ) {}
 
   static start(userId: string, seriesId: number, status: Status, now: Date, savingTarget: SavingTarget = 0, absoluteNumbering = false) {
@@ -74,10 +75,11 @@ export class TrackedSeries {
     savingTarget: SavingTarget;
     ratings?: Rating[];
     absoluteNumbering?: boolean;
+    namedSeasons?: boolean;
   }) {
     const watches = new Map(p.watches.map((watch) => [keyOf(watch), watch]));
     const ratings = new Map((p.ratings ?? []).map((rating) => [rating.season, rating.rating]));
-    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings, p.absoluteNumbering);
+    return new TrackedSeries(p.userId, p.seriesId, p.status, watches, p.addedAt, p.savingTarget, ratings, p.absoluteNumbering, p.namedSeasons);
   }
 
   get status() {
@@ -95,6 +97,15 @@ export class TrackedSeries {
 
   numberAbsolutely(on: boolean) {
     this._absoluteNumbering = on;
+  }
+
+  /** Named seasons: the User reads this Series' seasons by their own name on TMDB ("Arc East Blue"). */
+  get namedSeasons() {
+    return this._namedSeasons;
+  }
+
+  nameSeasons(on: boolean) {
+    this._namedSeasons = on;
   }
 
   get watches(): Watch[] {

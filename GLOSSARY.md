@@ -23,7 +23,11 @@ An Episode's rank across the whole Series: the Episodes of every earlier season,
 _Avoid_: Global number, overall number
 
 **Absolute numbering**:
-A User's choice, Series by Series, to address its Episodes by their Absolute number ("Ep. 1100") rather than `SxxEyy`, wherever a person reads them, and its seasons by their own name on TMDB ("Arc East Blue") when they have one. Meant for Anime.
+A User's choice, Series by Series, to address its Episodes by their Absolute number ("Ep. 1100") rather than `SxxEyy`, wherever a person reads them. Meant for Anime.
+
+**Named seasons**:
+A User's choice, Series by Series, to title its seasons by their own name on TMDB ("Arc East Blue") rather than "Season 1". A season TMDB only numbers keeps its number.
+_Avoid_: Arc mode
 _Avoid_: Anime mode
 
 **Day**:
@@ -93,7 +97,7 @@ _Avoid_: Blur, hidden titles
 Loading a User's Series, Statuses, Watches and Ratings from a Snug Export or another tracker (CSV, export file or an Assistant); it never overrides what Snug already has, so an Export restores as-is only into an empty account.
 
 **Export**:
-A copy of one User's TrackedSeries (Status, Saving up target, Absolute numbering), Watches and Ratings at a given time, as a file. Snug's Import reads it back without loss; another tracker or a spreadsheet can read it. Account settings and secrets are not part of it.
+A copy of one User's TrackedSeries (Status, Saving up target, Absolute numbering, Named seasons), Watches and Ratings at a given time, as a file. Snug's Import reads it back without loss; another tracker or a spreadsheet can read it. Account settings and secrets are not part of it.
 _Avoid_: Backup, dump
 
 **Feed**:
