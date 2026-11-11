@@ -95,6 +95,15 @@ export const fr: Messages = {
     watched: (code) => `${code} vu`,
     savingOut: (out, needed) => `${out}/${needed} sortis`,
     complete: (when) => `Complète ${when}`,
+    layout: {
+      label: "Affichage",
+      cards: "Cartes",
+      list: "Liste",
+      carousel: "Carrousel",
+      page: (current, total) => `${current} / ${total}`,
+      slide: "page",
+      pageOf: (current, total) => `Page ${current} sur ${total}`,
+    },
     pick: {
       trigger: (minutes) => `J'ai ${minutes} min`,
       title: "J'ai…",
