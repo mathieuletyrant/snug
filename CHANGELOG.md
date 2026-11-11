@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/mathieuletyrant/snug/compare/v0.21.0...v0.22.0) (2026-11-11)
+
+
+### ✨ Features
+
+* **home:** switch Ready to watch between cards, a compact list and a carousel ([#101](https://github.com/mathieuletyrant/snug/issues/101)) ([2bc3b08](https://github.com/mathieuletyrant/snug/commit/2bc3b087490f39ca32942443bc05a5de5303e847))
+
 ## [0.21.0](https://github.com/mathieuletyrant/snug/compare/v0.20.0...v0.21.0) (2026-11-09)
 
 
