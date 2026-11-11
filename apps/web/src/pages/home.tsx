@@ -19,7 +19,7 @@ export function HomePage() {
   const { data, isPending } = useQuery(homeQuery);
   const t = useT();
   const { showPick } = usePreferences();
-  const [layout, setLayout] = useReadyLayout();
+  const [chosenLayout, setLayout] = useReadyLayout();
   const [page, setPage] = useState(0);
   const columns = useColumns();
 
@@ -40,6 +40,9 @@ export function HomePage() {
     );
   }
 
+  // A computer screen fits the cards grid well: no switch there, the phone's choice stays for the phone.
+  const wide = columns === 4;
+  const layout = wide ? "cards" : chosenLayout;
   const pages = pageTotal(data.ready.length, columns);
   const currentPage = Math.min(page, pages - 1);
 
@@ -52,18 +55,22 @@ export function HomePage() {
           <SectionTitle
             count={data.ready.length}
             action={
-              layout === "carousel" &&
-              pages > 1 && <span className="text-sm font-bold text-muted">{t.home.layout.page(currentPage + 1, pages)}</span>
+              wide
+                ? showPick && <PickSheet ready={data.ready} />
+                : layout === "carousel" &&
+                  pages > 1 && <span className="text-sm font-bold text-muted">{t.home.layout.page(currentPage + 1, pages)}</span>
             }
           >
             {t.home.ready}
           </SectionTitle>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            {showPick && <PickSheet ready={data.ready} />}
-            <div className="ml-auto">
-              <LayoutSwitch value={layout} onChange={setLayout} />
+          {!wide && (
+            <div className="mb-4 flex items-center justify-between gap-3">
+              {showPick && <PickSheet ready={data.ready} />}
+              <div className="ml-auto">
+                <LayoutSwitch value={layout} onChange={setLayout} />
+              </div>
             </div>
-          </div>
+          )}
           {layout === "cards" && (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {data.ready.map((card) => (
