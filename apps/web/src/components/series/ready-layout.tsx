@@ -46,7 +46,7 @@ export function LayoutSwitch({ value, onChange }: { value: ReadyLayout; onChange
             aria-pressed={current}
             onClick={() => onChange(layout)}
             className={cx(
-              "flex h-8 w-10 items-center justify-center rounded-full transition",
+              "flex h-7 w-9 items-center justify-center rounded-full transition",
               current ? "bg-accent text-accent-ink" : "text-muted hover:text-text",
             )}
           >
