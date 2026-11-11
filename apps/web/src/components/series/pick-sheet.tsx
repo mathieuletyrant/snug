@@ -44,7 +44,7 @@ export function PickSheet({ ready }: { ready: SeriesCard[] }) {
     <Sheet
       title={t.home.pick.title}
       trigger={
-        <button className="flex shrink-0 items-center gap-1.5 rounded-full bg-raised px-3 py-1 text-sm font-bold text-muted transition hover:text-text">
+        <button className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-raised px-3 text-sm font-bold text-muted transition hover:text-text">
           <Hourglass className="size-4" />
           {t.home.pick.trigger(budget)}
         </button>
