@@ -26,7 +26,7 @@ export function ReadyRow({ card }: { card: SeriesCard }) {
           </div>
         </div>
         <div className="min-w-0">
-          <h3 className="flex items-center gap-1.5 text-[15px] leading-tight">
+          <h3 className="flex items-center gap-1.5 text-base leading-tight">
             {flagged && (
               <span className="size-1.75 shrink-0 rounded-full bg-accent" title={card.saving ? t.home.savedUp : t.home.new}>
                 <span className="sr-only">{card.saving ? t.home.savedUp : t.home.new}</span>

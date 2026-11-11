@@ -100,8 +100,9 @@ export const fr: Messages = {
       cards: "Cartes",
       list: "Liste",
       carousel: "Carrousel",
-      page: (n, total) => `${n} / ${total}`,
-      pageOf: (n, total) => `Page ${n} sur ${total}`,
+      page: (current, total) => `${current} / ${total}`,
+      slide: "page",
+      pageOf: (current, total) => `Page ${current} sur ${total}`,
     },
     pick: {
       trigger: (minutes) => `J'ai ${minutes} min`,

@@ -106,8 +106,9 @@ export const en = {
       cards: "Cards",
       list: "List",
       carousel: "Carousel",
-      page: (n: number, total: number) => `${n} / ${total}`,
-      pageOf: (n: number, total: number) => `Page ${n} of ${total}`,
+      page: (current: number, total: number) => `${current} / ${total}`,
+      slide: "page",
+      pageOf: (current: number, total: number) => `Page ${current} of ${total}`,
     },
     pick: {
       trigger: (minutes: number) => `I have ${minutes} min`,

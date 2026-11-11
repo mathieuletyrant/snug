@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Coffee } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import { Link } from "wouter";
 import { usePreferences } from "@/components/preferences";
 import { PickSheet } from "@/components/series/pick-sheet";
 import { ReadyCard } from "@/components/series/ready-card";
-import { ReadyCarousel, useColumns } from "@/components/series/ready-carousel";
+import { ReadyCarousel } from "@/components/series/ready-carousel";
 import { LayoutSwitch, useReadyLayout } from "@/components/series/ready-layout";
 import { ReadyRow } from "@/components/series/ready-row";
 import { UpcomingTile } from "@/components/series/upcoming-tile";
 import { HomeSkeleton } from "@/components/skeletons";
+import { useColumns } from "@/components/use-columns";
 import { Button, Empty, PageTitle, POSTER_GRID, SectionTitle } from "@/components/ui";
 import { useT } from "@/i18n";
 import { greeting } from "@/lib/format";
@@ -20,7 +21,8 @@ export function HomePage() {
   const t = useT();
   const { showPick } = usePreferences();
   const [chosenLayout, setLayout] = useReadyLayout();
-  const [page, setPage] = useState(0);
+  const [carousel, setCarousel] = useState({ page: 0, total: 1 });
+  const onPage = useCallback((page: number, total: number) => setCarousel({ page, total }), []);
   const columns = useColumns();
 
   if (isPending) return <HomeSkeleton />;
@@ -43,8 +45,17 @@ export function HomePage() {
   // A computer screen fits the cards grid well: no switch there, the phone's choice stays for the phone.
   const wide = columns === 4;
   const layout = wide ? "cards" : chosenLayout;
-  const pages = pageTotal(data.ready.length, columns);
-  const currentPage = Math.min(page, pages - 1);
+
+  // Wide: the Pick beside the title, as before the switch. Carousel: where you are, "2 / 3" (the dots say it to screen readers).
+  let titleAction: ReactNode = null;
+  if (wide) titleAction = showPick && <PickSheet ready={data.ready} />;
+  else if (layout === "carousel" && carousel.total > 1) {
+    titleAction = (
+      <span aria-hidden className="text-sm font-bold text-muted">
+        {t.home.layout.page(carousel.page + 1, carousel.total)}
+      </span>
+    );
+  }
 
   return (
     <>
@@ -54,12 +65,7 @@ export function HomePage() {
         <section className="mb-10">
           <SectionTitle
             count={data.ready.length}
-            action={
-              wide
-                ? showPick && <PickSheet ready={data.ready} />
-                : layout === "carousel" &&
-                  pages > 1 && <span className="text-sm font-bold text-muted">{t.home.layout.page(currentPage + 1, pages)}</span>
-            }
+            action={titleAction}
           >
             {t.home.ready}
           </SectionTitle>
@@ -85,7 +91,7 @@ export function HomePage() {
               ))}
             </ul>
           )}
-          {layout === "carousel" && <ReadyCarousel cards={data.ready} columns={columns} page={currentPage} onPage={setPage} />}
+          {layout === "carousel" && <ReadyCarousel cards={data.ready} columns={columns} onPage={onPage} />}
         </section>
       )}
 
@@ -103,7 +109,3 @@ export function HomePage() {
   );
 }
 
-/** How many carousel pages: two rows of `columns` cards each. */
-function pageTotal(cards: number, columns: number) {
-  return Math.ceil(cards / (columns * 2));
-}
