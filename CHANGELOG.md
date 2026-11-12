@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.1](https://github.com/mathieuletyrant/snug/compare/v0.22.0...v0.22.1) (2026-11-11)
+
+
+### 🐛 Fixes
+
+* **home:** same height for "I have N min" and the layout switch ([#103](https://github.com/mathieuletyrant/snug/issues/103)) ([0f16e3c](https://github.com/mathieuletyrant/snug/commit/0f16e3cf6a42d2d140edc7ff2b676d5d55534828))
+
 ## [0.22.0](https://github.com/mathieuletyrant/snug/compare/v0.21.0...v0.22.0) (2026-11-11)
 
 
