@@ -1,5 +1,5 @@
 // Offline support: the app shell and the last data seen load without network; actions need the network.
-const CACHE = "snug-v3";
+const CACHE = "snug-v4";
 const READ_API = /^\/api\/(setup|me|home|library|series\/\d+)$/;
 
 self.addEventListener("install", (event) => {
@@ -26,6 +26,18 @@ const networkFirst = async (request) => {
   }
 };
 
+// A navigation is fetched as is, so an auth proxy's redirect to its sign-in reaches the browser, which follows it;
+// only a failed network falls back to the cached app shell. The server answers index.html on every app path.
+const navigation = async (request) => {
+  try {
+    const response = await fetch(request);
+    if (response.ok) (await caches.open(CACHE)).put("/", response.clone());
+    return response;
+  } catch {
+    return (await caches.match("/")) ?? Response.error();
+  }
+};
+
 const cacheFirst = async (request) => {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -45,7 +57,7 @@ self.addEventListener("fetch", (event) => {
   }
   if (READ_API.test(url.pathname)) return event.respondWith(networkFirst(request));
   // A navigation to the API (the Export's download, a feed opened in a tab) reaches the server, not the app shell.
-  if (request.mode === "navigate" && !url.pathname.startsWith("/api/")) return event.respondWith(networkFirst(new Request("/")));
+  if (request.mode === "navigate" && !url.pathname.startsWith("/api/")) return event.respondWith(navigation(request));
 });
 
 // Web Push: { title, body, url, tag } sent by the server.

@@ -26,12 +26,32 @@ export async function api<T = void>(
     headers: hasBody ? { "content-type": raw ? (init.contentType ?? "text/plain") : "application/json" } : undefined,
     body: raw ? init.text : hasBody ? JSON.stringify(init.body) : undefined,
     credentials: "same-origin",
+    // Snug's API never redirects: a redirect comes from an auth proxy in front of Snug (Cloudflare Access, Authelia…) asking to sign in again.
+    redirect: "manual",
   });
+  if (res.type === "opaqueredirect") {
+    reloadForSignIn();
+    throw new ApiError(0, "The sign-in in front of Snug has expired");
+  }
   if (!res.ok) {
     const data = (await res.json().catch(() => null)) as { error?: string; fields?: Record<string, string> } | null;
     throw new ApiError(res.status, data?.error ?? `Request failed (${res.status})`, data?.fields);
   }
   return (res.status === 204 || res.status === 201 ? undefined : await res.json()) as T;
+}
+
+const SIGN_IN_RELOAD_KEY = "snug:sign-in-reload";
+
+/** Reloads the page so the browser itself follows the auth proxy to its sign-in; at most once a minute, against a loop. */
+function reloadForSignIn() {
+  try {
+    const last = Number(sessionStorage.getItem(SIGN_IN_RELOAD_KEY) ?? 0);
+    if (Date.now() - last < 60_000) return;
+    sessionStorage.setItem(SIGN_IN_RELOAD_KEY, String(Date.now()));
+  } catch {
+    // No sessionStorage: reload all the same.
+  }
+  location.reload();
 }
 
 export const queryClient = new QueryClient({
