@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.2](https://github.com/mathieuletyrant/snug/compare/v0.22.1...v0.22.2) (2026-11-23)
+
+
+### 🐛 Fixes
+
+* **web:** sign in again when an auth proxy's session ends ([#105](https://github.com/mathieuletyrant/snug/issues/105)) ([81f659f](https://github.com/mathieuletyrant/snug/commit/81f659f1ec45bc9aae3a3bdc23e8b538051c9757))
+
 ## [0.22.1](https://github.com/mathieuletyrant/snug/compare/v0.22.0...v0.22.1) (2026-11-11)
 
 
