@@ -26,12 +26,12 @@ export async function api<T = void>(
     headers: hasBody ? { "content-type": raw ? (init.contentType ?? "text/plain") : "application/json" } : undefined,
     body: raw ? init.text : hasBody ? JSON.stringify(init.body) : undefined,
     credentials: "same-origin",
-    // Snug's API never redirects: a redirect is Cloudflare Access asking to sign in again.
+    // Snug's API never redirects: a redirect comes from an auth proxy in front of Snug (Cloudflare Access, Authelia…) asking to sign in again.
     redirect: "manual",
   });
   if (res.type === "opaqueredirect") {
-    signInAgainThroughAccess();
-    throw new ApiError(0, "Cloudflare Access session expired");
+    reloadForSignIn();
+    throw new ApiError(0, "The sign-in in front of Snug has expired");
   }
   if (!res.ok) {
     const data = (await res.json().catch(() => null)) as { error?: string; fields?: Record<string, string> } | null;
@@ -40,14 +40,14 @@ export async function api<T = void>(
   return (res.status === 204 || res.status === 201 ? undefined : await res.json()) as T;
 }
 
-const ACCESS_RELOAD_KEY = "snug:access-reload";
+const SIGN_IN_RELOAD_KEY = "snug:sign-in-reload";
 
-/** Reloads the page so the browser itself follows Access to its sign-in; at most once a minute, against a loop. */
-function signInAgainThroughAccess() {
+/** Reloads the page so the browser itself follows the auth proxy to its sign-in; at most once a minute, against a loop. */
+function reloadForSignIn() {
   try {
-    const last = Number(sessionStorage.getItem(ACCESS_RELOAD_KEY) ?? 0);
+    const last = Number(sessionStorage.getItem(SIGN_IN_RELOAD_KEY) ?? 0);
     if (Date.now() - last < 60_000) return;
-    sessionStorage.setItem(ACCESS_RELOAD_KEY, String(Date.now()));
+    sessionStorage.setItem(SIGN_IN_RELOAD_KEY, String(Date.now()));
   } catch {
     // No sessionStorage: reload all the same.
   }

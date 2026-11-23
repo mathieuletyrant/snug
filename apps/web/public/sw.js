@@ -26,7 +26,7 @@ const networkFirst = async (request) => {
   }
 };
 
-// A navigation is fetched as is, so a redirect to the Cloudflare Access sign-in reaches the browser, which follows it;
+// A navigation is fetched as is, so an auth proxy's redirect to its sign-in reaches the browser, which follows it;
 // only a failed network falls back to the cached app shell. The server answers index.html on every app path.
 const navigation = async (request) => {
   try {
